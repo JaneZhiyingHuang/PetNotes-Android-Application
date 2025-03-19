@@ -8,30 +8,34 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import fi.oamk.petnotes.ui.theme.PetNotesTheme
+import fi.oamk.petnotes.viewmodel.GoogleSignInViewModel
 import fi.oamk.petnotes.viewmodel.SignInViewModel
 import fi.oamk.petnotes.viewmodel.SignUpViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             PetNotesTheme {
                 val navController = rememberNavController()
+                val googleSignInViewModel: GoogleSignInViewModel = viewModel() // Move viewModel() inside the composable scope
 
-                NavHost(navController = navController, startDestination = "sign_in") {
+                NavHost(navController = navController, startDestination = "landing") {
+                    composable("landing") {
+                        LandingScreen(navController = navController, googleSignInViewModel = googleSignInViewModel)
+                    }
                     composable("sign_in") {
-                        // Use viewModel() to get an instance of SignInViewModel
-                        val signInViewModel: SignInViewModel = viewModel()
+                        val signInViewModel: SignInViewModel = viewModel() // Move viewModel() inside the composable scope
                         SignInScreen(viewModel = signInViewModel, navController = navController)
                     }
                     composable("sign_up") {
-                        // Use viewModel() to get an instance of SignUpViewModel
-                        val signUpViewModel: SignUpViewModel = viewModel()
+                        val signUpViewModel: SignUpViewModel = viewModel() // Move viewModel() inside the composable scope
                         SignUpScreen(navController = navController, viewModel = signUpViewModel)
                     }
                     composable("home") {
                         // HomeScreen should also receive the view model if needed
-                        HomeScreen()
+                        HomeScreen(navController, googleSignInViewModel = googleSignInViewModel, )
                     }
                 }
             }
