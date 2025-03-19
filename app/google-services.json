@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "674752977371",
+    "project_id": "group3-petnotes",
+    "storage_bucket": "group3-petnotes.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674752977371:android:5243f0c64d911cf211affe",
+        "android_client_info": {
+          "package_name": "fi.oamk.petnotes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQEnkAaMrdkkgVbKlr-Ah6FhqaHfAhWDY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
