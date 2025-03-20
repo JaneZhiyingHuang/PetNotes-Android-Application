@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +42,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import fi.oamk.petnotes.viewmodel.SignUpViewModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = viewModel()) {
@@ -47,7 +50,6 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
     var confirmPassword by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     var isButtonEnabled by remember { mutableStateOf(true) }
-
 
     Scaffold(
         topBar = {
@@ -84,33 +86,91 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
 
             Spacer(modifier = Modifier.height(50.dp))
 
+            // Email Field
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.Start // Align label to the left
+            ) {
+                // Label for Email
+                Text(
+                    text = "Email",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 73.dp) // Adjust left padding for label
+                )
+                // Centered OutlinedTextField
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    modifier = Modifier
+                        .width(280.dp) // Width of the text field
+                        .padding(4.dp) // Padding around the text field
+                        .height(56.dp) // Height of the text field
+                        .align(Alignment.CenterHorizontally), // Center the text field
+                    shape = RoundedCornerShape(40.dp) // Rounded corners for the text field
+                )
+            }
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Password Field
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start // Align label to the left
+            ) {
+                // Label for Password
+                Text(
+                    text = "Password",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 73.dp) // Adjust left padding for label
+                )
+                // Centered OutlinedTextField
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    visualTransformation = PasswordVisualTransformation(), // Mask the password text
+                    modifier = Modifier
+                        .width(280.dp) // Width of the text field
+                        .padding(4.dp) // Padding around the text field
+                        .height(56.dp) // Height of the text field
+                        .align(Alignment.CenterHorizontally), // Center the text field
+                    shape = RoundedCornerShape(40.dp) // Rounded corners for the text field
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirm Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Confirm Password Field
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally // Center the whole content horizontally
+            ) {
+                // Label for Confirm Password
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start // Left-align the label
+                ) {
+                    Text(
+                        text = "Confirm Password",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 73.dp) // Adjust left padding for label
+                    )
+                }
+
+                // Centered OutlinedTextField for Confirm Password
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    visualTransformation = PasswordVisualTransformation(), // Mask the password text
+                    modifier = Modifier
+                        .width(280.dp) // Width of the text field
+                        .padding(4.dp) // Padding around the text field
+                        .height(56.dp) // Height of the text field
+                        .align(Alignment.CenterHorizontally), // Center the text field
+                    shape = RoundedCornerShape(40.dp) // Rounded corners for the text field
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -120,6 +180,22 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // "Already have an account? Sign In" link
+            TextButton(
+                onClick = {
+                    navController.navigate("sign_in") // Navigate to the Sign In screen
+                },
+                modifier = Modifier.fillMaxWidth() // Make the button fill the width
+            ) {
+                Text(
+                    text = "Already have an account? Sign In",
+                    color = Color.Gray // Change the text color to Gray
+                )
+            }
+
+            // Create Account Button
             Button(
                 onClick = {
                     if (password != confirmPassword) {
@@ -141,25 +217,26 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = isButtonEnabled
+                modifier = Modifier
+                    .width(280.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .height(56.dp), // Full width button
+                enabled = isButtonEnabled,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFD9D9D9), // Match the background color
+                    contentColor = Color.Black // Match the text color
+                )
             ) {
-                Text(text = "Create Account")
+                Text(
+                    text = "Create Account",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // "Already have an account? Sign In" link
-            TextButton(
-                onClick = {
-                    navController.navigate("sign_in") // Navigate to the Sign In screen
-                }
-            ) {
-                Text("Already have an account? Sign In", color = Color.Blue)
-            }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
