@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -194,12 +195,13 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                 }
 
                 // Use let block to navigate when signed in
-                isSignedIn?.let {
-                    navController.navigate("home") {
-                        popUpTo("sign_in") { inclusive = true } // Prevent going back to sign-in
+                LaunchedEffect(isSignedIn) {
+                    if (isSignedIn != null) {
+                        navController.navigate("home") {
+                            popUpTo("sign_in") { inclusive = true }
+                        }
                     }
                 }
-
 
                 // Error Message
                 if (errorMessage.isNotEmpty()) {
@@ -210,6 +212,8 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
         }
     }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable
