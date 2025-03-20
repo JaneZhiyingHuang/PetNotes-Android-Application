@@ -1,23 +1,20 @@
 package fi.oamk.petnotes.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class SignUpViewModel : ViewModel() {
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    // Function to perform sign-up logic (replace this with actual sign-up logic)
     fun signUp(
-        username: String,
         email: String,
         password: String,
         confirmPassword: String,
-        onResult: (Boolean, String?) -> Unit // Removed @Composable annotation
+        onResult: (Boolean, String?) -> Unit
     ) {
-        if (username.isBlank()) {
-            onResult(false, "Username is required")
-            return
-        }
         if (email.isBlank()) {
             onResult(false, "Email is required")
             return
@@ -35,14 +32,17 @@ class SignUpViewModel : ViewModel() {
             return
         }
 
-        // Simulate sign-up logic (e.g., calling an API)
         viewModelScope.launch {
-            try {
-                // Simulating a sign-up process (replace with actual sign-up logic)
-                onResult(true, null) // Indicate success
-            } catch (e: Exception) {
-                onResult(false, e.localizedMessage ?: "Sign-up failed")
-            }
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("SignUpViewModel", "createUserWithEmail:success")
+                        onResult(true, null)
+                    } else {
+                        Log.w("SignUpViewModel", "createUserWithEmail:failure", task.exception)
+                        onResult(false, task.exception?.localizedMessage ?: "Sign-up failed")
+                    }
+                }
         }
     }
 }

@@ -17,18 +17,14 @@ import fi.oamk.petnotes.viewmodel.SignUpViewModel
 
 @Composable
 fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = viewModel()) {
-    var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     var isButtonEnabled by remember { mutableStateOf(true) } // Handle button state
 
-    val snackBarHostState = remember { SnackbarHostState() }
-
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackBarHostState) }
+        modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -39,15 +35,6 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
         ) {
             Text(text = "Sign Up", fontSize = 24.sp, color = Color.Black)
             Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Username") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = email,
@@ -92,7 +79,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
 
                     isButtonEnabled = false // Disable button while signing up
 
-                    viewModel.signUp(username, email, password, confirmPassword) { success, error ->
+                    viewModel.signUp(email, password, confirmPassword) { success, error ->
                         isButtonEnabled = true // Re-enable the button
 
                         if (success) {
