@@ -53,6 +53,7 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
     // Observe ViewModel's LiveData
     val isButtonEnabled by viewModel.isButtonEnabled.observeAsState(true)
     val errorMessage by viewModel.errorMessage.observeAsState("")
+    val isSignedIn by viewModel.isSignedIn.observeAsState()
 
     Scaffold(
         topBar = {
@@ -74,16 +75,15 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Top // Set vertical arrangement to top
+            verticalArrangement = Arrangement.Top
         ) {
-            // Title: "Sign In"
-            Spacer(modifier = Modifier.height(100.dp)) // Add space to push title down
+            Spacer(modifier = Modifier.height(100.dp))
             Text(
                 text = "Sign In!",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp), // Move title further down
+                    .padding(bottom = 16.dp),
                 textAlign = TextAlign.Center
             )
 
@@ -92,9 +92,9 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
             // Centered form (email and password)
             Column(
                 modifier = Modifier
-                    .weight(1f) // This will center the form in the middle of the screen
+                    .weight(1f)
                     .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally, // Center align horizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // Email Field
                 Column(
@@ -103,17 +103,17 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                 ) {
                     Text(
                         text = "Email",
-                        fontWeight = FontWeight.Bold, // Make the text bold
-                        modifier = Modifier.padding(start = 73.dp) // Shift the label slightly to the right
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 73.dp)
                     )
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
                         modifier = Modifier
-                            .width(280.dp) // Make the text field narrower
+                            .width(280.dp)
                             .padding(4.dp)
                             .height(56.dp)
-                            .align(Alignment.CenterHorizontally), // Center the text field
+                            .align(Alignment.CenterHorizontally),
                         shape = RoundedCornerShape(40.dp)
                     )
                 }
@@ -123,22 +123,22 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                 // Password Field
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start // Align label to the left
+                    horizontalAlignment = Alignment.Start
                 ) {
                     Text(
                         text = "Password",
-                        fontWeight = FontWeight.Bold, // Make the text bold
-                        modifier = Modifier.padding(start = 73.dp) // Shift the label slightly to the right
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 73.dp)
                     )
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier
-                            .width(280.dp) // Make the text field narrower
+                            .width(280.dp)
                             .padding(4.dp)
                             .height(56.dp)
-                            .align(Alignment.CenterHorizontally), // Center the text field
+                            .align(Alignment.CenterHorizontally),
                         shape = RoundedCornerShape(40.dp)
                     )
                 }
@@ -148,13 +148,13 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                 // Forget Password Button (Centered below the fields)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center, // Center the button horizontally
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(
                         onClick = { /* Navigate to forget password screen */ },
                         modifier = Modifier
-                            .align(Alignment.CenterVertically) // Align vertically to center
+                            .align(Alignment.CenterVertically)
                     ) {
                         Text(text = "Forget Password?", color = Color.Gray)
                     }
@@ -176,19 +176,27 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                         viewModel.signInWithEmailAndPassword(email, password)
                     },
                     modifier = Modifier
-                        .width(280.dp) // Set a fixed width to make it narrower
+                        .width(280.dp)
                         .height(48.dp),
                     enabled = isButtonEnabled,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD9D9D9), // Set button background color to D9D9D9
-                        contentColor = Color.Black // Set button text color to black
+                        containerColor = Color(0xFFD9D9D9),
+                        contentColor = Color.Black
                     )
                 ) {
                     Text(
                         text = "Confirm",
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold) // Make text bold
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
+
+                // Use let block to navigate when signed in
+                isSignedIn?.let {
+                    navController.navigate("home") {
+                        popUpTo("sign_in") { inclusive = true } // Prevent going back to sign-in
+                    }
+                }
+
 
                 // Error Message
                 if (errorMessage.isNotEmpty()) {
