@@ -1,5 +1,6 @@
 package fi.oamk.petnotes.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -113,8 +114,9 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                             .width(280.dp)
                             .padding(4.dp)
                             .height(56.dp)
+                            .background(Color(0xFFD9D9D9), shape = RoundedCornerShape(40.dp))
                             .align(Alignment.CenterHorizontally),
-                        shape = RoundedCornerShape(40.dp)
+                           shape = RoundedCornerShape(40.dp)
                     )
                 }
 
@@ -138,6 +140,7 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                             .width(280.dp)
                             .padding(4.dp)
                             .height(56.dp)
+                            .background(Color(0xFFD9D9D9), shape = RoundedCornerShape(40.dp))
                             .align(Alignment.CenterHorizontally),
                         shape = RoundedCornerShape(40.dp)
                     )
@@ -160,8 +163,6 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
                 // Sign Up Link Above Button
                 TextButton(
                     onClick = { navController.navigate("sign_up") },
@@ -169,6 +170,8 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                 ) {
                     Text("Don't have an account? Sign Up", color = Color.Gray)
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Sign In Button
                 Button(

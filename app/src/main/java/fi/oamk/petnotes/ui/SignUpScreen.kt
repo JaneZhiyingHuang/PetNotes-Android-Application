@@ -1,5 +1,6 @@
 package fi.oamk.petnotes.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -106,6 +107,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
                         .width(280.dp) // Width of the text field
                         .padding(4.dp) // Padding around the text field
                         .height(56.dp) // Height of the text field
+                        .background(Color(0xFFD9D9D9), shape = RoundedCornerShape(40.dp))
                         .align(Alignment.CenterHorizontally), // Center the text field
                     shape = RoundedCornerShape(40.dp) // Rounded corners for the text field
                 )
@@ -134,6 +136,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
                         .width(280.dp) // Width of the text field
                         .padding(4.dp) // Padding around the text field
                         .height(56.dp) // Height of the text field
+                        .background(Color(0xFFD9D9D9), shape = RoundedCornerShape(40.dp))
                         .align(Alignment.CenterHorizontally), // Center the text field
                     shape = RoundedCornerShape(40.dp) // Rounded corners for the text field
                 )
@@ -167,6 +170,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
                         .width(280.dp) // Width of the text field
                         .padding(4.dp) // Padding around the text field
                         .height(56.dp) // Height of the text field
+                        .background(Color(0xFFD9D9D9), shape = RoundedCornerShape(40.dp))
                         .align(Alignment.CenterHorizontally), // Center the text field
                     shape = RoundedCornerShape(40.dp) // Rounded corners for the text field
                 )
