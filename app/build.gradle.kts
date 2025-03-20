@@ -43,7 +43,10 @@ android {
 dependencies {
     // Import the BoM for the Firebase platform
     implementation(platform(libs.firebase.bom))
-
+    // Import the BoM for the Firebase platform
+    // Declare the dependency for the Cloud Firestore library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation(libs.firebase.firestore)
     // Add the dependency for the Firebase Authentication library
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation(libs.firebase.auth)
