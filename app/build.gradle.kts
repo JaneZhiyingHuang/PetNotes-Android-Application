@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.play.services.fido)
     implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
