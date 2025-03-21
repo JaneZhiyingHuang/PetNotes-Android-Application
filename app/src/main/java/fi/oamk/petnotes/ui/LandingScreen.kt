@@ -1,5 +1,6 @@
 package fi.oamk.petnotes.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -19,12 +20,14 @@ import fi.oamk.petnotes.viewmodel.GoogleSignInViewModel
 
 @Composable
 fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSignInViewModel) {
-    val userState = googleSignInViewModel.user.collectAsState()
-    val user = userState.value
+    // Observing the current user from the ViewModel dynamically using collectAsState
+    val user = googleSignInViewModel.auth.currentUser
 
     // Redirect to home if user is authenticated
-    LaunchedEffect(user) {
-        if (user != null) {
+    if (user != null) {
+        // Navigate to the Home screen as soon as the user is authenticated
+        LaunchedEffect(user) {
+            Log.d("LandingScreen", "User is signed in: ${user.displayName}")
             navController.navigate("home") {
                 popUpTo("landing") { inclusive = true } // Clears back stack
             }
