@@ -43,7 +43,8 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
         Text("Let's login to continue")
         Spacer(modifier = Modifier.height(50.dp))
 
-        Button(onClick = {googleSignInViewModel.startGoogleSignIn()},
+        // Google Sign-In Button
+        Button(onClick = { googleSignInViewModel.startGoogleSignIn() },
             modifier = Modifier
                 .width(280.dp)
                 .height(48.dp),
@@ -60,6 +61,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Email Sign-In Button
         Button(onClick = { navController.navigate("sign_in") },
             modifier = Modifier
                 .width(280.dp)
@@ -78,6 +80,8 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
         Spacer(modifier = Modifier.height(16.dp))
         Text("or")
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Sign Up Button
         Text(text = "Don't have an account?", color = Color.LightGray)
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = { navController.navigate("sign_up") },
