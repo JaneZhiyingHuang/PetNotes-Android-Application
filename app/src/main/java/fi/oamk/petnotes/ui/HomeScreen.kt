@@ -1,20 +1,13 @@
 package fi.oamk.petnotes.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,66 +16,109 @@ import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 
 @Composable
 fun HomeScreen(
-    // Add the navController parameter
-    homeScreenViewModel: HomeScreenViewModel, // ViewModel for handling sign-out and login check
-    onSignOut: () -> Unit // Add onSignOut parameter
+    homeScreenViewModel: HomeScreenViewModel,
+    onSignOut: () -> Unit
 ) {
-    // Get the current user's login state using the ViewModel
     val isUserLoggedIn = homeScreenViewModel.isUserLoggedIn()
+    val context = LocalContext.current
 
-    // Recompose when the user logs out
     LaunchedEffect(isUserLoggedIn) {
         if (!isUserLoggedIn) {
-            onSignOut() // Trigger sign-out action when user is null
+            onSignOut()
         }
     }
 
-    if (isUserLoggedIn) {
-        // Show user's email and sign-out button
-        val user = FirebaseAuth.getInstance().currentUser
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Welcome, ${user?.email}",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (isUserLoggedIn) {
+            val user = remember { FirebaseAuth.getInstance().currentUser }
+            val email = user?.email ?: "Unknown Email"
+            val username = email.substringBefore("@") // Extracts the username part
 
-                    Spacer(modifier = Modifier.height(16.dp))
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Username: $username",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
 
-                    Button(onClick = {
-                        homeScreenViewModel.signOut() // Sign out user using ViewModel
-                        onSignOut() // Handle navigation after sign-out
-                    }) {
-                        Text(text = "Sign Out")
+                        Text(
+                            text = "Email: $email",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(onClick = {
+                            homeScreenViewModel.signOut()
+                            onSignOut()
+                        }) {
+                            Text(text = "Sign Out")
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                homeScreenViewModel.deleteAccount { success, message ->
+                                    if (success) {
+                                        Toast.makeText(context, "Account deleted", Toast.LENGTH_SHORT).show()
+                                        onSignOut()
+                                    } else {
+                                        Toast.makeText(context, "Error: $message", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        ) {
+                            Text(text = "Delete Account")
+                        }
                     }
                 }
             }
+        } else {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "No user is currently logged in",
+                    color = Color.Red
+                )
+            }
         }
-    } else {
-        // If no user is logged in, show a different message
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "No user is currently logged in",
-                color = Color.Red
+
+        BottomNavigationBar()
+    }
+}
+
+@Composable
+fun BottomNavigationBar() {
+    NavigationBar(containerColor = Color(0xFFEFEFEF)) {
+        val items = listOf("Home", "Notes", "Map", "Settings")
+        items.forEach { item ->
+            NavigationBarItem(
+                selected = false, // Handle selection logic as needed
+                onClick = { /* Handle navigation logic here */ },
+                icon = { /* You can add icons for each item here */ },
+                label = { Text(text = item) }
             )
         }
     }
