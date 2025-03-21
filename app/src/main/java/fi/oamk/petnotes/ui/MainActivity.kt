@@ -42,6 +42,9 @@ class MainActivity : ComponentActivity() {
                         val signUpViewModel: SignUpViewModel = viewModel()
                         SignUpScreen(navController = navController, viewModel = signUpViewModel)
                     }
+                    composable("reset_password") {
+                        ResetPasswordScreen(navController = navController)
+                    }
                     composable("home") {
                         HomeScreen(
                             homeScreenViewModel = homeScreenViewModel, // Pass the ViewModel to HomeScreen

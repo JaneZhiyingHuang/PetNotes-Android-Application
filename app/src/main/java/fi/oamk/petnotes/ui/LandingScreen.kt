@@ -2,6 +2,8 @@ package fi.oamk.petnotes.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,23 +41,58 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
         Text(text = "Welcome to PetNotes!", fontWeight = FontWeight.Bold, fontSize = 24.sp)
         Spacer(modifier = Modifier.height(8.dp))
         Text("Let's login to continue")
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(50.dp))
 
-        Button(onClick = {
-            googleSignInViewModel.startGoogleSignIn()
-        }) {
-            Text("Continue with Google")
+        Button(onClick = {googleSignInViewModel.startGoogleSignIn()},
+            modifier = Modifier
+                .width(280.dp)
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFD9D9D9),
+                contentColor = Color.Black
+            )
+        ) {
+            Text(
+                text = "Continue with Google",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+            )
         }
 
-        Button(onClick = { navController.navigate("sign_in") }) {
-            Text("Continue with Email")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { navController.navigate("sign_in") },
+            modifier = Modifier
+                .width(280.dp)
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFD9D9D9),
+                contentColor = Color.Black
+            )
+        ) {
+            Text(
+                text = "Continue with Email",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
         Text("or")
+        Spacer(modifier = Modifier.height(8.dp))
         Text(text = "Don't have an account?", color = Color.LightGray)
-        Button(onClick = { navController.navigate("sign_up") }) {
-            Text("Sign up with a new account")
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = { navController.navigate("sign_up") },
+            modifier = Modifier
+                .width(280.dp)
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFD9D9D9),
+                contentColor = Color.Black
+            )
+        ) {
+            Text(
+                text = "Sign up with a new account",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+            )
         }
     }
 }

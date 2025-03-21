@@ -156,7 +156,7 @@ fun SignInScreen(navController: NavController, viewModel: SignInViewModel = view
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(
-                        onClick = { /* Navigate to forget password screen */ },
+                        onClick = { navController.navigate("reset_password") },
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                     ) {
