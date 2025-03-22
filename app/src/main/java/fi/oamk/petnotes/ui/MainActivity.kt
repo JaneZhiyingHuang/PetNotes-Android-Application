@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import fi.oamk.petnotes.ui.theme.PetNotesTheme
 import fi.oamk.petnotes.viewmodel.GoogleSignInViewModel
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import fi.oamk.petnotes.viewmodel.SettingScreenViewModel
 import fi.oamk.petnotes.viewmodel.SignInViewModel
 import fi.oamk.petnotes.viewmodel.SignUpViewModel
 
@@ -24,7 +25,8 @@ class MainActivity : ComponentActivity() {
 
                 // Initialize ViewModels
                 val googleSignInViewModel: GoogleSignInViewModel = viewModel()
-                val homeScreenViewModel: HomeScreenViewModel = viewModel() // Initialize HomeScreenViewModel here
+                val homeScreenViewModel: HomeScreenViewModel = viewModel()
+                val settingScreenViewModel: SettingScreenViewModel = viewModel() // Initialize SettingScreenViewModel here
 
                 // Set up NavHost
                 NavHost(navController = navController, startDestination = "landing") {
@@ -48,8 +50,27 @@ class MainActivity : ComponentActivity() {
                     composable("home") {
                         HomeScreen(
                             homeScreenViewModel = homeScreenViewModel, // Pass the ViewModel to HomeScreen
+                            navController = navController
+                        )
+                    }
+                    composable("map") {
+                        MapScreen(
+                             // Pass the ViewModel to HomeScreen
+                                navController = navController
+                            )
+                    }
+                    composable("notes") {
+                        NotesScreen(
+                            // Pass the ViewModel to HomeScreen
+                            navController = navController
+                        )
+                    }
+                    composable("setting") {
+                        SettingScreen(
+                            navController = navController,
+                            settingScreenViewModel = settingScreenViewModel, // Pass SettingScreenViewModel to SettingScreen
                             onSignOut = {
-                                // Sign-out and navigate to the landing screen
+                                // Handle sign-out logic here
                                 navController.navigate("landing") {
                                     popUpTo("home") { inclusive = true }
                                     launchSingleTop = true // To avoid adding "home" to back stack again

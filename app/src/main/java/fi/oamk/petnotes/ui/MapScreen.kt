@@ -5,21 +5,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    homeScreenViewModel: HomeScreenViewModel,
-    navController: NavController // Pass NavController to HomeScreen
+fun MapScreen(
+    navController: NavController // Pass NavController to MapScreen
 ) {
-    val isUserLoggedIn = homeScreenViewModel.isUserLoggedIn()
+    // Check if the user is logged in
+    val isUserLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
 
     Scaffold(
         topBar = {
@@ -34,7 +35,7 @@ fun HomeScreen(
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (isUserLoggedIn) {
                 Text(
-                    text = "This is the homepage",
+                    text = "This is the map screen, user is logged in.",
                     style = TextStyle(fontWeight = FontWeight.Bold),
                     modifier = Modifier.padding(16.dp) // Add padding to the text for better readability
                 )
