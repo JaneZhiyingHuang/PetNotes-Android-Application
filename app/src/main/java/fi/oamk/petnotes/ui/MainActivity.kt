@@ -65,6 +65,12 @@ class MainActivity : ComponentActivity() {
                             navController = navController
                         )
                     }
+                    composable("addNewPet") {
+                        AddNewPetScreen(
+                            navController = navController
+                        ) // Define AddNewPetScreen in your app
+                    }
+
                     composable("setting") {
                         SettingScreen(
                             navController = navController,
