@@ -62,7 +62,8 @@ class MainActivity : ComponentActivity() {
                     composable("notes") {
                         NotesScreen(
                             // Pass the ViewModel to HomeScreen
-                            navController = navController
+                            navController = navController,
+                            homeScreenViewModel = homeScreenViewModel
                         )
                     }
                     composable("addNewPet") {
