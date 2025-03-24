@@ -1,5 +1,9 @@
 package fi.oamk.petnotes.ui
 
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -41,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -50,13 +56,15 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import fi.oamk.petnotes.viewmodel.PetTagsViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun NotesScreen(
     navController: NavController,
-    homeScreenViewModel: HomeScreenViewModel
+    homeScreenViewModel: HomeScreenViewModel,
+    petTagsViewModel: PetTagsViewModel
 ) {
     // Check if the user is logged in
     val isUserLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
@@ -67,9 +75,11 @@ fun NotesScreen(
     var expanded by remember { mutableStateOf(false) }
     var dropdownWidth by remember { mutableStateOf(0.dp) }
     var selectedTag by remember { mutableStateOf("All") }
-    var tags by remember { mutableStateOf(listOf("All", "Vomit", "Stool", "Cough", "Vet", "Water Intake", "Emotion")) }
+    var tags by remember { mutableStateOf(listOf<String>()) }
     var showDialog by remember { mutableStateOf(false) }
     var newTag by remember { mutableStateOf(TextFieldValue("")) }
+
+    val defaultTags = listOf("All", "Vomit", "Stool", "Cough", "Vet", "Water Intake", "Emotion")
 
     LaunchedEffect(isUserLoggedIn) {
         if (isUserLoggedIn) {
@@ -78,9 +88,14 @@ fun NotesScreen(
                 if (fetchedPets.isNotEmpty()) {
                     pets = fetchedPets
                     selectedPet = fetchedPets.first()
+                    tags = selectedPet?.tags?.takeIf { it.isNotEmpty() } ?: defaultTags
                 }
             }
         }
+    }
+
+    LaunchedEffect(selectedPet) {
+        tags = selectedPet?.tags?.takeIf { it.isNotEmpty() } ?: defaultTags
     }
 
     Scaffold(
@@ -157,12 +172,33 @@ fun NotesScreen(
                         maxItemsInEachRow = 6
                     ) {
                         tags.forEach { tag ->
-                            FilterChip(
-                                selected = selectedTag == tag,
-                                onClick = { selectedTag = tag },
-                                label = { Text(tag) },
-                                modifier = Modifier.padding(end = 4.dp)
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                var showDeleteSign by remember { mutableStateOf(false) }
+                                FilterChip(
+                                    selected = selectedTag == tag,
+                                    onClick = { selectedTag = tag },
+                                    label = { Text(tag) },
+                                    modifier = Modifier
+                                        .padding(end = 4.dp)
+                                        .background(if (showDeleteSign) Color.Red else Color.Transparent)
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(
+                                                onDoubleTap = {
+                                                    showDeleteSign = true
+                                                }
+                                            )
+                                        }
+                                )
+
+                                if (showDeleteSign) {
+                                    IconButton(onClick = {
+                                        showDialog = true
+                                        newTag = TextFieldValue(tag)
+                                    }) {
+                                        Icon(Icons.Filled.Delete, contentDescription = "Delete Tag")
+                                    }
+                                }
+                            }
                         }
                         FilterChip(
                             selected = false,
@@ -213,8 +249,21 @@ fun NotesScreen(
                             Button(
                                 onClick = {
                                     if (newTag.text.isNotBlank()) {
-                                        tags = tags.toMutableList().apply { add(newTag.text.trim()) }
-                                        newTag = TextFieldValue("")
+                                        val updatedTags = tags.toMutableList().apply { add(newTag.text.trim()) }
+                                        tags = updatedTags // Update the local state
+
+                                        selectedPet?.id?.let { petId ->
+                                            coroutineScope.launch {
+                                                petTagsViewModel.updatePetTags(petId, updatedTags,
+                                                    onSuccess = {
+                                                        newTag = TextFieldValue("")
+                                                        showDialog = false
+                                                    },
+                                                    onFailure = { e ->
+                                                        // Handle failure
+                                                    })
+                                            }
+                                        }
                                     }
                                     showDialog = false
                                 }

@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import fi.oamk.petnotes.ui.theme.PetNotesTheme
 import fi.oamk.petnotes.viewmodel.GoogleSignInViewModel
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import fi.oamk.petnotes.viewmodel.PetTagsViewModel
 import fi.oamk.petnotes.viewmodel.SettingScreenViewModel
 import fi.oamk.petnotes.viewmodel.SignInViewModel
 import fi.oamk.petnotes.viewmodel.SignUpViewModel
@@ -27,6 +28,7 @@ class MainActivity : ComponentActivity() {
                 val googleSignInViewModel: GoogleSignInViewModel = viewModel()
                 val homeScreenViewModel: HomeScreenViewModel = viewModel()
                 val settingScreenViewModel: SettingScreenViewModel = viewModel() // Initialize SettingScreenViewModel here
+                val petTagsViewModel: PetTagsViewModel = viewModel()
 
                 // Set up NavHost
                 NavHost(navController = navController, startDestination = "landing") {
@@ -63,7 +65,8 @@ class MainActivity : ComponentActivity() {
                         NotesScreen(
                             // Pass the ViewModel to HomeScreen
                             navController = navController,
-                            homeScreenViewModel = homeScreenViewModel
+                            homeScreenViewModel = homeScreenViewModel,
+                            petTagsViewModel = petTagsViewModel
                         )
                     }
                     composable("addNewPet") {

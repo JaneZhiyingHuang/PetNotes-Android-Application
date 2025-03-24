@@ -7,5 +7,6 @@ data class Pet(
     @DocumentId val id: String = "", // Firestore document ID
     val name: String = "",
     val breed: String = "",
-    val age: Int = 0 // Age should be an integer
+    val age: Int = 0, // Age should be an integer
+    val tags: List<String> = emptyList()
 )
