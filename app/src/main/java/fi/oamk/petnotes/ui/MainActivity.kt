@@ -14,7 +14,9 @@ import fi.oamk.petnotes.viewmodel.PetTagsViewModel
 import fi.oamk.petnotes.viewmodel.SettingScreenViewModel
 import fi.oamk.petnotes.viewmodel.SignInViewModel
 import fi.oamk.petnotes.viewmodel.SignUpViewModel
-
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,14 +58,15 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("map") {
+                        // MapScreen doesn't need any ViewModel based on your code
+                        val context = LocalContext.current // Get the context here
                         MapScreen(
-                             // Pass the ViewModel to HomeScreen
-                                navController = navController
-                            )
+                            navController = navController,
+                            context = context // Pass the context to MapScreen
+                        )
                     }
                     composable("notes") {
                         NotesScreen(
-                            // Pass the ViewModel to HomeScreen
                             navController = navController,
                             homeScreenViewModel = homeScreenViewModel,
                             petTagsViewModel = petTagsViewModel
@@ -72,18 +75,18 @@ class MainActivity : ComponentActivity() {
                     composable("addNewPet") {
                         AddNewPetScreen(
                             navController = navController
-                        ) // Define AddNewPetScreen in your app
+                        )
                     }
 
                     composable("setting") {
                         SettingScreen(
                             navController = navController,
-                            settingScreenViewModel = settingScreenViewModel, // Pass SettingScreenViewModel to SettingScreen
+                            settingScreenViewModel = settingScreenViewModel,
                             onSignOut = {
                                 // Handle sign-out logic here
                                 navController.navigate("landing") {
                                     popUpTo("home") { inclusive = true }
-                                    launchSingleTop = true // To avoid adding "home" to back stack again
+                                    launchSingleTop = true
                                 }
                             }
                         )
