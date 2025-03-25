@@ -3,7 +3,14 @@ activityComposeVersion = "1.6.0"
 agp = "8.7.3"
 credentials = "1.5.0"
 firebaseBom = "33.10.0"
+googleMapsCompose = "2.3.0"
+googlePlayServicesMaps = "18.1.0"
 kotlin = "2.0.0"
+mapsCompose = "2.2.0"
+mapsComposeVersion = "2.1.0"
+mapsSecret = "2.0.1"
+googleMaps = "19.1.0"
+
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -14,6 +21,8 @@ activityCompose = "1.10.1"
 composeBom = "2025.03.00"
 material3 = "1.3.1"
 playServicesAuth = "21.3.0"
+playServicesLocationVersion = "18.0.0"
+playServicesMapsVersion = "17.0.1"
 ui = "1.7.8"
 navigationRuntimeAndroid = "2.9.0-alpha08"
 navigationCompose = "2.8.9"
@@ -22,6 +31,7 @@ media3CommonKtx = "1.5.1"
 googleid = "1.1.1"
 playServicesFido = "20.0.1"
 appcompat = "1.7.0"
+playServicesLocation = "21.3.0"
 
 [libraries]
 androidx-activity-compose-v160 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
@@ -32,6 +42,8 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+gms-play-services-maps-v1701 = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMapsVersion" }
+gms-play-services-maps-v1810 = { module = "com.google.android.gms:play-services-maps", version.ref = "googlePlayServicesMaps" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -46,8 +58,12 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+maps-compose-v210 = { module = "com.google.maps.android:maps-compose", version.ref = "mapsComposeVersion" }
+maps-compose-v230 = { module = "com.google.maps.android:maps-compose", version.ref = "googleMapsCompose" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+play-services-location-v1800 = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocationVersion" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
@@ -56,9 +72,10 @@ androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 play-services-fido = { group = "com.google.android.gms", name = "play-services-fido", version.ref = "playServicesFido" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-
+google-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "googleMaps" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
+map-secret = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "mapsSecret" }

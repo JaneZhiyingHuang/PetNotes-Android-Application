@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    alias(libs.plugins.map.secret)
 }
 
 android {
@@ -43,6 +44,14 @@ android {
 dependencies {
     // Import the BoM for the Firebase platform
     implementation(platform(libs.firebase.bom))
+    implementation (libs.gms.play.services.maps.v1810)
+    implementation (libs.play.services.location.v1800)
+    implementation (libs.maps.compose.v230)  // For Jetpack Compose
+
+    implementation (libs.google.maps)
+    implementation (libs.maps.compose.v210)
+
+
     // Import the BoM for the Firebase platform
     // Declare the dependency for the Cloud Firestore library
     // When using the BoM, you don't specify versions in Firebase library dependencies
@@ -75,6 +84,7 @@ dependencies {
     implementation(libs.play.services.fido)
     implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.appcompat)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
