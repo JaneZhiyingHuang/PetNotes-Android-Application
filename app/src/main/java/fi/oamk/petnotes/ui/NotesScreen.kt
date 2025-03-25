@@ -1,6 +1,5 @@
 package fi.oamk.petnotes.ui
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -17,10 +16,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -34,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -78,6 +79,7 @@ fun NotesScreen(
     var tags by remember { mutableStateOf(listOf<String>()) }
     var showDialog by remember { mutableStateOf(false) }
     var newTag by remember { mutableStateOf(TextFieldValue("")) }
+    var userInput by remember { mutableStateOf("") }
 
     val defaultTags = listOf("All", "Vomit", "Stool", "Cough", "Vet", "Water Intake", "Emotion")
 
@@ -168,7 +170,7 @@ fun NotesScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp)
-                            .wrapContentHeight(align = Alignment. Top),
+                            .wrapContentHeight(align = Alignment.Top),
                         maxItemsInEachRow = 6
                     ) {
                         tags.forEach { tag ->
@@ -208,10 +210,82 @@ fun NotesScreen(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(text = "Add New Abnormal Behaviors:")
+            Spacer(modifier = Modifier.height(10.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Date Selection
+                        var selectedDate by remember { mutableStateOf("Date") }
+                        var selectedMonth by remember { mutableStateOf("Month") }
+                        var selectedYear by remember { mutableStateOf("Year") }
+                        var selectedTag by remember { mutableStateOf("Tag") }
+
+                        val months = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+                        val years = (2020..2030).map { it.toString() }
+
+                        DateSelector(selectedDate) { selectedDate = it }
+                        DropdownSelector(selectedMonth, months) { selectedMonth = it }
+                        DropdownSelector(selectedYear, years) { selectedYear = it }
+                        DropdownSelector(selectedTag, tags) { selectedTag = it }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Card(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        TextField(
+                            value = userInput,
+                            onValueChange = { userInput = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .padding(12.dp),
+                            placeholder = { Text("Write the description of your pet's abnormal behaviors") },
+                            singleLine = false
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(
+                            onClick = { /* to be written */ },
+                        ) {
+                            Text("Add Photos")
+                        }
+                        Button(
+                            onClick = { /* to be written */ },
+                        ) {
+                            Text("Add Documents")
+                        }
+                        Button(
+                            onClick = { /* to be written */ },
+                        ) {
+                            Text("Confirm")
+                        }
+                    }
+                }
+            }
         }
     }
 
-    if (showDialog) {
+
+if (showDialog) {
         BasicAlertDialog(
             onDismissRequest = { showDialog = false }
         ) {
@@ -283,3 +357,85 @@ fun NotesScreen(
         }
     }
 }
+
+@Composable
+fun DateSelector(selectedValue: String, onValueChange: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val days = (1..31).map { it.toString() }
+
+    Box {
+        Card(
+            modifier = Modifier
+                .width(90.dp)
+                .clickable { expanded = true }
+                .padding(4.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = selectedValue, modifier = Modifier.weight(1f))
+                Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select")
+            }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            days.forEach { day ->
+                DropdownMenuItem(
+                    text = { Text(day) },
+                    onClick = {
+                        onValueChange(day)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DropdownSelector(selectedValue: String, options: List<String>, onValueChange: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Card(
+            modifier = Modifier
+                .width(100.dp)
+                .clickable { expanded = true }
+                .padding(4.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = selectedValue, modifier = Modifier.weight(1f))
+                Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select")
+            }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onValueChange(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
