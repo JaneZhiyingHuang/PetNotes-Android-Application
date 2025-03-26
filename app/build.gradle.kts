@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.appcompat)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.benchmark.macro)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
