@@ -17,6 +17,7 @@ import fi.oamk.petnotes.viewmodel.SignUpViewModel
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import fi.oamk.petnotes.viewmodel.NotesViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
                 val homeScreenViewModel: HomeScreenViewModel = viewModel()
                 val settingScreenViewModel: SettingScreenViewModel = viewModel() // Initialize SettingScreenViewModel here
                 val petTagsViewModel: PetTagsViewModel = viewModel()
+                val notesViewModel: NotesViewModel = viewModel()
 
                 // Set up NavHost
                 NavHost(navController = navController, startDestination = "landing") {
@@ -69,7 +71,8 @@ class MainActivity : ComponentActivity() {
                         NotesScreen(
                             navController = navController,
                             homeScreenViewModel = homeScreenViewModel,
-                            petTagsViewModel = petTagsViewModel
+                            petTagsViewModel = petTagsViewModel,
+                            notesViewModel = notesViewModel
                         )
                     }
                     composable("addNewPet") {
