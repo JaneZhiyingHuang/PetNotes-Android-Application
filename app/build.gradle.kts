@@ -27,6 +27,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Place the buildConfigField method outside the proguardFiles block
         }
     }
     compileOptions {

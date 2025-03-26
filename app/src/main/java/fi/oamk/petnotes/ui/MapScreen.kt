@@ -65,9 +65,9 @@ fun MapScreen(navController: NavController, context: Context) {
     var petClinics by remember { mutableStateOf<List<PetStore>>(emptyList()) }  // New state for pet clinics
     var showPetClinics by remember { mutableStateOf(false) }  // State to control visibility of pet clinics
 
-
+    val apiKey ="see it on discord"
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val apiKey = "AIzaSyCsfIsVxEwo5-fsrUYs6j3UcIn0e0JrO1o"  // Replace with your API key
+    // Replace with your API key
 
     // Check if the user is logged in
     val isLoggedIn = isUserLoggedIn()
@@ -115,6 +115,7 @@ fun MapScreen(navController: NavController, context: Context) {
     LaunchedEffect(userLocation) {
         userLocation?.let {
             Log.d("MapScreen", "Fetching nearby pet stores...")
+
             petStores = fetchNearbyPetStores(it.latitude, it.longitude, apiKey)
         }
     }
@@ -300,7 +301,7 @@ suspend fun fetchNearbyPetStores(latitude: Double, longitude: Double, apiKey: St
 // Function to fetch nearby pet clinics
 suspend fun fetchNearbyPetClinics(latitude: Double, longitude: Double, apiKey: String): List<PetStore> {
     return withContext(Dispatchers.IO) {
-        val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=10000&type=vet&key=$apiKey" // Change type to 'vet' for pet clinics
+        val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=10000&type=veterinary_care&key=$apiKey" // Change type to 'vet' for pet clinics
         try {
             val response = URL(url).readText()
             val jsonObject = JSONObject(response)
