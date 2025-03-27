@@ -1,5 +1,8 @@
 package fi.oamk.petnotes.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -17,10 +20,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -39,6 +44,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,10 +59,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import fi.oamk.petnotes.viewmodel.NotesViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
 import kotlinx.coroutines.launch
 
@@ -65,7 +76,8 @@ import kotlinx.coroutines.launch
 fun NotesScreen(
     navController: NavController,
     homeScreenViewModel: HomeScreenViewModel,
-    petTagsViewModel: PetTagsViewModel
+    petTagsViewModel: PetTagsViewModel,
+    notesViewModel: NotesViewModel
 ) {
     // Check if the user is logged in
     val isUserLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
@@ -80,8 +92,30 @@ fun NotesScreen(
     var showDialog by remember { mutableStateOf(false) }
     var newTag by remember { mutableStateOf(TextFieldValue("")) }
     var userInput by remember { mutableStateOf("") }
+    var showDeleteConfirmationDialog by remember { mutableStateOf<String?>(null) }
 
     val defaultTags = listOf("All", "Vomit", "Stool", "Cough", "Vet", "Water Intake", "Emotion")
+
+    // State to track photo and document URIs
+    var photoUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var documentUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+
+    // Observe upload state
+    val uploadState by notesViewModel.uploadState.collectAsState()
+
+    // Photo picker launcher
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        photoUris = uris
+    }
+
+    // Document picker launcher
+    val documentPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        documentUris = uris
+    }
 
     LaunchedEffect(isUserLoggedIn) {
         if (isUserLoggedIn) {
@@ -98,6 +132,26 @@ fun NotesScreen(
 
     LaunchedEffect(selectedPet) {
         tags = selectedPet?.tags?.takeIf { it.isNotEmpty() } ?: defaultTags
+    }
+
+    // Handle upload state
+    LaunchedEffect(uploadState) {
+        when (val state = uploadState) {
+            is NotesViewModel.UploadState.Success -> {
+                // Reset inputs on success
+                userInput = ""
+                photoUris = emptyList()
+                documentUris = emptyList()
+                selectedTag = "All"
+
+                // Optional: Show a snackbar or toast
+            }
+            is NotesViewModel.UploadState.Error -> {
+                // Show error message
+                // You could use a Snackbar or another error display mechanism
+            }
+            else -> {} // Idle or Loading states
+        }
     }
 
     Scaffold(
@@ -173,35 +227,109 @@ fun NotesScreen(
                             .wrapContentHeight(align = Alignment.Top),
                         maxItemsInEachRow = 6
                     ) {
-                        tags.forEach { tag ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                var showDeleteSign by remember { mutableStateOf(false) }
+                        // Always show the "All" tag first
+                        FilterChip(
+                            selected = selectedTag == "All",
+                            onClick = { selectedTag = "All" },
+                            label = { Text("All") },
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
+
+                        // Display other tags with delete functionality
+                        tags.filter { it != "All" }.forEach { tag ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
                                 FilterChip(
                                     selected = selectedTag == tag,
-                                    onClick = { selectedTag = tag },
+                                    onClick = {
+                                        selectedTag = tag
+                                    },
                                     label = { Text(tag) },
-                                    modifier = Modifier
-                                        .padding(end = 4.dp)
-                                        .background(if (showDeleteSign) Color.Red else Color.Transparent)
-                                        .pointerInput(Unit) {
-                                            detectTapGestures(
-                                                onDoubleTap = {
-                                                    showDeleteSign = true
-                                                }
-                                            )
-                                        }
+                                    modifier = Modifier.padding(end = 4.dp)
                                 )
 
-                                if (showDeleteSign) {
-                                    IconButton(onClick = {
-                                        showDialog = true
-                                        newTag = TextFieldValue(tag)
-                                    }) {
-                                        Icon(Icons.Filled.Delete, contentDescription = "Delete Tag")
+                                // Only show delete icon when this specific tag is selected
+                                if (selectedTag == tag) {
+                                    IconButton(
+                                        onClick = {
+                                            showDeleteConfirmationDialog = tag
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.Delete,
+                                            contentDescription = "Delete Tag",
+                                            tint = Color.Red
+                                        )
                                     }
                                 }
                             }
                         }
+
+                        if (showDeleteConfirmationDialog != null) {
+                            BasicAlertDialog(
+                                onDismissRequest = { showDeleteConfirmationDialog = null }
+                            ) {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = "*Warning",
+                                            color = Color.Red,
+                                            modifier = Modifier.padding(bottom = 16.dp)
+                                        )
+                                        Text(
+                                            text = "Are you sure to DELETE all the notes of the tag '${showDeleteConfirmationDialog}'?",
+                                            modifier = Modifier.padding(bottom = 16.dp)
+                                        )
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceEvenly
+                                        ) {
+                                            Button(
+                                                onClick = {
+                                                    val tagToDelete = showDeleteConfirmationDialog
+                                                    val updatedTags = tags.toMutableList().apply { remove(tagToDelete) }
+
+                                                    selectedPet?.id?.let { petId ->
+                                                        coroutineScope.launch {
+                                                            petTagsViewModel.updatePetTags(
+                                                                petId,
+                                                                updatedTags,
+                                                                onSuccess = {
+                                                                    tags = updatedTags
+                                                                    selectedTag = "All"
+                                                                    showDeleteConfirmationDialog = null
+                                                                },
+                                                                onFailure = {
+                                                                    // Optional: Add error handling
+                                                                    showDeleteConfirmationDialog = null
+                                                                }
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            ) {
+                                                Text("Yes")
+                                            }
+                                            Button(
+                                                onClick = { showDeleteConfirmationDialog = null }
+                                            ) {
+                                                Text("No")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         FilterChip(
                             selected = false,
                             onClick = { showDialog = true },
@@ -219,7 +347,7 @@ fun NotesScreen(
                     .padding(8.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(modifier = Modifier.padding(8.dp)) {
+                Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -264,20 +392,30 @@ fun NotesScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Button(
-                            onClick = { /* to be written */ },
+                            onClick = { photoPickerLauncher.launch("image/*") },
                         ) {
-                            Text("Add Photos")
+                            Text("Add Photos (${photoUris.size})")
                         }
                         Button(
-                            onClick = { /* to be written */ },
+                            onClick = { documentPickerLauncher.launch("*/*") },
                         ) {
-                            Text("Add Documents")
+                            Text("Add Documents (${documentUris.size})")
                         }
-                        Button(
-                            onClick = { /* to be written */ },
-                        ) {
-                            Text("Confirm")
-                        }
+                    }
+                    Button(
+                        onClick = {
+                            if (selectedPet == null) {
+                                // Show error that no pet is selected
+                                return@Button
+                            }
+
+                            if (userInput.isBlank()) {
+                                // Show error that description is empty
+                                return@Button
+                            }
+                        },
+                    ) {
+                        Text("Confirm")
                     }
                 }
             }
@@ -433,6 +571,88 @@ fun DropdownSelector(selectedValue: String, options: List<String>, onValueChange
                         onValueChange(option)
                         expanded = false
                     }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun NotesListSection(
+    petId: String,
+    notesViewModel: NotesViewModel = viewModel()
+) {
+    var notes by remember { mutableStateOf(listOf<Notes>()) }
+
+    LaunchedEffect(petId) {
+        // Fetch notes for the specific pet
+        notes = notesViewModel.getNotesByPetId(petId)
+    }
+
+    LazyColumn {
+        items(notes) { note ->
+            NoteCard(note)
+        }
+    }
+}
+
+@Composable
+fun NoteCard(note: Notes) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = note.getFormattedDate(),
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = note.tag,
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = note.description,
+                    fontSize = 16.sp
+                )
+
+                // Display document names if available
+                if (note.documentUrls.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    note.documentUrls.forEach { documentUrl ->
+                        Text(
+                            text = documentUrl.substringAfterLast("/"),
+                            fontSize = 14.sp,
+                            color = Color.Blue
+                        )
+                    }
+                }
+            }
+
+            IconButton(onClick = { /* Edit note functionality */ }) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Note",
+                    tint = Color.Gray
                 )
             }
         }
