@@ -3,5 +3,5 @@
     <string name="default_web_client_id">674752977371-us9ltiie28jcu0h1va1uvavkl4g55q4o.apps.googleusercontent.com</string>
     <string name="welcome_user">Welcome, %1$s</string>
     <string name="no_user_logged_in">No user logged in</string>
-    <string name="google_maps_api_key">Replace with ApiKey here</string>
+    <string name="google_maps_api_key">AIzaSyBG6bx3kXG5YPinY3O759IAAzdUKH3M7eY</string>
 </resources>

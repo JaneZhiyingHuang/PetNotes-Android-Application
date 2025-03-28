@@ -9,15 +9,33 @@ class AddNewPetViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
 
-    suspend fun addPet(petName: String, petBreed: String, petAge: Int, onSuccess: () -> Unit) {
+    suspend fun addPet(
+        petName: String,
+        petGender: String,
+        petSpecie: String,
+        petDateOfBirth: String,
+        petBreed: String,
+        petAge: String,
+        petMedicalCondition: String,
+        petMicrochipNumber: String,
+        petInsuranceCompany: String,
+        petInsuranceNumber: String,
+        onSuccess: () -> Unit
+    ) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId != null) {
             val pet = hashMapOf(
                 "name" to petName,
+                "gender" to petGender,
+                "specie" to petSpecie,
+                "dateOfBirth" to petDateOfBirth,
                 "breed" to petBreed,
-                "age" to petAge  // Store age as an Int
+                "age" to petAge.toInt(),  // Ensure age is an integer
+                "medicalCondition" to petMedicalCondition,
+                "microchipNumber" to petMicrochipNumber,
+                "insuranceCompany" to petInsuranceCompany,
+                "insuranceNumber" to petInsuranceNumber
             )
-
             try {
                 db.collection("users")
                     .document(userId)
