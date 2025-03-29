@@ -1,5 +1,6 @@
 package fi.oamk.petnotes.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -43,6 +44,7 @@ class AddNewPetViewModel : ViewModel() {
                 onSuccess()
             } catch (e: Exception) {
                 e.printStackTrace()
+                Log.e("AddNewPet", "Error adding pet", e)
             }
         }
     }

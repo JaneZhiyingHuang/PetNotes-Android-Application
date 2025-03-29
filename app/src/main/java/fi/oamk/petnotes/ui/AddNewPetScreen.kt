@@ -64,6 +64,10 @@ import fi.oamk.petnotes.R
 import android.app.DatePickerDialog
 import android.widget.DatePicker
 import androidx.compose.material3.*
+import com.google.firebase.Timestamp
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 import java.util.*
 
@@ -208,13 +212,6 @@ fun AddNewPetScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-//            LabeledTextField(
-//                label = "Date of Birth",
-//                value = petDateOfBirth,
-//                onValueChange = { petDateOfBirth = it }
-//            )
-//            Spacer(modifier = Modifier.height(12.dp))
-//
             DatePickerField(
                 label = "Date of Birth",
                 date = petDateOfBirth,
@@ -260,12 +257,8 @@ fun AddNewPetScreen(navController: NavController) {
                 onClick = {
                     if (petName.isNotBlank() &&
                         petGender.isNotBlank() &&
-                        petSpecie.isNotBlank() &&
-                        petDateOfBirth.isNotBlank()) {
+                        petSpecie.isNotBlank() ) {
 
-                        // Convert petAge to Int
-                        val petAgeInt = petAge.toIntOrNull()
-                        if (petAgeInt != null) {
                             isLoading = true
                             coroutineScope.launch {
                                 addnewPetViewModel.addPet(
@@ -283,7 +276,7 @@ fun AddNewPetScreen(navController: NavController) {
                                     navController.popBackStack()
                                 }
                             }
-                        }
+
                     } else {
                         Toast.makeText(
                             context,
@@ -365,6 +358,7 @@ fun DatePickerField(
         year, month, day
     )
 
+
     Column {
         Text(
             text = label,
@@ -388,7 +382,7 @@ fun DatePickerField(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = date.ifEmpty { "Select Date" },
+                text =date.ifEmpty { "Select Date" },
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = Color.Black
             )
