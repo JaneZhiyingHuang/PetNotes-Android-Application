@@ -13,6 +13,7 @@ data class Notes (
     val tag: String = "",
     val photoUrls: List<String> = emptyList(),
     val documentUrls: List<String> = emptyList(),
+    val userSelectedTimestamp: Long = 0
 ) {
     fun getFormattedDate(): String {
         return date ?: SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())

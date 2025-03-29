@@ -1,5 +1,6 @@
 package fi.oamk.petnotes.ui
 
+import android.icu.util.Calendar
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -93,6 +94,14 @@ fun NotesScreen(
     var newTag by remember { mutableStateOf(TextFieldValue("")) }
     var userInput by remember { mutableStateOf("") }
     var showDeleteConfirmationDialog by remember { mutableStateOf<String?>(null) }
+    var fetchedNotes by remember { mutableStateOf(listOf<Notes>()) }
+
+    // Date
+    val currentDate = remember { Calendar.getInstance() }
+    var selectedDate by remember { mutableStateOf(currentDate.get(Calendar.DAY_OF_MONTH).toString()) }
+    var selectedMonth by remember { mutableStateOf((currentDate.get(Calendar.MONTH) + 1).toString()) }
+    var selectedYear by remember { mutableStateOf(currentDate.get(Calendar.YEAR).toString()) }
+
 
     val defaultTags = listOf("All", "Vomit", "Stool", "Cough", "Vet", "Water Intake", "Emotion")
 
@@ -132,19 +141,30 @@ fun NotesScreen(
 
     LaunchedEffect(selectedPet) {
         tags = selectedPet?.tags?.takeIf { it.isNotEmpty() } ?: defaultTags
+
+        selectedPet?.id?.let { petId ->
+            fetchedNotes = notesViewModel.getNotesByPetId(petId)
+        }
     }
 
     // Handle upload state
     LaunchedEffect(uploadState) {
         when (val state = uploadState) {
             is NotesViewModel.UploadState.Success -> {
+                selectedPet?.id?.let { petId ->
+                    fetchedNotes = notesViewModel.getNotesByPetId(petId)
+                }
+
                 // Reset inputs on success
                 userInput = ""
                 photoUris = emptyList()
                 documentUris = emptyList()
                 selectedTag = "All"
 
-                // Optional: Show a snackbar or toast
+                // Reset date to current
+                selectedDate = currentDate.get(Calendar.DAY_OF_MONTH).toString()
+                selectedMonth = (currentDate.get(Calendar.MONTH) + 1).toString()
+                selectedYear = currentDate.get(Calendar.YEAR).toString()
             }
             is NotesViewModel.UploadState.Error -> {
                 // Show error message
@@ -208,216 +228,272 @@ fun NotesScreen(
         },
         bottomBar = { BottomNavigationBar(navController = navController) }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(4.dp)) {
-                    FlowRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
-                            .wrapContentHeight(align = Alignment.Top),
-                        maxItemsInEachRow = 6
-                    ) {
-                        // Always show the "All" tag first
-                        FilterChip(
-                            selected = selectedTag == "All",
-                            onClick = { selectedTag = "All" },
-                            label = { Text("All") },
-                            modifier = Modifier.padding(end = 4.dp)
-                        )
-
-                        // Display other tags with delete functionality
-                        tags.filter { it != "All" }.forEach { tag ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                FilterChip(
-                                    selected = selectedTag == tag,
-                                    onClick = {
-                                        selectedTag = tag
-                                    },
-                                    label = { Text(tag) },
-                                    modifier = Modifier.padding(end = 4.dp)
-                                )
-
-                                // Only show delete icon when this specific tag is selected
-                                if (selectedTag == tag) {
-                                    IconButton(
-                                        onClick = {
-                                            showDeleteConfirmationDialog = tag
-                                        }
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Delete,
-                                            contentDescription = "Delete Tag",
-                                            tint = Color.Red
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        if (showDeleteConfirmationDialog != null) {
-                            BasicAlertDialog(
-                                onDismissRequest = { showDeleteConfirmationDialog = null }
-                            ) {
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                ) {
-                                    Column(
-                                        modifier = Modifier.padding(16.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            text = "*Warning",
-                                            color = Color.Red,
-                                            modifier = Modifier.padding(bottom = 16.dp)
-                                        )
-                                        Text(
-                                            text = "Are you sure to DELETE all the notes of the tag '${showDeleteConfirmationDialog}'?",
-                                            modifier = Modifier.padding(bottom = 16.dp)
-                                        )
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceEvenly
-                                        ) {
-                                            Button(
-                                                onClick = {
-                                                    val tagToDelete = showDeleteConfirmationDialog
-                                                    val updatedTags = tags.toMutableList().apply { remove(tagToDelete) }
-
-                                                    selectedPet?.id?.let { petId ->
-                                                        coroutineScope.launch {
-                                                            petTagsViewModel.updatePetTags(
-                                                                petId,
-                                                                updatedTags,
-                                                                onSuccess = {
-                                                                    tags = updatedTags
-                                                                    selectedTag = "All"
-                                                                    showDeleteConfirmationDialog = null
-                                                                },
-                                                                onFailure = {
-                                                                    // Optional: Add error handling
-                                                                    showDeleteConfirmationDialog = null
-                                                                }
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            ) {
-                                                Text("Yes")
-                                            }
-                                            Button(
-                                                onClick = { showDeleteConfirmationDialog = null }
-                                            ) {
-                                                Text("No")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        FilterChip(
-                            selected = false,
-                            onClick = { showDialog = true },
-                            label = { Text("Add +") }
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(text = "Add New Abnormal Behaviors:")
-            Spacer(modifier = Modifier.height(10.dp))
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // Date Selection
-                        var selectedDate by remember { mutableStateOf("Date") }
-                        var selectedMonth by remember { mutableStateOf("Month") }
-                        var selectedYear by remember { mutableStateOf("Year") }
-                        var selectedTag by remember { mutableStateOf("Tag") }
-
-                        val months = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-                        val years = (2020..2030).map { it.toString() }
-
-                        DateSelector(selectedDate) { selectedDate = it }
-                        DropdownSelector(selectedMonth, months) { selectedMonth = it }
-                        DropdownSelector(selectedYear, years) { selectedYear = it }
-                        DropdownSelector(selectedTag, tags) { selectedTag = it }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Card(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        TextField(
-                            value = userInput,
-                            onValueChange = { userInput = it },
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(4.dp)) {
+                        FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp)
-                                .padding(12.dp),
-                            placeholder = { Text("Write the description of your pet's abnormal behaviors") },
-                            singleLine = false
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Button(
-                            onClick = { photoPickerLauncher.launch("image/*") },
+                                .padding(horizontal = 8.dp)
+                                .wrapContentHeight(align = Alignment.Top),
+                            maxItemsInEachRow = 6
                         ) {
-                            Text("Add Photos (${photoUris.size})")
-                        }
-                        Button(
-                            onClick = { documentPickerLauncher.launch("*/*") },
-                        ) {
-                            Text("Add Documents (${documentUris.size})")
-                        }
-                    }
-                    Button(
-                        onClick = {
-                            if (selectedPet == null) {
-                                // Show error that no pet is selected
-                                return@Button
+                            // Always show the "All" tag first
+                            FilterChip(
+                                selected = selectedTag == "All",
+                                onClick = { selectedTag = "All" },
+                                label = { Text("All") },
+                                modifier = Modifier.padding(end = 4.dp)
+                            )
+
+                            // Display other tags with delete functionality
+                            tags.filter { it != "All" }.forEach { tag ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    FilterChip(
+                                        selected = selectedTag == tag,
+                                        onClick = {
+                                            selectedTag = tag
+                                        },
+                                        label = { Text(tag) },
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    )
+
+                                    // Only show delete icon when this specific tag is selected
+                                    if (selectedTag == tag) {
+                                        IconButton(
+                                            onClick = {
+                                                showDeleteConfirmationDialog = tag
+                                            }
+                                        ) {
+                                            Icon(
+                                                Icons.Filled.Delete,
+                                                contentDescription = "Delete Tag",
+                                                tint = Color.Red
+                                            )
+                                        }
+                                    }
+                                }
                             }
 
-                            if (userInput.isBlank()) {
-                                // Show error that description is empty
-                                return@Button
+                            if (showDeleteConfirmationDialog != null) {
+                                BasicAlertDialog(
+                                    onDismissRequest = { showDeleteConfirmationDialog = null }
+                                ) {
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(16.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Text(
+                                                text = "*Warning",
+                                                color = Color.Red,
+                                                modifier = Modifier.padding(bottom = 16.dp)
+                                            )
+                                            Text(
+                                                text = "Are you sure to DELETE all the notes of the tag '${showDeleteConfirmationDialog}'?",
+                                                modifier = Modifier.padding(bottom = 16.dp)
+                                            )
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceEvenly
+                                            ) {
+                                                Button(
+                                                    onClick = {
+                                                        val tagToDelete =
+                                                            showDeleteConfirmationDialog
+                                                        val updatedTags = tags.toMutableList()
+                                                            .apply { remove(tagToDelete) }
+
+                                                        selectedPet?.id?.let { petId ->
+                                                            coroutineScope.launch {
+                                                                petTagsViewModel.updatePetTags(
+                                                                    petId,
+                                                                    updatedTags,
+                                                                    onSuccess = {
+                                                                        tags = updatedTags
+                                                                        selectedTag = "All"
+                                                                        showDeleteConfirmationDialog =
+                                                                            null
+                                                                    },
+                                                                    onFailure = {
+                                                                        // Optional: Add error handling
+                                                                        showDeleteConfirmationDialog =
+                                                                            null
+                                                                    }
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                ) {
+                                                    Text("Yes")
+                                                }
+                                                Button(
+                                                    onClick = {
+                                                        showDeleteConfirmationDialog = null
+                                                    }
+                                                ) {
+                                                    Text("No")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        },
-                    ) {
-                        Text("Confirm")
+
+                            FilterChip(
+                                selected = false,
+                                onClick = { showDialog = true },
+                                label = { Text("Add +") }
+                            )
+                        }
                     }
                 }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Add New Abnormal Behaviors:",
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            // Date Selection
+                            val months = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12")
+                            val years = (2020..2030).map { it.toString() }
+                            val displayTag =
+                                if (selectedTag == "All") tags.firstOrNull { it != "All" }
+                                    ?: "Vomit" else selectedTag
+
+                            DateSelector(selectedDate) { selectedDate = it }
+                            DropdownSelector(selectedMonth, months) { selectedMonth = it }
+                            DropdownSelector(selectedYear, years) { selectedYear = it }
+                            DropdownSelector(selectedTag, tags) { selectedTag = it }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Card(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            TextField(
+                                value = userInput,
+                                onValueChange = { userInput = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .padding(12.dp),
+                                placeholder = { Text("Write the description of your pet's abnormal behaviors") },
+                                singleLine = false
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Button(
+                                onClick = { photoPickerLauncher.launch("image/*") },
+                            ) {
+                                Text("Add Photos (${photoUris.size})")
+                            }
+                            Button(
+                                onClick = { documentPickerLauncher.launch("*/*") },
+                            ) {
+                                Text("Add Documents (${documentUris.size})")
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                if (selectedPet == null) {
+                                    // Show error that no pet is selected
+                                    return@Button
+                                }
+
+                                if (userInput.isBlank()) {
+                                    // Show error that description is empty
+                                    return@Button
+                                }
+
+                                // Create a Calendar instance for the timestamp
+                                val calendar = Calendar.getInstance()
+                                calendar.set(
+                                    selectedYear.toInt(),
+                                    selectedMonth.toInt() - 1,
+                                    selectedDate.toInt()
+                                )
+                                val userSelectedTimestamp = calendar.timeInMillis
+
+                                coroutineScope.launch {
+                                    notesViewModel.uploadAndCreateNote(
+                                        photoUris = photoUris,
+                                        documentUris = documentUris,
+                                        selectedPet = selectedPet,
+                                        userInput = userInput,
+                                        selectedYear = selectedYear.toInt(),
+                                        selectedMonth = selectedMonth.toInt(),
+                                        selectedDate = selectedDate.toInt(),
+                                        selectedTag = selectedTag,
+                                        userSelectedTimestamp = userSelectedTimestamp
+                                    )
+                                }
+                            },
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        ) {
+                            Text("Confirm")
+                        }
+                    }
+                }
+
+                if (fetchedNotes.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Your Pet's Notes:",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            // Display notes
+            items(fetchedNotes.filter { note ->
+                selectedTag == "All" || note.tag == selectedTag
+            }) { note ->
+                NoteCard(note)
             }
         }
     }
@@ -504,7 +580,7 @@ fun DateSelector(selectedValue: String, onValueChange: (String) -> Unit) {
     Box {
         Card(
             modifier = Modifier
-                .width(90.dp)
+                .width(80.dp)
                 .clickable { expanded = true }
                 .padding(4.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -544,7 +620,7 @@ fun DropdownSelector(selectedValue: String, options: List<String>, onValueChange
     Box {
         Card(
             modifier = Modifier
-                .width(100.dp)
+                .width(90.dp)
                 .clickable { expanded = true }
                 .padding(4.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -577,24 +653,24 @@ fun DropdownSelector(selectedValue: String, options: List<String>, onValueChange
     }
 }
 
-@Composable
-fun NotesListSection(
-    petId: String,
-    notesViewModel: NotesViewModel = viewModel()
-) {
-    var notes by remember { mutableStateOf(listOf<Notes>()) }
-
-    LaunchedEffect(petId) {
-        // Fetch notes for the specific pet
-        notes = notesViewModel.getNotesByPetId(petId)
-    }
-
-    LazyColumn {
-        items(notes) { note ->
-            NoteCard(note)
-        }
-    }
-}
+//@Composable
+//fun NotesListSection(
+//    petId: String,
+//    notesViewModel: NotesViewModel = viewModel()
+//) {
+//    var notes by remember { mutableStateOf(listOf<Notes>()) }
+//
+//    LaunchedEffect(petId) {
+//        // Fetch notes for the specific pet
+//        notes = notesViewModel.getNotesByPetId(petId)
+//    }
+//
+//    LazyColumn {
+//        items(notes) { note ->
+//            NoteCard(note)
+//        }
+//    }
+//}
 
 @Composable
 fun NoteCard(note: Notes) {

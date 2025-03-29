@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.Calendar
 import java.util.UUID
 
 class NotesViewModel : ViewModel() {
@@ -84,7 +85,8 @@ class NotesViewModel : ViewModel() {
         selectedYear: Int,
         selectedMonth: Int,
         selectedDate: Int,
-        selectedTag: String
+        selectedTag: String,
+        userSelectedTimestamp: Long
     ) = viewModelScope.launch {
         if (selectedPet == null || userInput.isBlank()) {
             _uploadState.value = UploadState.Error("Pet or description is missing!")
@@ -105,7 +107,8 @@ class NotesViewModel : ViewModel() {
             date = "$selectedYear-$selectedMonth-$selectedDate",
             tag = selectedTag,
             photoUrls = photoUrls,
-            documentUrls = documentUrls
+            documentUrls = documentUrls,
+            userSelectedTimestamp = userSelectedTimestamp
         )
 
         createNote(note)
@@ -116,7 +119,7 @@ class NotesViewModel : ViewModel() {
             val querySnapshot = FirebaseFirestore.getInstance()
                 .collection("notes")
                 .whereEqualTo("petId", petId)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .orderBy("userSelectedTimestamp", Query.Direction.DESCENDING)
                 .get()
                 .await()
 
