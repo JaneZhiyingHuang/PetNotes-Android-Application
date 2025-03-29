@@ -217,13 +217,13 @@ fun AddNewPetScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-//            LabeledTextField(
-//                label = "Age",
-//                value = petAge,
-//                onValueChange = { petAge = it },
-//                keyboardType = KeyboardType.Number
-//            )
-//            Spacer(modifier = Modifier.height(12.dp))
+            LabeledTextField(
+                label = "Age",
+                value = petAge,
+                onValueChange = { petAge = it },
+                keyboardType = KeyboardType.Number
+            )
+            Spacer(modifier = Modifier.height(12.dp))
 
             LabeledTextField(
                 label = "*Medical Condition",
@@ -267,11 +267,11 @@ fun AddNewPetScreen(navController: NavController) {
                             coroutineScope.launch {
                                 addnewPetViewModel.addPet(
                                     petName,
-                                    petBreed,
-                                    petAge,
                                     petGender,
                                     petSpecie,
                                     petDateOfBirth,
+                                    petBreed,
+                                    petAge,
                                     petMedicalCondition,
                                     petMicrochipNumber,
                                     petInsuranceCompany,
@@ -346,4 +346,3 @@ fun LabeledTextField(
         )
     }
 }
-

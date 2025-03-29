@@ -172,7 +172,7 @@ fun HomeScreen(
                             }
                         }
                     }
-            } else {
+                } else {
                     // Show "No pets available" if the user has no pets
                     Card(
                         shape = RoundedCornerShape(15.dp),
@@ -181,18 +181,18 @@ fun HomeScreen(
                         modifier = Modifier
                             .padding(top = 150.dp)
                             .width(352.dp)
-                                .height(214.dp),
+                            .height(214.dp),
                         onClick = {
                             navController.navigate("addNewPet") // Navigate to AddNewPetScreen
                         }
                     ){
                         Column(
                             modifier = Modifier.fillMaxSize()
-                                                .padding(16.dp),
+                                .padding(16.dp),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
 
-                            ) {
+                        ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_add_circle_outline_26),
                                 contentDescription = "Add New Pet"
