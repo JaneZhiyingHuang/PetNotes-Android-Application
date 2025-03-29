@@ -32,22 +32,7 @@ class HomeScreenViewModel : ViewModel() {
                     .await()
 
                 for (document in snapshot) {
-                    // Manually fetch 'age' and convert it to an Int or handle other types
                     val pet = document.toObject(Pet::class.java)
-//                    val petAge: Int = when {
-//                        document.contains("age") -> {
-//                            val ageField = document.get("age")
-//                            when (ageField) {
-//                                is String -> ageField.toIntOrNull() ?: 0
-//                                is Long -> ageField.toInt()
-//                                is Double -> ageField.toInt()
-//                                else -> 0
-//                            }
-//                        }
-//                        else -> 0
-//                    }
-
-                    // Manually update the 'age' field after conversion
                     petList.add(pet.copy())
                 }
             } catch (e: Exception) {

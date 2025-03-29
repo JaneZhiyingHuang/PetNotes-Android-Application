@@ -48,6 +48,10 @@ import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.ui.theme.InputColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.Period
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,7 +154,15 @@ fun HomeScreen(
                                             text = "${pet.dateOfBirth}", // DOB
                                             style = TextStyle(
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp)                                        )
+                                                fontSize = 16.sp)
+                                        )
+                                        Text(
+                                            text = calculateAge(pet.dateOfBirth),  // Use the calculated age here
+                                            style = TextStyle(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 16.sp
+                                            )
+                                        )
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(20.dp))
@@ -213,5 +225,28 @@ fun HomeScreen(
                 )
             }
         }
+    }
+}
+
+
+fun calculateAge(dateOfBirth: String?): String {
+    if (dateOfBirth.isNullOrEmpty()) {
+        // If the dateOfBirth is null or empty, return a fallback value
+        return "Unknown Age"
+    }
+
+    try {
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+        // Parse the dateOfBirth string to LocalDate
+        val birthDate = LocalDate.parse(dateOfBirth, formatter)
+        val currentDate = LocalDate.now() // Get the current date
+
+        // Calculate the period between birthDate and currentDate
+        val period = Period.between(birthDate, currentDate)
+
+        return "${period.years} years and ${period.months} months"
+    } catch (e: DateTimeParseException) {
+        return "Invalid Date Format"
     }
 }
