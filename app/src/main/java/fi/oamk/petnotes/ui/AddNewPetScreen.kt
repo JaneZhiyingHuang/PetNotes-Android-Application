@@ -61,6 +61,12 @@ import fi.oamk.petnotes.ui.theme.ButtonColor
 import fi.oamk.petnotes.ui.theme.InputColor
 import fi.oamk.petnotes.R
 
+import android.app.DatePickerDialog
+import android.widget.DatePicker
+import androidx.compose.material3.*
+
+import java.util.*
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNewPetScreen(navController: NavController) {
@@ -202,26 +208,23 @@ fun AddNewPetScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            LabeledTextField(
+//            LabeledTextField(
+//                label = "Date of Birth",
+//                value = petDateOfBirth,
+//                onValueChange = { petDateOfBirth = it }
+//            )
+//            Spacer(modifier = Modifier.height(12.dp))
+//
+            DatePickerField(
                 label = "Date of Birth",
-                value = petDateOfBirth,
-                onValueChange = { petDateOfBirth = it }
+                date = petDateOfBirth,
+                onDateSelected = { petDateOfBirth = it }
             )
-            Spacer(modifier = Modifier.height(12.dp))
-
 
             LabeledTextField(
                 label = "*Breed",
                 value = petBreed,
                 onValueChange = { petBreed = it }
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
-            LabeledTextField(
-                label = "Age",
-                value = petAge,
-                onValueChange = { petAge = it },
-                keyboardType = KeyboardType.Number
             )
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -271,7 +274,6 @@ fun AddNewPetScreen(navController: NavController) {
                                     petSpecie,
                                     petDateOfBirth,
                                     petBreed,
-                                    petAge,
                                     petMedicalCondition,
                                     petMicrochipNumber,
                                     petInsuranceCompany,
@@ -281,12 +283,6 @@ fun AddNewPetScreen(navController: NavController) {
                                     navController.popBackStack()
                                 }
                             }
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Please enter a valid age",
-                                Toast.LENGTH_SHORT
-                            ).show()
                         }
                     } else {
                         Toast.makeText(
@@ -344,5 +340,59 @@ fun LabeledTextField(
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
             shape = RoundedCornerShape(40.dp)
         )
+    }
+}
+
+@Composable
+fun DatePickerField(
+    label: String,
+    date: String,
+    onDateSelected: (String) -> Unit
+) {
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+
+    val year = calendar.get(Calendar.YEAR)
+    val month = calendar.get(Calendar.MONTH)
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _: DatePicker, selectedYear: Int, selectedMonth: Int, selectedDay: Int ->
+            val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
+            onDateSelected(selectedDate)
+        },
+        year, month, day
+    )
+
+    Column {
+        Text(
+            text = label,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(bottom = 1.dp)
+                .padding(start = 73.dp)
+                .fillMaxWidth()
+        )
+        Box(
+            modifier = Modifier
+                .width(280.dp)
+                .padding(top = 3.dp)
+                .height(56.dp)
+                .background(
+                    color = InputColor,
+                    shape = RoundedCornerShape(40.dp)
+                )
+                .clickable { datePickerDialog.show() }
+                .align(Alignment.CenterHorizontally),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = date.ifEmpty { "Select Date" },
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = Color.Black
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }

@@ -15,7 +15,6 @@ class AddNewPetViewModel : ViewModel() {
         petSpecie: String,
         petDateOfBirth: String,
         petBreed: String,
-        petAge: String,
         petMedicalCondition: String,
         petMicrochipNumber: String,
         petInsuranceCompany: String,
@@ -30,7 +29,6 @@ class AddNewPetViewModel : ViewModel() {
                 "specie" to petSpecie,
                 "dateOfBirth" to petDateOfBirth,
                 "breed" to petBreed,
-                "age" to petAge.toInt(),  // Ensure age is an integer
                 "medicalCondition" to petMedicalCondition,
                 "microchipNumber" to petMicrochipNumber,
                 "insuranceCompany" to petInsuranceCompany,

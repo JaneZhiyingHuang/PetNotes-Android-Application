@@ -140,12 +140,7 @@ fun HomeScreen(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 24.sp )
                                         )
-                                        Text(
-                                            text = "${pet.age} years old", // Age
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp)
-                                        )
+
                                         Text(
                                             text = "${pet.gender}", // Gender
                                             style = TextStyle(
