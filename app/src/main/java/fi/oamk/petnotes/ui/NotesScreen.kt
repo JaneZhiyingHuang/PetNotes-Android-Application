@@ -2,6 +2,7 @@ package fi.oamk.petnotes.ui
 
 import android.icu.util.Calendar
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -95,6 +96,7 @@ fun NotesScreen(
     var userInput by remember { mutableStateOf("") }
     var showDeleteConfirmationDialog by remember { mutableStateOf<String?>(null) }
     var fetchedNotes by remember { mutableStateOf(listOf<Notes>()) }
+    var refreshTrigger by remember { mutableStateOf(0) }
 
     // Date
     val currentDate = remember { Calendar.getInstance() }
@@ -151,6 +153,8 @@ fun NotesScreen(
     LaunchedEffect(uploadState) {
         when (val state = uploadState) {
             is NotesViewModel.UploadState.Success -> {
+                refreshTrigger++
+
                 selectedPet?.id?.let { petId ->
                     fetchedNotes = notesViewModel.getNotesByPetId(petId)
                 }
@@ -171,6 +175,12 @@ fun NotesScreen(
                 // You could use a Snackbar or another error display mechanism
             }
             else -> {} // Idle or Loading states
+        }
+    }
+
+    LaunchedEffect(refreshTrigger, selectedPet) {
+        selectedPet?.id?.let { petId ->
+            fetchedNotes = notesViewModel.getNotesByPetId(petId)
         }
     }
 
@@ -495,6 +505,7 @@ fun NotesScreen(
             }) { note ->
                 NoteCard(note)
             }
+            Log.d("NotesScreen", "Displaying ${fetchedNotes.size} notes")
         }
     }
 
@@ -652,25 +663,6 @@ fun DropdownSelector(selectedValue: String, options: List<String>, onValueChange
         }
     }
 }
-
-//@Composable
-//fun NotesListSection(
-//    petId: String,
-//    notesViewModel: NotesViewModel = viewModel()
-//) {
-//    var notes by remember { mutableStateOf(listOf<Notes>()) }
-//
-//    LaunchedEffect(petId) {
-//        // Fetch notes for the specific pet
-//        notes = notesViewModel.getNotesByPetId(petId)
-//    }
-//
-//    LazyColumn {
-//        items(notes) { note ->
-//            NoteCard(note)
-//        }
-//    }
-//}
 
 @Composable
 fun NoteCard(note: Notes) {
