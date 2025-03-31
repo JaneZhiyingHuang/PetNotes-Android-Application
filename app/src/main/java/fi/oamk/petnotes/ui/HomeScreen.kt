@@ -3,6 +3,7 @@ package fi.oamk.petnotes.ui
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,16 +24,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.firestore.FirebaseFirestore
 import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.ui.theme.InputColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -43,6 +45,8 @@ fun HomeScreen(
     var pets by remember { mutableStateOf(listOf<Pet>()) }
     var selectedPet by remember { mutableStateOf<Pet?>(null) }
     val coroutineScope = rememberCoroutineScope()
+
+    val userId = homeScreenViewModel.getUserId() // Fetch the user ID from the view model
 
     LaunchedEffect(isUserLoggedIn) {
         Log.d("HomeScreen", "User logged in: $isUserLoggedIn")
@@ -84,7 +88,7 @@ fun HomeScreen(
                                 Text(
                                     text = selectedPet?.name ?: "Select Pet",
                                     fontWeight = FontWeight.Bold,
-                                            fontSize = 18.sp
+                                    fontSize = 18.sp
                                 )
                                 IconButton(onClick = { expanded = true }) {
                                     Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Pet")
@@ -121,6 +125,9 @@ fun HomeScreen(
             if (isUserLoggedIn) {
                 if (selectedPet != null) {
                     PetCard(selectedPet!!)
+
+                    // Pass the userId to the WeightCard
+                    WeightCard(selectedPet!!, userId, navController)
                 } else {
                     NoPetsCard(navController)
                 }
@@ -134,6 +141,7 @@ fun HomeScreen(
         }
     }
 }
+
 
 @Composable
 fun PetCard(pet: Pet) {
@@ -196,6 +204,53 @@ fun NoPetsCard(navController: NavController) {
         }
     }
 }
+
+@Composable
+fun WeightCard(pet: Pet, userId: String, navController: NavController) {
+    var latestWeight by remember { mutableStateOf<String?>("N/A") }
+
+    // Fetch the latest weight from Firestore
+    LaunchedEffect(pet.id, userId) {
+        val db = FirebaseFirestore.getInstance()
+        try {
+            val weightSnapshot = db.collection("pet_weights")
+                .whereEqualTo("petId", pet.id)
+                .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(1)
+                .get()
+                .await()
+
+            if (!weightSnapshot.isEmpty) {
+                latestWeight = weightSnapshot.documents.first().getString("weight") ?: "N/A"
+            }
+        } catch (e: Exception) {
+            latestWeight = "Error"
+        }
+    }
+
+    Card(
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        modifier = Modifier
+            .padding(top = 10.dp)
+            .width(352.dp)
+            .clickable {
+                navController.navigate("weight_screen/$userId/${pet.id}") // Navigate with userId and petId
+            }
+    ) {
+        Column(modifier = Modifier.padding(22.dp)) {
+            Text(
+                text = "Weight: $latestWeight kg",
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            )
+        }
+    }
+}
+
 
 fun calculateAge(dateOfBirth: String?): String {
     if (dateOfBirth.isNullOrEmpty()) return "Unknown Age"

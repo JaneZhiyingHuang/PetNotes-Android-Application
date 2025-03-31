@@ -3,6 +3,8 @@ package fi.oamk.petnotes.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -10,14 +12,11 @@ import androidx.navigation.compose.rememberNavController
 import fi.oamk.petnotes.ui.theme.PetNotesTheme
 import fi.oamk.petnotes.viewmodel.GoogleSignInViewModel
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import fi.oamk.petnotes.viewmodel.NotesViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
 import fi.oamk.petnotes.viewmodel.SettingScreenViewModel
 import fi.oamk.petnotes.viewmodel.SignInViewModel
 import fi.oamk.petnotes.viewmodel.SignUpViewModel
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import fi.oamk.petnotes.viewmodel.NotesViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,7 +57,20 @@ class MainActivity : ComponentActivity() {
                             homeScreenViewModel = homeScreenViewModel, // Pass the ViewModel to HomeScreen
                             navController = navController
                         )
+
                     }
+                    composable("weight_screen/{userId}/{petId}") { backStackEntry ->
+                        val userId = backStackEntry.arguments?.getString("userId")
+                        val petId = backStackEntry.arguments?.getString("petId")
+
+                        if (userId != null && petId != null) {
+                            WeightScreen(navController = navController, userId = userId, petId = petId)
+                        } else {
+                            // Handle missing arguments (e.g., show an error message)
+                            Text(text = "User ID or Pet ID is missing.")
+                        }
+                    }
+
                     composable("map") {
                         // MapScreen doesn't need any ViewModel based on your code
                         val context = LocalContext.current // Get the context here
