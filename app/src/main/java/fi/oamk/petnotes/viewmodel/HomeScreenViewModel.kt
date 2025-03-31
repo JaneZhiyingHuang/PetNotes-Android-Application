@@ -4,13 +4,24 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import fi.oamk.petnotes.model.Pet
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.tasks.await
 
 class HomeScreenViewModel : ViewModel() {
 
-    private val firestore = FirebaseFirestore.getInstance()  // Corrected firestore reference
-    private val auth = FirebaseAuth.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()  // Firestore instance
+    private val auth = FirebaseAuth.getInstance()  // Firebase authentication instance
+
+    // StateFlow for list of pets
+    private val _pets = MutableStateFlow<List<Pet>>(emptyList())
+    val pets: StateFlow<List<Pet>> = _pets
+
+    // StateFlow for selected pet
+    private val _selectedPet = MutableStateFlow<Pet?>(null)
+    val selectedPet: StateFlow<Pet?> = _selectedPet
 
     // Check if the user is currently logged in
     fun isUserLoggedIn(): Boolean {
@@ -19,8 +30,11 @@ class HomeScreenViewModel : ViewModel() {
         return isLoggedIn
     }
 
-    suspend fun getPets(): List<Pet> {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+    // Fetch pets from Firestore and update the pets list
+
+
+    suspend fun fetchPets(): List<Pet> {
+        val userId = auth.currentUser?.uid
         val petList = mutableListOf<Pet>()
 
         if (userId != null) {
@@ -32,13 +46,26 @@ class HomeScreenViewModel : ViewModel() {
                     .await()
 
                 for (document in snapshot) {
-                    val pet = document.toObject(Pet::class.java)
-                    petList.add(pet.copy())
+                    var pet = document.toObject(Pet::class.java)
+
+                    // Fetch image URL from Firebase Storage if needed
+                    if (!pet.petImageUri.startsWith("http")) {
+                        val imageRef = FirebaseStorage.getInstance().reference.child(pet.petImageUri)
+                        pet = pet.copy(petImageUri = imageRef.downloadUrl.await().toString())
+                    }
+
+                    petList.add(pet)
                 }
             } catch (e: Exception) {
                 Log.e("HomeScreenViewModel", "Error fetching pets: ${e.message}")
             }
         }
         return petList
+    }
+
+
+    // Set the selected pet
+    fun setSelectedPet(pet: Pet) {
+        _selectedPet.value = pet
     }
 }

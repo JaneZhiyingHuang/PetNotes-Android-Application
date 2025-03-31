@@ -3,45 +3,24 @@ package fi.oamk.petnotes.ui
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import fi.oamk.petnotes.R
@@ -57,20 +36,22 @@ import java.time.format.DateTimeParseException
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    homeScreenViewModel: HomeScreenViewModel,
-    navController: NavController // Pass NavController to HomeScreen
+    homeScreenViewModel: HomeScreenViewModel = viewModel(),
+    navController: NavController
 ) {
     val isUserLoggedIn = homeScreenViewModel.isUserLoggedIn()
     var pets by remember { mutableStateOf(listOf<Pet>()) }
-    var selectedPetName by remember { mutableStateOf("") }
+    var selectedPet by remember { mutableStateOf<Pet?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(isUserLoggedIn) {
-        Log.d("HomeScreen", "User logged in: $isUserLoggedIn") // Log user login status
+        Log.d("HomeScreen", "User logged in: $isUserLoggedIn")
         if (isUserLoggedIn) {
             coroutineScope.launch {
-                pets = homeScreenViewModel.getPets() // Fetch pets from Firestore
-                Log.d("HomeScreen", "Fetched pets: $pets") // Log pets data after it's fetched
+                pets = homeScreenViewModel.fetchPets()
+                if (pets.isNotEmpty()) {
+                    selectedPet = pets.first()
+                }
             }
         }
     }
@@ -78,14 +59,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Home Screen")
-                    }
-                },
+                title = { Text(text = "") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("addNewPet") }) {
                         Icon(
@@ -94,133 +68,63 @@ fun HomeScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
-            )
+                actions = {
+                    if (pets.isNotEmpty()) {
+                        var expanded by remember { mutableStateOf(false) }
 
-
-
-        },
-        bottomBar = { BottomNavigationBar(navController = navController) }
-    ) { paddingValues ->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (isUserLoggedIn) {
-                if (pets.isNotEmpty()) {
-                    // Display pets in cards
-                    pets.forEach { pet ->
-                        Card(
-                            shape = RoundedCornerShape(15.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+                        Box(
                             modifier = Modifier
-                                .padding(top = 10.dp)
-                                .width(352.dp)
-//                                .height(214.dp)
+                                .fillMaxWidth()
+                                .wrapContentSize(Alignment.Center)
                         ) {
-                            Column(modifier = Modifier.padding(22.dp)) {
-                                // First Row: Circle Image + Column with name, age, gender, dob
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(
-                                    modifier = Modifier
-                                        .size(100.dp)
-                                        .clip(CircleShape)
-                                        .background(InputColor) // Placeholder color
-                                ) {
-                                    if (pet.petImageUri.isNotEmpty()) {
-                                        Image(
-                                            painter = rememberAsyncImagePainter(pet.petImageUri),
-                                            contentDescription = "Pet Avatar",
-                                            modifier = Modifier.fillMaxSize()
-                                        )
-                                    }
-                                }
-                                    Spacer(modifier = Modifier.width(26.dp))
-                                    Column {
-                                        Text(
-                                            text = pet.name, // Name
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 24.sp )
-                                        )
-
-                                        Text(
-                                            text = "${pet.gender}", // Gender
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp)                                        )
-                                        Text(
-                                            text = "${pet.dateOfBirth}", // DOB
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp)
-                                        )
-                                        Text(
-                                            text = calculateAge(pet.dateOfBirth),  // Use the calculated age here
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp
-                                            )
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(20.dp))
-
-                                // Second Row: Medical Condition
+                            Row(
+                                modifier = Modifier.padding(top = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Text(
-                                    text = "*Medical Condition: ${pet.medicalCondition}",
-                                    style = TextStyle(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    ),
+                                    text = selectedPet?.name ?: "Select Pet",
+                                    fontWeight = FontWeight.Bold,
+                                            fontSize = 18.sp
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
+                                IconButton(onClick = { expanded = true }) {
+                                    Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Pet")
+                                }
+                            }
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                pets.forEach { pet ->
+                                    DropdownMenuItem(
+                                        text = { Text(pet.name) },
+                                        onClick = {
+                                            selectedPet = pet
+                                            expanded = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
+            )
+        },
+        bottomBar = { BottomNavigationBar(navController = navController) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (isUserLoggedIn) {
+                if (selectedPet != null) {
+                    PetCard(selectedPet!!)
                 } else {
-                    // Show "No pets available" if the user has no pets
-                    Card(
-                        shape = RoundedCornerShape(15.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-                        modifier = Modifier
-                            .padding(top = 150.dp)
-                            .width(352.dp)
-                            .height(214.dp),
-                        onClick = {
-                            navController.navigate("addNewPet") // Navigate to AddNewPetScreen
-                        }
-                    ){
-                        Column(
-                            modifier = Modifier.fillMaxSize()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_add_circle_outline_26),
-                                contentDescription = "Add New Pet"
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "Add your first pet to start !",
-                                style = TextStyle(fontWeight = FontWeight.Bold)
-                            )
-
-
-                        }
-                    }
+                    NoPetsCard(navController)
                 }
             } else {
-                // Show message if the user is not logged in
                 Text(
                     text = "Please log in to continue.",
                     style = TextStyle(fontWeight = FontWeight.Bold),
@@ -231,25 +135,76 @@ fun HomeScreen(
     }
 }
 
+@Composable
+fun PetCard(pet: Pet) {
+    Card(
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        modifier = Modifier
+            .padding(top = 10.dp)
+            .width(352.dp)
+    ) {
+        Column(modifier = Modifier.padding(22.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(InputColor)
+                ) {
+                    if (pet.petImageUri.isNotEmpty()) {
+                        Image(
+                            painter = rememberAsyncImagePainter(pet.petImageUri),
+                            contentDescription = "Pet Avatar",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(26.dp))
+                Column {
+                    Text(text = pet.name, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp))
+                    Text(text = pet.gender, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
+                    Text(text = pet.dateOfBirth, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
+                    Text(text = calculateAge(pet.dateOfBirth), style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
+                }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(text = "*Medical Condition: ${pet.medicalCondition}", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+fun NoPetsCard(navController: NavController) {
+    Card(
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        modifier = Modifier.padding(top = 150.dp).width(352.dp).height(214.dp),
+        onClick = { navController.navigate("addNewPet") }
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(painter = painterResource(id = R.drawable.baseline_add_circle_outline_26), contentDescription = "Add New Pet")
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Add your first pet to start!", style = TextStyle(fontWeight = FontWeight.Bold))
+        }
+    }
+}
 
 fun calculateAge(dateOfBirth: String?): String {
-    if (dateOfBirth.isNullOrEmpty()) {
-        // If the dateOfBirth is null or empty, return a fallback value
-        return "Unknown Age"
-    }
-
-    try {
+    if (dateOfBirth.isNullOrEmpty()) return "Unknown Age"
+    return try {
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-
-        // Parse the dateOfBirth string to LocalDate
         val birthDate = LocalDate.parse(dateOfBirth, formatter)
-        val currentDate = LocalDate.now() // Get the current date
-
-        // Calculate the period between birthDate and currentDate
-        val period = Period.between(birthDate, currentDate)
-
-        return "${period.years} years and ${period.months} months"
+        val period = Period.between(birthDate, LocalDate.now())
+        "${period.years} years and ${period.months} months"
     } catch (e: DateTimeParseException) {
-        return "Invalid Date Format"
+        "Invalid Date Format"
     }
 }
