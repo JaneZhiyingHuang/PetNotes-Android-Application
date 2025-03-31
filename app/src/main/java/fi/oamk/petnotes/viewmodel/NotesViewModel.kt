@@ -31,7 +31,7 @@ class NotesViewModel : ViewModel() {
         data class Error(val message: String) : UploadState()
     }
 
-    suspend fun uploadFilesToFirebase(
+    private suspend fun uploadFilesToFirebase(
         files: List<Uri>,
         fileType: String,
         petId: String
@@ -40,38 +40,47 @@ class NotesViewModel : ViewModel() {
             return@withContext emptyList<String>()
         }
 
-        _uploadState.value = UploadState.Loading
+        Log.d("NotesViewModel", "Starting upload of ${files.size} $fileType files")
         val storage = FirebaseStorage.getInstance()
         val uploadedFileUrls = mutableListOf<String>()
 
         try {
             files.forEach { uri ->
+                Log.d("NotesViewModel", "Uploading $fileType with URI: $uri")
                 val fileName = "${fileType}_${UUID.randomUUID()}"
                 val storageRef = storage.reference.child("$petId/$fileName")
 
+                val uploadTask = storageRef.putFile(uri).await()
+                Log.d("NotesViewModel", "Upload completed, getting download URL")
                 val downloadUrl = storageRef.putFile(uri).await().storage.downloadUrl.await()
+                Log.d("NotesViewModel", "Got download URL: $downloadUrl")
                 uploadedFileUrls.add(downloadUrl.toString())
             }
 
-            _uploadState.value = UploadState.Success("Files uploaded successfully")
+            Log.d("NotesViewModel", "Successfully uploaded ${uploadedFileUrls.size} $fileType files")
             return@withContext uploadedFileUrls
         } catch (e: Exception) {
+            Log.e("NotesViewModel", "Error uploading $fileType files", e)
             _uploadState.value = UploadState.Error("Upload failed: ${e.message}")
             return@withContext emptyList<String>()
         }
     }
 
-    fun createNote(note: Notes) = viewModelScope.launch {
-        _uploadState.value = UploadState.Loading
+    private fun createNote(note: Notes) = viewModelScope.launch {
+//        _uploadState.value = UploadState.Loading
 
         try {
             FirebaseFirestore.getInstance().collection("notes")
                 .add(note)
                 .await()
 
-            _uploadState.value = UploadState.Success("Note created successfully")
+            withContext(Dispatchers.Main) {
+                _uploadState.value = UploadState.Success("Note created successfully")
+            }
         } catch (e: Exception) {
-            _uploadState.value = UploadState.Error("Note creation failed: ${e.message}")
+            withContext(Dispatchers.Main) {
+                _uploadState.value = UploadState.Error("Note creation failed: ${e.message}")
+            }
             Log.e("NotesViewModel", "Upload error", e)
         }
     }
@@ -93,25 +102,34 @@ class NotesViewModel : ViewModel() {
             return@launch
         }
 
+        _uploadState.value = UploadState.Loading
+
         val petId = selectedPet.id
-        val photoUrlsDeferred = async { uploadFilesToFirebase(photoUris, "photo", petId) }
-        val documentUrlsDeferred = async { uploadFilesToFirebase(documentUris, "document", petId) }
 
-        // Await the results of both uploads
-        val photoUrls = photoUrlsDeferred.await()
-        val documentUrls = documentUrlsDeferred.await()
+        try {
+            val photoUrlsDeferred = async { uploadFilesToFirebase(photoUris, "photo", petId) }
+            val documentUrlsDeferred = async { uploadFilesToFirebase(documentUris, "document", petId) }
 
-        val note = Notes(
-            petId = petId,
-            description = userInput,
-            date = "$selectedYear-$selectedMonth-$selectedDate",
-            tag = selectedTag,
-            photoUrls = photoUrls,
-            documentUrls = documentUrls,
-            userSelectedTimestamp = userSelectedTimestamp
-        )
+            // Await the results of both uploads
+            val photoUrls = photoUrlsDeferred.await()
+            val documentUrls = documentUrlsDeferred.await()
 
-        createNote(note)
+            val note = Notes(
+                petId = petId,
+                description = userInput,
+                date = "$selectedYear-$selectedMonth-$selectedDate",
+                tag = selectedTag,
+                photoUrls = photoUrls,
+                documentUrls = documentUrls,
+                userSelectedTimestamp = userSelectedTimestamp
+            )
+
+            createNote(note)
+        } catch (e: Exception) {
+            _uploadState.value = UploadState.Error("Upload failed: ${e.message}")
+            Log.e("NotesViewModel","Upload error",e)
+
+        }
     }
 
     suspend fun getNotesByPetId(petId: String): List<Notes> {
@@ -123,6 +141,7 @@ class NotesViewModel : ViewModel() {
                 .get()
                 .await()
 
+            Log.d("NotesViewModel", "Fetched ${querySnapshot.size()} notes for pet $petId")
             querySnapshot.toObjects(Notes::class.java)
         } catch (e: Exception) {
             emptyList()
