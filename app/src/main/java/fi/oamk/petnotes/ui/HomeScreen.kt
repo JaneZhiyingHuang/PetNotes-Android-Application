@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.ui.theme.InputColor
@@ -125,17 +126,19 @@ fun HomeScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Box(
-                                        modifier = Modifier
-                                            .size(100.dp)
-                                            .clip(CircleShape)
-                                            .background(InputColor) // Placeholder color if no image
-                                    ) {
-//                                        Image(
-//                                            painter = painterResource(id = R.drawable.ic_avatar),
-//                                            contentDescription = "Avatar",
-//                                            modifier = Modifier.fillMaxSize()
-//                                        )
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .clip(CircleShape)
+                                        .background(InputColor) // Placeholder color
+                                ) {
+                                    if (pet.petImageUri.isNotEmpty()) {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(pet.petImageUri),
+                                            contentDescription = "Pet Avatar",
+                                            modifier = Modifier.fillMaxSize()
+                                        )
                                     }
+                                }
                                     Spacer(modifier = Modifier.width(26.dp))
                                     Column {
                                         Text(

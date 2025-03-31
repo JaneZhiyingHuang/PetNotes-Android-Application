@@ -20,6 +20,7 @@ class AddNewPetViewModel : ViewModel() {
         petMicrochipNumber: String,
         petInsuranceCompany: String,
         petInsuranceNumber: String,
+        petImageUri: String,
         onSuccess: () -> Unit
     ) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -33,7 +34,8 @@ class AddNewPetViewModel : ViewModel() {
                 "medicalCondition" to petMedicalCondition,
                 "microchipNumber" to petMicrochipNumber,
                 "insuranceCompany" to petInsuranceCompany,
-                "insuranceNumber" to petInsuranceNumber
+                "insuranceNumber" to petInsuranceNumber,
+                "petImageUri" to petImageUri
             )
             try {
                 db.collection("users")

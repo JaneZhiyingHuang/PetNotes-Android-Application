@@ -52,6 +52,8 @@ dependencies {
     implementation (libs.google.maps)
     implementation (libs.maps.compose.v210)
 
+    // For image upload
+    implementation (libs.coil.compose)
 
     // Import the BoM for the Firebase platform
     // Declare the dependency for the Cloud Firestore library

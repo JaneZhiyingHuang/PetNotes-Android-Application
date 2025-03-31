@@ -14,5 +14,6 @@ data class Pet(
     val microchipNumber: String = "",
     val insuranceCompany: String = "",
     val insuranceNumber: String = "",
+    val petImageUri: String = "",
     val tags: List<String> = emptyList()
 )

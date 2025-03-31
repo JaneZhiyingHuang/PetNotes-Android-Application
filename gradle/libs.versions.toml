@@ -1,6 +1,7 @@
 [versions]
 activityComposeVersion = "1.6.0"
 agp = "8.7.3"
+coilCompose = "2.4.0"
 credentials = "1.5.0"
 firebaseBom = "33.10.0"
 googleMapsCompose = "2.3.0"
@@ -40,6 +41,7 @@ androidx-activity-compose-v160 = { module = "androidx.activity:activity-compose"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }

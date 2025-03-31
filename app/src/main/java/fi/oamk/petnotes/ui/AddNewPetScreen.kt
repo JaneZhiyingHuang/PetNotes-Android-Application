@@ -1,6 +1,5 @@
 package fi.oamk.petnotes.ui
 
-import android.renderscript.ScriptGroup.Input
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -32,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -54,31 +52,29 @@ import fi.oamk.petnotes.viewmodel.AddNewPetViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.rememberNavController
 import fi.oamk.petnotes.ui.theme.ButtonColor
 import fi.oamk.petnotes.ui.theme.InputColor
 import fi.oamk.petnotes.R
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
-import androidx.compose.material3.*
-import com.google.firebase.Timestamp
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.storage.FirebaseStorage
 
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNewPetScreen(navController: NavController) {
-    val addnewPetViewModel: AddNewPetViewModel = viewModel()  // Provide the viewModel
+    val addnewPetViewModel: AddNewPetViewModel = viewModel()
 
     var petName by remember { mutableStateOf("") }
     var petBreed by remember { mutableStateOf("") }
-    var petAge by remember { mutableStateOf("") }
     var petGender by remember { mutableStateOf("") }
     var petSpecie by remember { mutableStateOf("") }
     var petDateOfBirth by remember { mutableStateOf("") }
@@ -87,9 +83,22 @@ fun AddNewPetScreen(navController: NavController) {
     var petInsuranceCompany by remember { mutableStateOf("") }
     var petInsuranceNumber by remember { mutableStateOf("") }
 
+
     var isLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current // Access context in Compose
+
+    //for upload image to fire storage : img -> url
+    var imageUrl by remember { mutableStateOf<Uri?>(null) }
+    //for fetch image from fire storage: url -> img
+    var petImageUri by remember { mutableStateOf("") }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        imageUrl = uri
+    }
+
 
     Scaffold(
         topBar = {
@@ -115,6 +124,7 @@ fun AddNewPetScreen(navController: NavController) {
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            //avatar
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -123,13 +133,17 @@ fun AddNewPetScreen(navController: NavController) {
                     modifier = Modifier
                         .size(107.dp)
                         .clip(CircleShape)
-                        .background(InputColor) // Placeholder color if no image is uploaded
-                        .clickable {
-
-                        },
-                    contentAlignment = Alignment.Center // Center the icon inside the circle
+                        .background(InputColor)
+                        .clickable { imagePickerLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Image(
+                    imageUrl?.let { uri ->
+                        Image(
+                            painter = rememberAsyncImagePainter(uri),
+                            contentDescription = "Pet Avatar",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } ?: Image(
                         painter = painterResource(id = R.drawable.add_a_photo_24px),
                         contentDescription = "Upload Avatar",
                         modifier = Modifier.size(40.dp)
@@ -257,9 +271,36 @@ fun AddNewPetScreen(navController: NavController) {
                 onClick = {
                     if (petName.isNotBlank() &&
                         petGender.isNotBlank() &&
-                        petSpecie.isNotBlank() ) {
+                        petSpecie.isNotBlank() &&
+                        petDateOfBirth.isNotBlank()){
 
                             isLoading = true
+                        if (imageUrl != null) {
+                            // upload image to cloud storage
+                            uploadImageToFirebase(imageUrl!!, onSuccess = { remoteUrl ->
+                                petImageUri = remoteUrl
+                                coroutineScope.launch {
+                                    addnewPetViewModel.addPet(
+                                        petName,
+                                        petGender,
+                                        petSpecie,
+                                        petDateOfBirth,
+                                        petBreed,
+                                        petMedicalCondition,
+                                        petMicrochipNumber,
+                                        petInsuranceCompany,
+                                        petInsuranceNumber,
+                                        petImageUri
+                                    ) {
+                                        isLoading = false
+                                        navController.popBackStack()
+                                    }
+                                }
+                            }, onFailure = { exception ->
+                                isLoading = false
+                                Toast.makeText(context, "Image upload failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                            })
+                        } else {
                             coroutineScope.launch {
                                 addnewPetViewModel.addPet(
                                     petName,
@@ -270,13 +311,14 @@ fun AddNewPetScreen(navController: NavController) {
                                     petMedicalCondition,
                                     petMicrochipNumber,
                                     petInsuranceCompany,
-                                    petInsuranceNumber
+                                    petInsuranceNumber,
+                                    ""
                                 ) {
                                     isLoading = false
                                     navController.popBackStack()
                                 }
                             }
-
+                        }
                     } else {
                         Toast.makeText(
                             context,
@@ -298,7 +340,6 @@ fun AddNewPetScreen(navController: NavController) {
                 shape = RoundedCornerShape(30.dp)
             ) {
                 Text(if (isLoading) "Saving..." else "Add New Pet")
-
             }
         }
     }
@@ -336,6 +377,7 @@ fun LabeledTextField(
     }
 }
 
+//DoB calendar datepicker
 @Composable
 fun DatePickerField(
     label: String,
@@ -389,4 +431,23 @@ fun DatePickerField(
         }
         Spacer(modifier = Modifier.height(12.dp))
     }
+}
+
+//handle avatar photo upload logic:
+// to fire storage-> get imageUrl -> store Url in firebase -> use Url to fetch image
+
+
+fun uploadImageToFirebase(uri: Uri, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
+    val storageRef = FirebaseStorage.getInstance().reference
+    val fileRef = storageRef.child("pet_images/${UUID.randomUUID()}.jpg")
+
+    fileRef.putFile(uri)
+        .addOnSuccessListener {
+            fileRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                onSuccess(downloadUri.toString())
+            }
+        }
+        .addOnFailureListener { exception ->
+            onFailure(exception)
+        }
 }
