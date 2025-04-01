@@ -131,7 +131,7 @@ fun NotesScreen(
     LaunchedEffect(isUserLoggedIn) {
         if (isUserLoggedIn) {
             coroutineScope.launch {
-                val fetchedPets = homeScreenViewModel.getPets() // Fetch pets from Firestore
+                val fetchedPets = homeScreenViewModel.fetchPets() // Fetch pets from Firestore
                 if (fetchedPets.isNotEmpty()) {
                     pets = fetchedPets
                     selectedPet = fetchedPets.first()

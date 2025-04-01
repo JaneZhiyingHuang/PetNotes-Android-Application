@@ -6,8 +6,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -15,27 +31,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeightScreen(navController: NavController, petId: String, userId: String) {
-    // State to store weight, selected date, and pet name
+    val db = FirebaseFirestore.getInstance()
+
+    // UI States
     val weight = remember { mutableStateOf("") }
     val selectedDate = remember { mutableStateOf(Calendar.getInstance().time) }
     var isDatePickerOpen by remember { mutableStateOf(false) }
     var petName by remember { mutableStateOf<String?>(null) }
+    var weightEntries by remember { mutableStateOf<List<Pair<String, Float>>>(emptyList()) }
 
-    // Snackbar and coroutine scope
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Fetch pet name from Firestore based on petId and userId
+    // Fetch pet name
     LaunchedEffect(petId, userId) {
-        val db = FirebaseFirestore.getInstance()
         try {
             val petDocument = db.collection("users")
                 .document(userId)
@@ -44,17 +63,32 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                 .get()
                 .await()
 
-            petName = if (petDocument.exists()) {
-                petDocument.getString("name") ?: "Unknown Pet"
-            } else {
-                "Unknown Pet"
-            }
+            petName = petDocument.getString("name") ?: "Unknown Pet"
         } catch (e: Exception) {
             petName = "Error fetching pet name"
         }
     }
 
-    // Format the selected date as YYYY-MM-DDThh:mm:ssTZD
+    // Fetch weight data
+    LaunchedEffect(petId, userId) {
+        try {
+            val snapshot = db.collection("pet_weights")
+                .whereEqualTo("petId", petId)
+                .whereEqualTo("userId", userId)
+                .orderBy("date", Query.Direction.ASCENDING)
+                .get()
+                .await()
+
+            weightEntries = snapshot.documents.mapNotNull { doc ->
+                val date = doc.getString("date") ?: return@mapNotNull null
+                val weightValue = doc.getDouble("weight")?.toFloat() ?: return@mapNotNull null
+                date to weightValue
+            }
+        } catch (e: Exception) {
+            weightEntries = emptyList()
+        }
+    }
+
     val formattedDate = remember(selectedDate.value) {
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).format(selectedDate.value)
     }
@@ -70,7 +104,7 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                 }
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) } // Add SnackbarHost
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             Text(
@@ -89,7 +123,7 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
             )
 
             Text(
-                text = "Selected Date: $formattedDate", // Use the formatted date
+                text = "Selected Date: $formattedDate",
                 modifier = Modifier.padding(top = 16.dp),
                 fontSize = 16.sp
             )
@@ -107,8 +141,8 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                     { _, year, month, dayOfMonth ->
                         val selectedCalendar = Calendar.getInstance()
                         selectedCalendar.set(year, month, dayOfMonth)
-                        selectedDate.value = selectedCalendar.time // Update the selected date
-                        isDatePickerOpen = false // Close the date picker
+                        selectedDate.value = selectedCalendar.time
+                        isDatePickerOpen = false
                     },
                     Calendar.getInstance().get(Calendar.YEAR),
                     Calendar.getInstance().get(Calendar.MONTH),
@@ -118,13 +152,12 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
 
             Button(
                 onClick = {
-                    val db = FirebaseFirestore.getInstance()
                     val weightData = hashMapOf(
                         "userId" to userId,
                         "petId" to petId,
                         "petName" to (petName ?: "Unknown Pet"),
-                        "weight" to weight.value,
-                        "date" to formattedDate // Use the formatted date here
+                        "weight" to weight.value.toFloatOrNull(),
+                        "date" to formattedDate
                     )
 
                     db.collection("pet_weights")
@@ -143,6 +176,11 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                 modifier = Modifier.padding(top = 16.dp)
             ) {
                 Text("Save Weight")
+            }
+
+            // Display the line chart
+            if (weightEntries.isNotEmpty()) {
+//                PetWeightChart(weightEntries)
             }
         }
     }
