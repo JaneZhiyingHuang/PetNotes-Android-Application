@@ -44,7 +44,7 @@ android {
 
 dependencies {
     // Import the BoM for the Firebase platform
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.coil.compose.v250)
     implementation(platform(libs.firebase.bom))
     implementation (libs.gms.play.services.maps.v1810)
     implementation (libs.play.services.location.v1800)
