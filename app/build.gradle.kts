@@ -43,7 +43,8 @@ android {
 }
 
 dependencies {
-    // Import the BoM for the Firebase platform
+
+    implementation ("io.github.ehsannarmani:compose-charts:0.1.2")
     implementation(libs.coil.compose.v250)
     implementation(platform(libs.firebase.bom))
     implementation (libs.gms.play.services.maps.v1810)

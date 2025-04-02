@@ -204,10 +204,9 @@ fun NoPetsCard(navController: NavController) {
         }
     }
 }
-
 @Composable
 fun WeightCard(pet: Pet, userId: String, navController: NavController) {
-    var latestWeight by remember { mutableStateOf<String?>("N/A") }
+    var latestWeight by remember { mutableStateOf("N/A") }
 
     // Fetch the latest weight from Firestore
     LaunchedEffect(pet.id, userId) {
@@ -221,7 +220,8 @@ fun WeightCard(pet: Pet, userId: String, navController: NavController) {
                 .await()
 
             if (!weightSnapshot.isEmpty) {
-                latestWeight = weightSnapshot.documents.first().getString("weight") ?: "N/A"
+                val weight = weightSnapshot.documents.first().getDouble("weight") // ✅ Get weight as Number
+                latestWeight = weight?.toString() ?: "N/A" // ✅ Convert to string safely
             }
         } catch (e: Exception) {
             latestWeight = "Error"
@@ -250,6 +250,7 @@ fun WeightCard(pet: Pet, userId: String, navController: NavController) {
         }
     }
 }
+
 
 
 fun calculateAge(dateOfBirth: String?): String {
