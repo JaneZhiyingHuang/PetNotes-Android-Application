@@ -66,6 +66,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -76,8 +77,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
+import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
+import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.NotesViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
@@ -107,6 +110,7 @@ fun NotesScreen(
     var showDeleteConfirmationDialog by remember { mutableStateOf<String?>(null) }
     var fetchedNotes by remember { mutableStateOf(listOf<Notes>()) }
     var refreshTrigger by remember { mutableStateOf(0) }
+    val context = LocalContext.current
 
     // Date
     val currentDate = remember { Calendar.getInstance() }
@@ -144,7 +148,12 @@ fun NotesScreen(
                 val fetchedPets = homeScreenViewModel.fetchPets() // Fetch pets from Firestore
                 if (fetchedPets.isNotEmpty()) {
                     pets = fetchedPets
-                    selectedPet = fetchedPets.first()
+
+                    // get selected pet from datastore
+                    PetDataStore.getSelectedPetId(context).collect { storedPetId ->
+                        selectedPet = fetchedPets.find { it.id == storedPetId } ?: fetchedPets.first()
+                    }
+
                     tags = selectedPet?.tags?.takeIf { it.isNotEmpty() } ?: defaultTags
                 }
             }
@@ -197,50 +206,19 @@ fun NotesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(top = 4.dp)
-                                    .onGloballyPositioned { coordinates ->
-                                        dropdownWidth = with(density) {
-                                            coordinates.size.width.toDp()
-                                        }
-                                    },
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = selectedPet?.name ?: "Select Pet",
-                                    fontWeight = FontWeight.Bold
-                                )
-                                IconButton(onClick = { expanded = true }) {
-                                    Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Pet")
+                title = { Text(text = "") },
+                actions = {
+                    if (pets.isNotEmpty()) {
+                        SelectedPetDropdown(
+                            pets = pets,
+                            selectedPet = selectedPet,
+                            onPetSelected = { pet ->
+                                selectedPet = pet
+                                coroutineScope.launch {
+                                    PetDataStore.setSelectedPetId(context, pet.id)
                                 }
                             }
-                            Box {
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false },
-                                    modifier = Modifier.width(dropdownWidth)
-                                ) {
-                                    pets.forEach { pet ->
-                                        DropdownMenuItem(
-                                            text = { Text(pet.name) },
-                                            onClick = {
-                                                selectedPet = pet
-                                                expanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
