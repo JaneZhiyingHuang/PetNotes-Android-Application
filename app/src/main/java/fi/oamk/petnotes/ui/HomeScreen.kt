@@ -7,15 +7,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -29,33 +27,36 @@ import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.ui.theme.InputColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import fi.oamk.petnotes.model.PetDataStore
+import kotlinx.coroutines.launch
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     homeScreenViewModel: HomeScreenViewModel = viewModel(),
-    navController: NavController
+    navController: NavController,
 ) {
+    val context = LocalContext.current
     val isUserLoggedIn = homeScreenViewModel.isUserLoggedIn()
     var pets by remember { mutableStateOf(listOf<Pet>()) }
     var selectedPet by remember { mutableStateOf<Pet?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val userId = homeScreenViewModel.getUserId()
 
-    val userId = homeScreenViewModel.getUserId() // Fetch the user ID from the view model
-
-    LaunchedEffect(isUserLoggedIn) {
+    LaunchedEffect(context) {
         Log.d("HomeScreen", "User logged in: $isUserLoggedIn")
-        if (isUserLoggedIn) {
-            coroutineScope.launch {
-                pets = homeScreenViewModel.fetchPets()
-                if (pets.isNotEmpty()) {
-                    selectedPet = pets.first()
-                }
+        PetDataStore.getSelectedPetId(context).collect { petId ->
+            if (isUserLoggedIn) {
+                val fetchedPets = homeScreenViewModel.fetchPets()
+                pets = fetchedPets
+
+                //if there is a selected pet in datastore / default :just the first pet
+                selectedPet = fetchedPets.find { it.id == petId } ?: fetchedPets.firstOrNull()
             }
         }
     }
@@ -74,41 +75,16 @@ fun HomeScreen(
                 },
                 actions = {
                     if (pets.isNotEmpty()) {
-                        var expanded by remember { mutableStateOf(false) }
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentSize(Alignment.Center)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(top = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = selectedPet?.name ?: "Select Pet",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp
-                                )
-                                IconButton(onClick = { expanded = true }) {
-                                    Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Pet")
+                        SelectedPetDropdown(
+                            pets = pets,
+                            selectedPet = selectedPet,
+                            onPetSelected = { pet ->
+                                selectedPet = pet
+                                coroutineScope.launch {
+                                    PetDataStore.setSelectedPetId(context, pet.id)
                                 }
                             }
-                            DropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false }
-                            ) {
-                                pets.forEach { pet ->
-                                    DropdownMenuItem(
-                                        text = { Text(pet.name) },
-                                        onClick = {
-                                            selectedPet = pet
-                                            expanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
@@ -168,6 +144,14 @@ fun PetCard(pet: Pet) {
                             modifier = Modifier.fillMaxSize()
                         )
                     }
+//                    else {
+//                        Box(
+//                            modifier = Modifier
+//                                .size(100.dp)
+//                                .clip(CircleShape)
+//                                .background(InputColor)
+//                        )
+//                    }
                 }
                 Spacer(modifier = Modifier.width(26.dp))
                 Column {

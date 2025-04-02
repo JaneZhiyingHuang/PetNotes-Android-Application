@@ -54,6 +54,10 @@ dependencies {
     implementation (libs.google.maps)
     implementation (libs.maps.compose.v210)
 
+    // For store selected pet
+    implementation(libs.androidx.datastore)
+    implementation("androidx.datastore:datastore-preferences:1.1.4")
+
     // For image upload
     implementation (libs.coil.compose)
 

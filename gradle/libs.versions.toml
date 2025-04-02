@@ -7,6 +7,7 @@ coilComposeVersion = "2.5.0"
 composeCharts = "1.0.1"
 composeChartsVersion = "1.9.24"
 credentials = "1.5.0"
+datastore = "1.1.4"
 firebaseBom = "33.10.0"
 githubComposeCharts = "0.2.1"
 githubComposeChartsVersion = "1.6.7"
@@ -51,6 +52,7 @@ uiVersion = "1.67"
 androidx-activity-compose-v160 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-ui-v167 = { module = "androidx.compose.ui:ui", version.ref = "uiVersion" }
 bytebeats-compose-charts = { module = "io.github.bytebeats:compose-charts", version.ref = "composeChartsVersion" }
