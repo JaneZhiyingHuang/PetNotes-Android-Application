@@ -26,12 +26,35 @@ class SettingScreenViewModel : ViewModel() {
             // Deleting user's pet data from Firestore (if it exists)
             db.collection("users")
                 .document(userId)
-                .collection("pets") // If pets are stored in a subcollection called 'pets'
+                .collection("pets") // Pets collection
                 .get()
                 .addOnSuccessListener { snapshot ->
                     // Delete all pets in this user's pets collection
                     for (document in snapshot.documents) {
-                        document.reference.delete() // Delete individual pet documents
+                        val petDocRef = document.reference
+
+                        // Deleting pet weights if exists
+                        petDocRef.collection("pet_weights").get()
+                            .addOnSuccessListener { weightSnapshot ->
+                                for (weightDoc in weightSnapshot.documents) {
+                                    weightDoc.reference.delete() // Delete individual weight records
+                                }
+
+                                // Now delete the pet document itself
+                                petDocRef.delete()
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            // Successfully deleted pet and pet weights
+                                        } else {
+                                            onComplete(false, task.exception?.message ?: "Error deleting pet")
+                                            return@addOnCompleteListener
+                                        }
+                                    }
+                            }
+                            .addOnFailureListener { exception ->
+                                onComplete(false, exception.message ?: "Error fetching pet weights")
+                                return@addOnFailureListener
+                            }
                     }
 
                     // Now, delete the user's document from 'users' collection
@@ -42,13 +65,12 @@ class SettingScreenViewModel : ViewModel() {
                                 currentUser.delete()
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
-                                            onComplete(true, null) // Successfully deleted
+                                            onComplete(true, null) // Successfully deleted account
                                         } else {
-                                            onComplete(false, task.exception?.message) // Error in deleting user
+                                            onComplete(false, task.exception?.message) // Error deleting Firebase user
                                         }
                                     }
                             } else {
-                                // If Firestore data deletion fails
                                 onComplete(false, task.exception?.message ?: "Error deleting Firestore data")
                             }
                         }
@@ -59,4 +81,5 @@ class SettingScreenViewModel : ViewModel() {
                 }
         } ?: onComplete(false, "No user is currently logged in")
     }
+
 }

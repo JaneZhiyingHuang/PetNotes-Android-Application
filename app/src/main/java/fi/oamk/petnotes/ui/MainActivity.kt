@@ -75,10 +75,8 @@ class MainActivity : ComponentActivity() {
                     composable("map") {
                         // MapScreen doesn't need any ViewModel based on your code
                         val context = LocalContext.current // Get the context here
-                        MapScreen(
-                            navController = navController,
-                            context = context // Pass the context to MapScreen
-                        )
+                        MapScreen(navController = navController, context = context)
+
                     }
                     composable("notes") {
                         NotesScreen(
