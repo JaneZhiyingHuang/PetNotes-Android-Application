@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -76,12 +78,15 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
     val weightEntries = remember { mutableStateListOf<Pair<Date, Float>>() }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val dateFormatforselect = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+
 
     val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault())
     val displayDateFormat = SimpleDateFormat("MMM dd", Locale.getDefault()) // For x-axis labels
     var selectedDate by remember { mutableStateOf<Date?>(null) }
     var newWeight by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+    val currentDate = Date()
 
     var isDatePickerOpen by remember { mutableStateOf(false) } // Define the state for the date picker
 
@@ -194,6 +199,9 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                 // Remove from the local list after deletion
                 weightEntries.removeAll { it.first == date }
 
+                // Sort by date in descending order (latest first)
+                weightEntries.sortByDescending { it.first }
+
                 snackbarHostState.showSnackbar("Weight entry deleted successfully!")
             } catch (e: Exception) {
                 Log.e("WeightScreen", "Error deleting weight entry", e)
@@ -201,6 +209,7 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
             }
         }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -255,6 +264,12 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(16.dp)
                     ) {
+                        Text(
+                            "Weight Trend",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                         LineChart(
                             data = remember {
                                 listOf(
@@ -267,7 +282,6 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                                             color = SolidColor(Color.White),
                                             strokeColor = SolidColor(Color.Blue)
                                         ),
-                                        // Apply label properties here
                                     )
                                 )
                             },
@@ -276,7 +290,6 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                                 .height(200.dp)
 
                         )
-
                         // Display Date Labels Below Chart
                         Row(
                             modifier = Modifier
@@ -291,82 +304,133 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                     }
 
                 }
-            }
-            Card(
-                shape = RoundedCornerShape(15.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                modifier = Modifier
-                    .padding(20.dp)
-                    .width(400.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally // Ensures child elements are centered horizontally
+            }else {
+                Card(
+                    shape = RoundedCornerShape(15.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .width(400.dp)
                 ) {
-                    Text(
-                        text = "Selected Date: ${selectedDate?.let { displayDateFormat.format(it) } ?: "None"}", // Show formatted date or "None"
-                        modifier = Modifier.padding(top = 16.dp),
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center // Center the text horizontally
-                    )
-
-                    // Button to open the DatePicker
-                    Button(
-                        onClick = { isDatePickerOpen = true },
+                    Box(
                         modifier = Modifier
-                            .padding(top = 10.dp)
-                            .align(Alignment.CenterHorizontally) // Ensures button is horizontally centered
-                    ) {
-                        Text("Select Date")
-                    }
-
-                    // Show Date Picker Dialog
-                    if (isDatePickerOpen) {
-                        DatePickerDialog(
-                            LocalContext.current,
-                            { _, year, month, dayOfMonth ->
-                                val selectedCalendar = Calendar.getInstance()
-                                selectedCalendar.set(year, month, dayOfMonth)
-                                selectedDate = selectedCalendar.time // Update selected date
-                                isDatePickerOpen = false // Close date picker after selection
-                            },
-                            Calendar.getInstance().get(Calendar.YEAR),
-                            Calendar.getInstance().get(Calendar.MONTH),
-                            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-                        ).show()
-                    }
-
-                    // Input field for new weight
-                    OutlinedTextField(
-                        value = newWeight,
-                        onValueChange = { newWeight = it },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier
-                            .width(200.dp)
-                            .height(55.dp)
-                            .align(Alignment.CenterHorizontally), // Ensures text field is horizontally centered
-                        shape = RoundedCornerShape(40.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Button to add weight
-                    Button(
-                        onClick = { addWeight() },
-                        modifier = Modifier
-                            .width(200.dp)
-                            .height(40.dp)
-                            .align(Alignment.CenterHorizontally), // Ensures button is horizontally centered
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFD9D9D9),
-                            contentColor = Color.Black
-                        )
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Add Weight",
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                            "Start adding your first pet weight data",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
                         )
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+            ) {
+                Card(
+                    shape = RoundedCornerShape(15.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .width(400.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally // Aligns items inside Column
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically, // Aligns items vertically
+                            horizontalArrangement = Arrangement.spacedBy(70.dp) // Adds spacing between items
+                        ) {
+
+                            Text(
+                                text = "Date: ${dateFormatforselect.format(selectedDate ?: currentDate)}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Button(
+                                onClick = { isDatePickerOpen = true },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFD9D9D9),
+                                    contentColor = Color.Black
+                                )
+                            ) {
+                                Text("Select Date",
+                                    fontWeight = FontWeight.Bold)
+                            }
+
+
+                        }
+
+                        // Show Date Picker Dialog
+                        if (isDatePickerOpen) {
+                            DatePickerDialog(
+                                LocalContext.current,
+                                { _, year, month, dayOfMonth ->
+                                    val selectedCalendar = Calendar.getInstance()
+                                    selectedCalendar.set(year, month, dayOfMonth)
+                                    selectedDate = selectedCalendar.time
+                                    isDatePickerOpen = false
+                                },
+                                Calendar.getInstance().get(Calendar.YEAR),
+                                Calendar.getInstance().get(Calendar.MONTH),
+                                Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+                            ).show()
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically, // Aligns items vertically
+                            horizontalArrangement = Arrangement.spacedBy(15.dp), // Adds spacing between input and button
+                            modifier = Modifier.fillMaxWidth() // Ensures proper layout handling
+                        ) {
+                            OutlinedTextField(
+                                value = newWeight,
+                                onValueChange = { newWeight = it },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier
+                                    .width(140.dp)
+                                    .padding(start =30.dp)
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(40.dp)
+                            )
+                            Text(
+                                text = "KG",
+                                fontWeight = FontWeight.Bold
+                            )
+
+
+                            Button(
+                                onClick = { addWeight() },
+                                modifier = Modifier.padding(start = 33.dp), // Add padding to the start (left) of the button
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFD9D9D9),
+                                    contentColor = Color.Black
+                                )
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(30.dp), // Space between the icon and the text
+                                    verticalAlignment = Alignment.CenterVertically // Ensure vertical alignment of icon and text
+                                ) {
+                                    Text(
+                                        text = "Add",
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.Add, // You can replace this with any icon you prefer
+                                        contentDescription = "Add Icon",
+                                        modifier = Modifier.size(20.dp) // Size of the icon
+                                    )
+
+                                }
+                            }
+
+                        }
+
                     }
                 }
             }
@@ -384,7 +448,9 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                     Column(modifier = Modifier.padding(30.dp)) {
                         Text(
                             "Weight History",
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -393,7 +459,8 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(1.dp)
                         ) {
-                            items(weightEntries) { (date, weight) ->
+                            // Sort weightEntries by date in descending order (latest first)
+                            items(weightEntries.sortedByDescending { it.first }) { (date, weight) ->
                                 Row(
                                     modifier = Modifier
                                         .width(400.dp)
@@ -402,18 +469,18 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                                 ) {
                                     Row(modifier = Modifier.weight(0.5f)) {
                                         Text(
-                                            text = "${displayDateFormat.format(date)}",
+                                            text = "${dateFormatforselect.format(date)}",
                                             style = MaterialTheme.typography.bodyMedium.copy(
-                                                fontWeight = FontWeight.Bold,    // Makes the text bold
-                                                fontSize = 15.sp                // Increases the font size
+                                                fontWeight = FontWeight.Bold, // Makes the text bold
+                                                fontSize = 15.sp // Increases the font size
                                             ),
                                             modifier = Modifier.weight(0.3f)
                                         )
                                         Text(
                                             text = "${weight} kg",
                                             style = MaterialTheme.typography.bodyMedium.copy(
-                                                fontWeight = FontWeight.Bold,    // Makes the text bold
-                                                fontSize = 15.sp                // Increases the font size
+                                                fontWeight = FontWeight.Bold, // Makes the text bold
+                                                fontSize = 15.sp // Increases the font size
                                             ),
                                             modifier = Modifier.weight(0.3f)
                                         )
@@ -424,16 +491,40 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                                     ) {
                                         Icon(Icons.Filled.Delete, contentDescription = "Delete")
                                     }
-
                                 }
-                                HorizontalDivider(thickness = 1.dp, color = Color.Gray , modifier = Modifier.offset(y = (-12).dp))
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    color = Color.Gray,
+                                    modifier = Modifier.offset(y = (-12).dp)
+                                )
                             }
                         }
                     }
                 }
             } else {
-                BasicText("No weight data available", modifier = Modifier.padding(16.dp))
+                Card(
+                    shape = RoundedCornerShape(15.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .width(400.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(30.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "No weight data available",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
+                }
             }
         }
+
     }
 }
