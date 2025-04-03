@@ -4,15 +4,41 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -25,15 +51,21 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
 import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Pet
+import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.ui.theme.InputColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import ir.ehsannarmani.compose_charts.LineChart
+import ir.ehsannarmani.compose_charts.models.DotProperties
+import ir.ehsannarmani.compose_charts.models.Line
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import fi.oamk.petnotes.model.PetDataStore
-import kotlinx.coroutines.launch
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,7 +135,8 @@ fun HomeScreen(
                     PetCard(selectedPet!!)
 
                     // Pass the userId to the WeightCard
-                    WeightCard(selectedPet!!, userId, navController)
+                    WeightTrendCard(pet = selectedPet!!, userId = userId, navController = navController)
+
                 } else {
                     NoPetsCard(navController)
                 }
@@ -117,6 +150,7 @@ fun HomeScreen(
         }
     }
 }
+
 
 
 @Composable
@@ -188,53 +222,151 @@ fun NoPetsCard(navController: NavController) {
         }
     }
 }
-@Composable
-fun WeightCard(pet: Pet, userId: String, navController: NavController) {
-    var latestWeight by remember { mutableStateOf("N/A") }
 
-    // Fetch the latest weight from Firestore
-    LaunchedEffect(pet.id, userId) {
+@Composable
+fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
+    // Store the weight entries to plot the trend
+    var weightEntries by remember { mutableStateOf<List<Pair<Long, Float>>>(emptyList()) }
+
+    // Fetch the weight entries from Firestore
+    LaunchedEffect(pet.id) {
         val db = FirebaseFirestore.getInstance()
         try {
             val weightSnapshot = db.collection("pet_weights")
                 .whereEqualTo("petId", pet.id)
-                .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
-                .limit(1)
+                .orderBy("date", com.google.firebase.firestore.Query.Direction.ASCENDING)
                 .get()
                 .await()
 
-            if (!weightSnapshot.isEmpty) {
-                val weight = weightSnapshot.documents.first().getDouble("weight") // ✅ Get weight as Number
-                latestWeight = weight?.toString() ?: "N/A" // ✅ Convert to string safely
+            val fetchedEntries = weightSnapshot.documents.mapNotNull { doc ->
+                val dateString = doc.getString("date")
+                val weight = doc.getDouble("weight")?.toFloat()
+
+                // Parse the date string into a Date object if it exists
+                val dateMillis = if (dateString != null) {
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateString)
+                    date?.time // Convert to milliseconds
+                } else {
+                    null
+                }
+
+                if (dateMillis != null && weight != null) {
+                    Pair(dateMillis, weight)
+                } else {
+                    null
+                }
             }
+
+            weightEntries = fetchedEntries.sortedBy { it.first } // Sort entries by date
         } catch (e: Exception) {
-            latestWeight = "Error"
+            Log.e("WeightTrendCard", "Error fetching weight data", e)
         }
     }
 
-    Card(
-        shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-        modifier = Modifier
-            .padding(top = 10.dp)
-            .width(352.dp)
-            .clickable {
-                navController.navigate("weight_screen/$userId/${pet.id}") // Navigate with userId and petId
-            }
-    ) {
-        Column(modifier = Modifier.padding(22.dp)) {
-            Text(
-                text = "Weight: $latestWeight kg",
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+    // If no weight entries, display a "No data" message
+    if (weightEntries.isEmpty()) {
+        Card(
+            shape = RoundedCornerShape(15.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            modifier = Modifier
+                .padding(20.dp)
+                .width(352.dp)
+                .clickable {
+                    // Navigate to weight screen when clicked
+                    navController.navigate("weight_screen/$userId/${pet.id}")
+                }
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp), // Add some padding around the box
+                contentAlignment = Alignment.Center // Center the content
+            ) {
+                Text(
+                    text = "Start adding your first pet weight data", // Text to be centered
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
                 )
-            )
+            }
+
+        }
+    } else {
+        // Process the data for charting
+        val chartData = weightEntries.map { (dateMillis, weight) ->
+            // Convert to X-Y pairs where X is the time (in millis) and Y is the weight
+            Pair(dateMillis.toFloat(), weight)
+        }
+        val dateLabels = weightEntries.map { (dateMillis, _) ->
+            SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(dateMillis))
+        }
+
+        // Display the weight trend in a chart
+        Card(
+            shape = RoundedCornerShape(15.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            modifier = Modifier
+                .padding(20.dp)
+                .width(352.dp)
+                .clickable {
+                    // Navigate to weight screen when clicked
+                    navController.navigate("weight_screen/$userId/${pet.id}")
+                }
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                // Title Text
+                Text(
+                    "Weight Trend",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                // Line Chart
+                LineChart(
+                    data = remember {
+                        listOf(
+                            Line(
+                                label = "Pet Weight",
+                                values = chartData.map { it.second.toDouble() },
+                                color = SolidColor(Color.Blue),
+                                dotProperties = DotProperties(
+                                    enabled = true,
+                                    color = SolidColor(Color.White),
+                                    strokeColor = SolidColor(Color.Blue)
+                                ),
+                            )
+                        )
+                    },
+                    modifier = Modifier
+                        .width(350.dp)
+                        .height(200.dp)
+                )
+
+                // Display Date Labels Below Chart
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    dateLabels.forEachIndexed { index, dateLabel ->
+                        Text(
+                            text = dateLabel,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier
+
+                        )
+                    }
+                }
+            }
         }
     }
 }
-
 
 
 fun calculateAge(dateOfBirth: String?): String {

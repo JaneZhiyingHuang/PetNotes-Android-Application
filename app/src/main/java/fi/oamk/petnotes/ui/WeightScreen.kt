@@ -1,7 +1,6 @@
 package fi.oamk.petnotes.ui
 
 import android.app.DatePickerDialog
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,8 +39,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,153 +50,47 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.firestore.FirebaseFirestore
+import fi.oamk.petnotes.viewmodel.WeightViewModel
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.models.DotProperties
 import ir.ehsannarmani.compose_charts.models.Line
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeightScreen(navController: NavController, petId: String, userId: String) {
-    var petName by remember { mutableStateOf<String?>(null) }
-    val weightEntries = remember { mutableStateListOf<Pair<Date, Float>>() }
-    val snackbarHostState = remember { SnackbarHostState() }
+    val viewModel: WeightViewModel = viewModel()
+
+    // Correct way to observe ViewModel state with collectAsState or observeAsState for LiveData
+    val petName by viewModel.petName.collectAsState(initial = null)
+    val snackbarMessage by viewModel.snackbarMessage.collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
-    SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault())
-    val displayDateFormat = SimpleDateFormat("MMM dd", Locale.getDefault()) // For x-axis labels
     var selectedDate by remember { mutableStateOf<Date?>(null) }
     var newWeight by remember { mutableStateOf("") }
-    val focusManager = LocalFocusManager.current
-
-    val db = FirebaseFirestore.getInstance()
-
+    val weightEntries by viewModel.weightEntries.collectAsState()
+    // Call loadPetData when the screen is launched
     LaunchedEffect(petId, userId) {
-        try {
-            val petDocument = db.collection("users")
-                .document(userId)
-                .collection("pets")
-                .document(petId)
-                .get()
-                .await()
-
-            petName = petDocument.getString("name") ?: "Unknown Pet"
-
-            val weightDocuments = db.collection("pet_weights")
-                .whereEqualTo("userId", userId)
-                .whereEqualTo("petId", petId)
-                .get()
-                .await()
-
-            val parsedWeights = weightDocuments.documents.mapNotNull { doc ->
-                val dateString = doc.getString("date") ?: return@mapNotNull null
-                val date = try {
-                    dateFormat.parse(dateString)
-                } catch (e: Exception) {
-                    Log.e("WeightScreen", "Error parsing date: $dateString", e)
-                    null
-                }
-
-                val weight = when (val weightValue = doc.get("weight")) {
-                    is Number -> weightValue.toFloat()
-                    is String -> weightValue.toFloatOrNull()
-                    else -> null
-                }
-
-                if (date != null && weight != null) {
-                    Pair(date, weight)
-                } else {
-                    null
-                }
-            }.sortedBy { it.first }
-
-            weightEntries.clear()
-            weightEntries.addAll(parsedWeights)
-
-        } catch (e: Exception) {
-            Log.e("WeightScreen", "Error fetching weight data", e)
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar("Error fetching weight data")
-            }
-        }
+        viewModel.loadPetData(petId, userId)
     }
+    // Initialize SnackbarHostState
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    fun addWeight() {
-        val weightValue = newWeight.toFloatOrNull()
-        if (weightValue == null || weightValue <= 0) {
+    // Show the snackbar if there is a message
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let {
             coroutineScope.launch {
-                snackbarHostState.showSnackbar("Please enter a valid weight")
-            }
-            return
-        }
-
-        val dateToSave = selectedDate ?: Date() // Use selected date or current date if not selected
-        val currentDate = dateFormat.format(dateToSave)
-
-        val weightData = mapOf(
-            "userId" to userId,
-            "petId" to petId,
-            "date" to currentDate,
-            "weight" to weightValue
-        )
-
-        coroutineScope.launch {
-            try {
-                db.collection("pet_weights").add(weightData).await()
-                Log.d("WeightScreen", "Added weight entry: $weightData")
-
-                // Refresh weight list
-                weightEntries.add(dateToSave to weightValue)
-                weightEntries.sortBy { it.first }
-
-                newWeight = "" // Reset input field
-                focusManager.clearFocus()
-
-                snackbarHostState.showSnackbar("Weight added successfully!")
-            } catch (e: Exception) {
-                Log.e("WeightScreen", "Error adding weight", e)
-                snackbarHostState.showSnackbar("Failed to add weight")
-            }
-        }
-    }
-
-    fun deleteWeightEntry(date: Date) {
-        coroutineScope.launch {
-            try {
-                // Find and delete the entry from Firebase
-                val weightDocument = db.collection("pet_weights")
-                    .whereEqualTo("userId", userId)
-                    .whereEqualTo("petId", petId)
-                    .whereEqualTo("date", dateFormat.format(date))
-                    .get()
-                    .await()
-
-                weightDocument.documents.forEach { doc ->
-                    doc.reference.delete().await()
-                }
-
-                // Remove from the local list after deletion
-                weightEntries.removeAll { it.first == date }
-
-                // Sort by date in descending order (latest first)
-                weightEntries.sortByDescending { it.first }
-
-                snackbarHostState.showSnackbar("Weight entry deleted successfully!")
-            } catch (e: Exception) {
-                Log.e("WeightScreen", "Error deleting weight entry", e)
-                snackbarHostState.showSnackbar("Failed to delete weight entry")
+                snackbarHostState.showSnackbar(it)
             }
         }
     }
@@ -212,9 +105,9 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                         Text(
                             text = " ${petName ?: "Loading..."}",
                             style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold  // Makes the text bold
+                                fontWeight = FontWeight.Bold
                             ),
-                            modifier = Modifier.padding(start = 130.dp)  // Adds padding to the right
+                            modifier = Modifier.padding(start = 130.dp)
                         )
                     }
                 },
@@ -229,57 +122,57 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
-            horizontalAlignment = Alignment.CenterHorizontally  // Correct way to set horizontal alignment
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
+            // Display the Weight Trend or NoChartCard based on data availability
             if (weightEntries.isNotEmpty()) {
-                // Sort the weight entries and extract necessary data
                 val sortedEntries = weightEntries.sortedBy { it.first }
-                val dateLabels = sortedEntries.map { (date, _) -> displayDateFormat.format(date) }
+                val dateLabels = sortedEntries.map { (date, _) ->
+                    SimpleDateFormat("MMM dd", Locale.getDefault()).format(date)
+                }
 
                 val chartData = sortedEntries.mapIndexed { index, (_, weight) ->
-                    index.toFloat() to weight // Use index for x-axis
+                    index.toFloat() to weight
                 }
+
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Use WeightTrendCard with the chart data and date labels
                 WeightTrendCard(chartData = chartData, dateLabels = dateLabels)
             } else {
                 NoChartCard()
             }
 
-            Box(
-                modifier = Modifier
-            ) {
-                AddWeightCard(
-                    currentDate = Date(),
-                    selectedDate = selectedDate,
-                    onDateSelected = { selectedDate = it },
-                    newWeight = newWeight,
-                    onWeightChange = { newWeight = it },
-                    addWeight = {
-                        addWeight()
-
+            // Add Weight Card
+            AddWeightCard(
+                currentDate = Date(),
+                selectedDate = selectedDate,
+                onDateSelected = { selectedDate = it },
+                newWeight = newWeight,
+                onWeightChange = { newWeight = it },
+                addWeight = {
+                    val weightValue = newWeight.toFloatOrNull()
+                    if (weightValue != null && weightValue > 0) {
+                        viewModel.addWeight(petId, userId, weightValue, selectedDate)
                     }
-                )
-            }
-            // Weight History (Scrollable)
-            WeightHistoryCard(
-                weightEntries = weightEntries, // List of weight entries
-                deleteWeightEntry = { date ->
-                    // Call your delete function here
-                    deleteWeightEntry(date)
                 }
             )
-        }
 
+            // Weight History (Scrollable)
+            WeightHistoryCard(
+                weightEntries = weightEntries,
+                deleteWeightEntry = { date -> viewModel.deleteWeightEntry(petId, userId, date) }
+            )
+        }
     }
 }
 
 @Composable
 fun WeightTrendCard(chartData: List<Pair<Float, Float>>, dateLabels: List<String>) {
     // Wrap the chart in a Card with the style you requested
+
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -360,6 +253,7 @@ fun NoChartCard() {
         }
     }
 }
+
 @Composable
 fun AddWeightCard(
     currentDate: Date,
@@ -371,9 +265,8 @@ fun AddWeightCard(
 ) {
     var isDatePickerOpen by remember { mutableStateOf(false) }
     val dateFormatforselect = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
-    Box(
-        modifier = Modifier
-    ) {
+
+    Box(modifier = Modifier) {
         Card(
             shape = RoundedCornerShape(15.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -472,12 +365,12 @@ fun AddWeightCard(
         }
     }
 }
+
 @Composable
 fun WeightHistoryCard(
     weightEntries: List<Pair<Date, Float>>,
     deleteWeightEntry: (Date) -> Unit
 ) {
-    // Check if the list is not empty and show the Card
     val dateFormatforselect = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
     if (weightEntries.isNotEmpty()) {
         Card(
@@ -497,12 +390,10 @@ fun WeightHistoryCard(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Using LazyColumn for scrollable weight history
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(1.dp)
                 ) {
-                    // Sort weightEntries by date in descending order (latest first)
                     items(weightEntries.sortedByDescending { it.first }) { (date, weight) ->
                         Row(
                             modifier = Modifier
@@ -514,23 +405,23 @@ fun WeightHistoryCard(
                                 Text(
                                     text = dateFormatforselect.format(date),
                                     style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontWeight = FontWeight.Bold, // Makes the text bold
-                                        fontSize = 15.sp // Increases the font size
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp
                                     ),
                                     modifier = Modifier.weight(0.3f)
                                 )
                                 Text(
                                     text = "$weight kg",
                                     style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontWeight = FontWeight.Bold, // Makes the text bold
-                                        fontSize = 15.sp // Increases the font size
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp
                                     ),
                                     modifier = Modifier.weight(0.3f)
                                 )
                             }
                             IconButton(
                                 onClick = { deleteWeightEntry(date) },
-                                modifier = Modifier.offset(y = (-15).dp) // Adjust the value to move it higher
+                                modifier = Modifier.offset(y = (-15).dp)
                             ) {
                                 Icon(Icons.Filled.Delete, contentDescription = "Delete")
                             }
@@ -545,7 +436,6 @@ fun WeightHistoryCard(
             }
         }
     } else {
-        // Show a message when there are no weight entries
         Card(
             shape = RoundedCornerShape(15.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),

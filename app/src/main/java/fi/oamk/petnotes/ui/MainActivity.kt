@@ -67,7 +67,6 @@ class MainActivity : ComponentActivity() {
                         if (userId != null && petId != null) {
                             WeightScreen(navController = navController, userId = userId, petId = petId)
                         } else {
-                            // Handle missing arguments (e.g., show an error message)
                             Text(text = "User ID or Pet ID is missing.")
                         }
                     }
