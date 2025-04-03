@@ -60,6 +60,17 @@ class MainActivity : ComponentActivity() {
                         )
 
                     }
+
+                    composable("profile/{petId}") { backStackEntry ->
+                        val petId = backStackEntry.arguments?.getString("petId") ?: ""
+                        ProfileScreen(
+                            petId = petId,
+                            navController = navController,
+                            homeScreenViewModel = homeScreenViewModel
+                        )
+                    }
+
+
                     composable("weight_screen/{userId}/{petId}") { backStackEntry ->
                         val userId = backStackEntry.arguments?.getString("userId")
                         val petId = backStackEntry.arguments?.getString("petId")

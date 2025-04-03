@@ -63,12 +63,6 @@ class HomeScreenViewModel : ViewModel() {
         return petList
     }
 
-
-    // Set the selected pet
-    fun setSelectedPet(pet: Pet) {
-        _selectedPet.value = pet
-    }
-
     fun getUserId(): String {
         val user = FirebaseAuth.getInstance().currentUser
         return user?.uid ?: "" // Return the user ID or an empty string if no user is logged in

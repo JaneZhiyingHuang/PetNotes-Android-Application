@@ -132,7 +132,7 @@ fun HomeScreen(
         ) {
             if (isUserLoggedIn) {
                 if (selectedPet != null) {
-                    PetCard(selectedPet!!)
+                    PetCard(selectedPet!!,userId = userId, navController = navController)
 
                     // Pass the userId to the WeightCard
                     WeightTrendCard(pet = selectedPet!!, userId = userId, navController = navController)
@@ -154,14 +154,16 @@ fun HomeScreen(
 
 
 @Composable
-fun PetCard(pet: Pet) {
+fun PetCard(pet: Pet, userId: String, navController: NavController) {
     Card(
+        onClick ={ navController.navigate("profile/${pet.id}") } ,
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
         modifier = Modifier
             .padding(top = 10.dp)
             .width(352.dp)
+
     ) {
         Column(modifier = Modifier.padding(22.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -178,14 +180,6 @@ fun PetCard(pet: Pet) {
                             modifier = Modifier.fillMaxSize()
                         )
                     }
-//                    else {
-//                        Box(
-//                            modifier = Modifier
-//                                .size(100.dp)
-//                                .clip(CircleShape)
-//                                .background(InputColor)
-//                        )
-//                    }
                 }
                 Spacer(modifier = Modifier.width(26.dp))
                 Column {
