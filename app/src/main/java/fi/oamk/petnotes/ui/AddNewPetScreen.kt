@@ -272,7 +272,8 @@ fun AddNewPetScreen(navController: NavController) {
                     if (petName.isNotBlank() &&
                         petGender.isNotBlank() &&
                         petSpecie.isNotBlank() &&
-                        petDateOfBirth.isNotBlank()){
+                        petDateOfBirth.isNotBlank()&&
+                        petImageUri.isNotBlank()) {
 
                             isLoading = true
                         if (imageUrl != null) {
@@ -300,29 +301,11 @@ fun AddNewPetScreen(navController: NavController) {
                                 isLoading = false
                                 Toast.makeText(context, "Image upload failed: ${exception.message}", Toast.LENGTH_SHORT).show()
                             })
-                        } else {
-                            coroutineScope.launch {
-                                addnewPetViewModel.addPet(
-                                    petName,
-                                    petGender,
-                                    petSpecie,
-                                    petDateOfBirth,
-                                    petBreed,
-                                    petMedicalCondition,
-                                    petMicrochipNumber,
-                                    petInsuranceCompany,
-                                    petInsuranceNumber,
-                                    ""
-                                ) {
-                                    isLoading = false
-                                    navController.popBackStack()
-                                }
-                            }
                         }
                     } else {
                         Toast.makeText(
                             context,
-                            "Please fill all mandatory fields",
+                            "Please fill all mandatory fields amd upload avatar.",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
