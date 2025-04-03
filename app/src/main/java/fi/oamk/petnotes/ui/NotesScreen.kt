@@ -1,13 +1,14 @@
 package fi.oamk.petnotes.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.icu.util.Calendar
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,13 +27,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -47,7 +50,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -61,23 +63,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
-import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
@@ -118,6 +115,12 @@ fun NotesScreen(
     var selectedMonth by remember { mutableStateOf((currentDate.get(Calendar.MONTH) + 1).toString()) }
     var selectedYear by remember { mutableStateOf(currentDate.get(Calendar.YEAR).toString()) }
 
+    // Add state variables for note editing
+    var noteToEdit by remember { mutableStateOf<Notes?>(null) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editedDescription by remember { mutableStateOf("") }
+    var editedTag by remember { mutableStateOf("") }
+    var showDeleteNoteDialog by remember { mutableStateOf<Notes?>(null) }
 
     val defaultTags = listOf("All", "Vomit", "Stool", "Cough", "Vet", "Water Intake", "Emotion")
 
@@ -491,14 +494,173 @@ fun NotesScreen(
             items(fetchedNotes.filter { note ->
                 selectedTag == "All" || note.tag == selectedTag
             }) { note ->
-                NoteCard(note)
+                NoteCard(
+                    note = note,
+                    onEdit = {
+                        noteToEdit = it
+                        editedDescription = it.description
+                        editedTag = it.tag
+                        showEditDialog = true
+                    },
+                    onDelete = { showDeleteNoteDialog = it }
+                )
             }
             Log.d("NotesScreen", "Displaying ${fetchedNotes.size} notes")
         }
     }
 
+    if (showEditDialog && noteToEdit != null) {
+        BasicAlertDialog(
+            onDismissRequest = {
+                showEditDialog = false
+                noteToEdit = null
+            }
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Edit Note",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    DropdownSelector(
+                        selectedValue = editedTag,
+                        options = tags.filter { it != "All" },
+                        onValueChange = { editedTag = it }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = editedDescription,
+                        onValueChange = { editedDescription = it },
+                        label = { Text("Description") },
+                        modifier = Modifier.fillMaxWidth().height(200.dp),
+                        singleLine = false
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(
+                            onClick = {
+                                coroutineScope.launch {
+                                    noteToEdit?.let { note ->
+                                        val updatedNote = note.copy(
+                                            description = editedDescription,
+                                            tag = editedTag
+                                        )
+                                        notesViewModel.updateNote(
+                                            updatedNote,
+                                            onSuccess = {
+                                                Toast.makeText(context, "Note updated successfully", Toast.LENGTH_SHORT).show()
+                                                refreshTrigger++
+                                                showEditDialog = false
+                                            },
+                                            onFailure = { error ->
+                                                Toast.makeText(context, "Failed to update note: $error", Toast.LENGTH_SHORT).show()
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            Text("Save")
+                        }
+                        Button(
+                            onClick = {
+                                showDeleteNoteDialog = noteToEdit
+                                showEditDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Red
+                            )
+                        ) {
+                            Text("Delete")
+                        }
 
-if (showDialog) {
+                        Button(
+                            onClick = {
+                                showEditDialog = false
+                                noteToEdit = null
+                            }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDeleteNoteDialog != null) {
+        BasicAlertDialog(
+            onDismissRequest = { showDeleteNoteDialog = null }
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "*Warning",
+                        color = Color.Red,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Text(
+                        text = "Are you sure you want to delete this note? This action cannot be undone.",
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = {
+                                coroutineScope.launch {
+                                    showDeleteNoteDialog?.let { note ->
+                                        notesViewModel.deleteNote(
+                                            note,
+                                            onSuccess = {
+                                                Toast.makeText(context, "Note deleted successfully", Toast.LENGTH_SHORT).show()
+                                                refreshTrigger++
+                                                showDeleteNoteDialog = null
+                                            },
+                                            onFailure = { error ->
+                                                Toast.makeText(context, "Failed to delete note: $error", Toast.LENGTH_SHORT).show()
+                                            }
+                                        )
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Red
+                            )
+                        ) {
+                            Text("Delete")
+                        }
+                        Button(
+                            onClick = { showDeleteNoteDialog = null }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDialog) {
         BasicAlertDialog(
             onDismissRequest = { showDialog = false }
         ) {
@@ -653,7 +815,11 @@ fun DropdownSelector(selectedValue: String, options: List<String>, onValueChange
 }
 
 @Composable
-fun NoteCard(note: Notes) {
+fun NoteCard(
+    note: Notes,
+    onEdit: (Notes) -> Unit = {},
+    onDelete: (Notes) -> Unit = {}
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -722,18 +888,57 @@ fun NoteCard(note: Notes) {
 
                 // Display document names if available
                 if (note.documentUrls.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    note.documentUrls.forEach { documentUrl ->
-                        Text(
-                            text = documentUrl.substringAfterLast("/"),
-                            fontSize = 14.sp,
-                            color = Color.Blue
-                        )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Documents:",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    ) {
+                        note.documentUrls.forEach { documentUrl ->
+                            val fileName = documentUrl.substringAfterLast("/")
+                            val context = LocalContext.current
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable {
+                                        val intent =
+                                            Intent(Intent.ACTION_VIEW, Uri.parse(documentUrl))
+                                        try {
+                                            context.startActivity(intent)
+                                        } catch (e: ActivityNotFoundException) {
+                                            Toast.makeText(
+                                                context,
+                                                "No application found to open this document",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
+                                    contentDescription = "Document",
+                                    tint = Color.Blue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = fileName,
+                                    fontSize = 14.sp,
+                                    color = Color.Blue,
+                                    textDecoration = TextDecoration.Underline
+                                )
+                            }
+                        }
                     }
                 }
             }
 
-            IconButton(onClick = { /* Edit note functionality */ }) {
+            IconButton(onClick = { onEdit(note) }) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Edit Note",

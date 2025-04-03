@@ -21,6 +21,7 @@ mapsCompose = "2.2.0"
 mapsComposeVersion = "2.1.0"
 mapsSecret = "2.0.1"
 googleMaps = "19.1.0"
+materialIconsExtended = "1.7.8"
 mpandroidchart = "v3.1.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -54,6 +55,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-ui-v167 = { module = "androidx.compose.ui:ui", version.ref = "uiVersion" }
 bytebeats-compose-charts = { module = "io.github.bytebeats:compose-charts", version.ref = "composeChartsVersion" }
 charty = { module = "com.himanshoe:charty", version.ref = "charty" }

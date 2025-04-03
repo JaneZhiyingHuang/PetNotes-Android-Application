@@ -4,9 +4,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.storage
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.net.URLDecoder
 import java.util.Calendar
 import java.util.UUID
 
@@ -82,6 +86,76 @@ class NotesViewModel : ViewModel() {
                 _uploadState.value = UploadState.Error("Note creation failed: ${e.message}")
             }
             Log.e("NotesViewModel", "Upload error", e)
+        }
+    }
+
+    suspend fun updateNote(
+        updatedNote: Notes,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        try {
+            // Get reference to the notes collection
+            val notesRef = Firebase.firestore.collection("notes")
+
+            // Update the note document
+            notesRef.document(updatedNote.id)
+                .set(updatedNote)
+                .addOnSuccessListener {
+                    onSuccess()
+                }
+                .addOnFailureListener { e ->
+                    onFailure(e)
+                }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    suspend fun deleteNote(
+        note: Notes,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        try {
+            // Get reference to the notes collection
+            val notesRef = Firebase.firestore.collection("notes")
+
+            // Delete the note document
+            notesRef.document(note.id)
+                .delete()
+                .addOnSuccessListener {
+                    // If the note has photos or documents, delete them from storage too
+                    if (note.photoUrls.isNotEmpty() || note.documentUrls.isNotEmpty()) {
+                        deleteFilesFromStorage(note.photoUrls + note.documentUrls)
+                    }
+                    onSuccess()
+                }
+                .addOnFailureListener { e ->
+                    onFailure(e)
+                }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    private fun deleteFilesFromStorage(fileUrls: List<String>) {
+        val storage = Firebase.storage
+
+        fileUrls.forEach { fileUrl ->
+            try {
+                // Extract the path from the URL
+                val path = fileUrl.substringAfter("firebase.com/o/").substringBefore("?")
+                val decodedPath = URLDecoder.decode(path, "UTF-8")
+
+                // Get reference to the file and delete it
+                val fileRef = storage.reference.child(decodedPath)
+                fileRef.delete().addOnFailureListener { e ->
+                    Log.e("NotesViewModel", "Failed to delete file: $fileUrl", e)
+                }
+            } catch (e: Exception) {
+                Log.e("NotesViewModel", "Error parsing or deleting file: $fileUrl", e)
+            }
         }
     }
 
