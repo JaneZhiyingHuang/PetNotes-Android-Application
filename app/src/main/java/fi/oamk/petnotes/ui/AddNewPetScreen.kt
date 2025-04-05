@@ -272,8 +272,7 @@ fun AddNewPetScreen(navController: NavController) {
                     if (petName.isNotBlank() &&
                         petGender.isNotBlank() &&
                         petSpecie.isNotBlank() &&
-                        petDateOfBirth.isNotBlank()&&
-                        petImageUri.isNotBlank()) {
+                        petDateOfBirth.isNotBlank()) {
 
                             isLoading = true
                         if (imageUrl != null) {
