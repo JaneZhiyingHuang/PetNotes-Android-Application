@@ -1,50 +1,29 @@
 package fi.oamk.petnotes.ui
 
-import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
-import fi.oamk.petnotes.ui.theme.InputColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,6 +47,7 @@ fun ProfileScreen(
             }
         }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -103,27 +83,105 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (selectedPet != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(selectedPet!!.petImageUri),
-                    contentDescription = "Pet Avatar",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(InputColor)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Name: ${selectedPet!!.name}",
-                    style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                )
-                Text(
-                    text = "Gender: ${selectedPet!!.gender}",
-                    style = TextStyle(fontSize = 16.sp)
-                )
-
+                // card for pet image
+               PetImageCard(pet = selectedPet!!)
+                // card for pet infos
+                PetInfoCard(pet = selectedPet!!)
             } else {
                 Text(text = "Pet not found")
             }
         }
     }
 }
+
+@Composable
+fun PetImageCard(pet: Pet){
+    Card(
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        modifier = Modifier
+            .padding(top = 10.dp)
+            .width(352.dp)
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(pet.petImageUri),
+            contentDescription = "Pet Avatar",
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp)),
+        )
+    }
+}
+
+@Composable
+fun PetInfoCard(pet: Pet) {
+    Card(
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        modifier = Modifier
+            .width(352.dp)
+            .offset(y = (-40).dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+
+            // title (Pet Profile)
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Pet Profile",
+                    style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 16.sp),
+                    modifier = Modifier.align(Alignment.CenterVertically).weight(1f),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Details ( Name,Gender...)
+            InfoRow(label = "Pet Name:", text = pet.name)
+            InfoRow(label = "Gender:", text = pet.gender)
+            InfoRow(label = "Specie:", text = pet.specie)
+            InfoRow(label = "Date of Birth:", text = pet.dateOfBirth)
+            InfoRow(label = "Age:",text = calculateAge(pet.dateOfBirth))
+            InfoRow(label = "Breed:", text = pet.breed)
+            InfoRow(label = "Medical Condition:", text = pet.medicalCondition)
+            InfoRow(label = "Microchip Number:", text = pet.microchipNumber)
+            InfoRow(label = "Insurance Company:", text = pet.insuranceCompany)
+            InfoRow(label = "Insurance Number:", text = pet.insuranceNumber)
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // Delete button
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "*Delete profile of this pet.",
+                    style = TextStyle(fontSize = 16.sp, color = Color.DarkGray),
+                    modifier = Modifier.align(Alignment.CenterVertically).weight(1f),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+        }
+    }
+}
+
+//for info card style
+@Composable
+fun InfoRow(label: String, text: String) {
+    Column(modifier = Modifier.padding(vertical = 6.dp, horizontal = 40.dp)) {
+        Text(
+            text = label,
+            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Gray)
+        )
+        Text(
+            text = text,
+            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+        )
+    }
+}
+
