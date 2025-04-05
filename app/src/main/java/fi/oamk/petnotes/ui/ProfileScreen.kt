@@ -2,9 +2,12 @@ package fi.oamk.petnotes.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -78,8 +81,8 @@ fun ProfileScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
+                .padding(padding),
+//                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (selectedPet != null) {
@@ -101,7 +104,7 @@ fun PetImageCard(pet: Pet){
         colors = CardDefaults.cardColors(containerColor = Color.White),
 //        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
         modifier = Modifier
-            .padding(top = 10.dp)
+            .padding(top = 16.dp)
             .width(352.dp)
     ) {
         Image(
@@ -125,9 +128,12 @@ fun PetInfoCard(pet: Pet) {
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
         modifier = Modifier
             .width(352.dp)
-            .offset(y = (-40).dp)
+            .offset(y = (-30).dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        // Wrap in a scrollable column to avoid content being cut off
+        Column(modifier = Modifier
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())) {
 
             // title (Pet Profile)
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -137,6 +143,15 @@ fun PetInfoCard(pet: Pet) {
                     modifier = Modifier.align(Alignment.CenterVertically).weight(1f),
                     textAlign = TextAlign.Center
                 )
+
+                // Edit icon on the right
+                IconButton(onClick = { /* Handle Edit */ }) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Edit Pet Profile",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -146,7 +161,7 @@ fun PetInfoCard(pet: Pet) {
             InfoRow(label = "Gender:", text = pet.gender)
             InfoRow(label = "Specie:", text = pet.specie)
             InfoRow(label = "Date of Birth:", text = pet.dateOfBirth)
-            InfoRow(label = "Age:",text = calculateAge(pet.dateOfBirth))
+            InfoRow(label = "Age:", text = calculateAge(pet.dateOfBirth))
             InfoRow(label = "Breed:", text = pet.breed)
             InfoRow(label = "Medical Condition:", text = pet.medicalCondition)
             InfoRow(label = "Microchip Number:", text = pet.microchipNumber)
@@ -178,6 +193,7 @@ fun InfoRow(label: String, text: String) {
             text = label,
             style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Gray)
         )
+        Spacer(modifier =Modifier.height(1.dp))
         Text(
             text = text,
             style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
