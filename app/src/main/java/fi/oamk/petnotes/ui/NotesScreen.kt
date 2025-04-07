@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,7 +27,10 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -68,6 +72,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -117,9 +122,15 @@ fun NotesScreen(
 
     // Add state variables for note editing
     var noteToEdit by remember { mutableStateOf<Notes?>(null) }
-    var showEditDialog by remember { mutableStateOf(false) }
     var editedDescription by remember { mutableStateOf("") }
     var editedTag by remember { mutableStateOf("") }
+    var editedPhotoUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var editedDocumentUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var existingPhotoUrls by remember { mutableStateOf<List<String>>(emptyList()) }
+    var existingDocumentUrls by remember { mutableStateOf<List<String>>(emptyList()) }
+    var removedPhotoUrls by remember { mutableStateOf<List<String>>(emptyList()) }
+    var removedDocumentUrls by remember { mutableStateOf<List<String>>(emptyList()) }
+    var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteNoteDialog by remember { mutableStateOf<Notes?>(null) }
 
     val defaultTags = listOf("All", "Vomit", "Stool", "Cough", "Vet", "Water Intake", "Emotion")
@@ -380,7 +391,7 @@ fun NotesScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(8.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Row(
@@ -395,9 +406,9 @@ fun NotesScreen(
                                     ?: "Vomit" else selectedTag
 
                             DateSelector(selectedDate) { selectedDate = it }
-                            DropdownSelector(selectedMonth, months) { selectedMonth = it }
-                            DropdownSelector(selectedYear, years) { selectedYear = it }
-                            DropdownSelector(selectedTag, tags) { selectedTag = it }
+                            DropdownSelector(selectedValue = selectedMonth, options = months, onValueChange = { selectedMonth = it }, modifier = Modifier.weight(0.7f))
+                            DropdownSelector(selectedValue = selectedYear, options = years, onValueChange = { selectedYear = it }, modifier = Modifier.weight(1f))
+                            DropdownSelector(selectedValue = selectedTag, options = tags, onValueChange = { selectedTag = it }, modifier = Modifier.weight(1.2f))
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -500,6 +511,12 @@ fun NotesScreen(
                         noteToEdit = it
                         editedDescription = it.description
                         editedTag = it.tag
+                        existingPhotoUrls = it.photoUrls
+                        existingDocumentUrls = it.documentUrls
+                        editedPhotoUris = emptyList()
+                        editedDocumentUris = emptyList()
+                        removedPhotoUrls = emptyList()
+                        removedDocumentUrls = emptyList()
                         showEditDialog = true
                     },
                     onDelete = { showDeleteNoteDialog = it }
@@ -517,10 +534,10 @@ fun NotesScreen(
             }
         ) {
             Card(
-                modifier = Modifier.fillMaxWidth().padding(16.dp)
+                modifier = Modifier.fillMaxWidth().padding(16.dp).height(600.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(8.dp).verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -532,7 +549,8 @@ fun NotesScreen(
                     DropdownSelector(
                         selectedValue = editedTag,
                         options = tags.filter { it != "All" },
-                        onValueChange = { editedTag = it }
+                        onValueChange = { editedTag = it },
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
@@ -543,17 +561,249 @@ fun NotesScreen(
                         singleLine = false
                     )
                     Spacer(modifier = Modifier.height(16.dp))
+                    if (existingPhotoUrls.isNotEmpty() || editedPhotoUris.isNotEmpty()) {
+                        Text(
+                            text = "Photos",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            modifier = Modifier.align(Alignment.Start)
+                        )
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth().height(120.dp).padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(existingPhotoUrls.filter {url ->
+                                !removedPhotoUrls.contains(url)
+                            }) {
+                                photoUrl ->
+                                Box(modifier = Modifier.size(100.dp)) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(photoUrl)
+                                            .crossfade(true)
+                                            .build(),
+                                        contentDescription = "Pet photo",
+                                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop,
+                                        placeholder = ColorPainter(Color(0xFFE0E0E0))
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            removedPhotoUrls = removedPhotoUrls + photoUrl
+                                        },
+                                        modifier = Modifier.align(Alignment.TopEnd).size(24.dp).background(Color.White, CircleShape)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Remove Photo",
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            items(editedPhotoUris) { uri ->
+                                Box(modifier = Modifier.size(100.dp)) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(uri)
+                                            .crossfade(true)
+                                            .build(),
+                                        contentDescription = "New photo",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop,
+                                        placeholder = ColorPainter(Color(0xFFE0E0E0))
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            editedPhotoUris = editedPhotoUris.filter { it != uri }
+                                        },
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .size(24.dp)
+                                            .background(Color.White, CircleShape)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Remove Photo",
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (existingDocumentUrls.isNotEmpty() || editedDocumentUris.isNotEmpty()) {
+                        Text(
+                            text = "Documents",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            modifier = Modifier.align(Alignment.Start)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            // Show existing documents that haven't been marked for removal
+                            existingDocumentUrls.filter { url ->
+                                !removedDocumentUrls.contains(url)
+                            }.forEach { documentUrl ->
+                                val fileName = documentUrl.substringAfterLast("/")
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
+                                        contentDescription = "Document",
+                                        tint = Color.Blue,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = fileName,
+                                        fontSize = 14.sp,
+                                        color = Color.Blue,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            removedDocumentUrls = removedDocumentUrls + documentUrl
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Remove Document",
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            editedDocumentUris.forEach { uri ->
+                                val context = LocalContext.current
+                                val fileName = uri.lastPathSegment ?: "Document"
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
+                                        contentDescription = "New Document",
+                                        tint = Color.Blue,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = fileName,
+                                        fontSize = 14.sp,
+                                        color = Color.Blue,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            editedDocumentUris = editedDocumentUris.filter { it != uri }
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Remove Document",
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Photo picker launcher
+                        val photoPickerLauncher = rememberLauncherForActivityResult(
+                            contract = ActivityResultContracts.GetMultipleContents()
+                        ) { uris: List<Uri> ->
+                            editedPhotoUris = editedPhotoUris + uris
+                        }
+
+                        // Document picker launcher
+                        val documentPickerLauncher = rememberLauncherForActivityResult(
+                            contract = ActivityResultContracts.GetMultipleContents()
+                        ) { uris: List<Uri> ->
+                            editedDocumentUris = editedDocumentUris + uris
+                        }
+
+                        Button(
+                            onClick = { photoPickerLauncher.launch("image/*") },
+                            modifier = Modifier.weight(1f).padding(end = 4.dp)
+                        ) {
+                            Text("Add Photos")
+                        }
+
+                        Button(
+                            onClick = { documentPickerLauncher.launch("*/*") },
+                            modifier = Modifier.weight(1f).padding(start = 4.dp)
+                        ) {
+                            Text(text = "Add Documents", textAlign = TextAlign.Center)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(1.dp)
                     ) {
                         Button(
                             onClick = {
                                 coroutineScope.launch {
                                     noteToEdit?.let { note ->
+                                        val newPhotoUrls = mutableListOf<String>()
+                                        val newDocumentUrls = mutableListOf<String>()
+                                        if(editedPhotoUris.isNotEmpty()) {
+                                            try {
+                                                newPhotoUrls.addAll(
+                                                    notesViewModel.uploadPhotos(editedPhotoUris)
+                                                )
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Failed to upload photos: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                        if (editedDocumentUris.isNotEmpty()) {
+                                            try {
+                                                newDocumentUrls.addAll(
+                                                    notesViewModel.uploadDocuments(editedDocumentUris)
+                                                )
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Failed to upload documents: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+
+                                        val updatedPhotoUrls = existingPhotoUrls.filter {
+                                            !removedPhotoUrls.contains(it)
+                                        } + newPhotoUrls
+
+                                        val updatedDocumentUrls = existingDocumentUrls.filter {
+                                            !removedDocumentUrls.contains(it)
+                                        } + newDocumentUrls
+
                                         val updatedNote = note.copy(
                                             description = editedDescription,
-                                            tag = editedTag
+                                            tag = editedTag,
+                                            photoUrls = updatedPhotoUrls,
+                                            documentUrls = updatedDocumentUrls
                                         )
                                         notesViewModel.updateNote(
                                             updatedNote,
@@ -568,7 +818,8 @@ fun NotesScreen(
                                         )
                                     }
                                 }
-                            }
+                            },
+                            modifier = Modifier.weight(0.9f)
                         ) {
                             Text("Save")
                         }
@@ -579,16 +830,17 @@ fun NotesScreen(
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Red
-                            )
+                            ),
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("Delete")
                         }
-
                         Button(
                             onClick = {
                                 showEditDialog = false
                                 noteToEdit = null
-                            }
+                            },
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("Cancel")
                         }
@@ -775,13 +1027,13 @@ fun DateSelector(selectedValue: String, onValueChange: (String) -> Unit) {
 }
 
 @Composable
-fun DropdownSelector(selectedValue: String, options: List<String>, onValueChange: (String) -> Unit) {
+fun DropdownSelector(modifier: Modifier = Modifier, selectedValue: String, options: List<String>, onValueChange: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box {
+    Box(modifier = modifier) {
         Card(
             modifier = Modifier
-                .width(90.dp)
+                .fillMaxWidth()
                 .clickable { expanded = true }
                 .padding(4.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -799,7 +1051,8 @@ fun DropdownSelector(selectedValue: String, options: List<String>, onValueChange
         }
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth(0.9f)
         ) {
             options.forEach { option ->
                 DropdownMenuItem(

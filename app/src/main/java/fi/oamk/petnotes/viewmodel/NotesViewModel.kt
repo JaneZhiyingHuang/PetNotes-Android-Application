@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
@@ -89,7 +90,51 @@ class NotesViewModel : ViewModel() {
         }
     }
 
-    suspend fun updateNote(
+    suspend fun uploadPhotos(photoUris: List<Uri>): List<String> {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return emptyList()
+        val photoUrls = mutableListOf<String>()
+
+        photoUris.forEach { uri ->
+            val photoFileName = "photo_${System.currentTimeMillis()}_${uri.lastPathSegment}"
+            val photoRef = storageRef.child("users/$userId/notes/photos/$photoFileName")
+
+            try {
+                val uploadTask = photoRef.putFile(uri).await()
+                val downloadUrl = photoRef.downloadUrl.await().toString()
+                photoUrls.add(downloadUrl)
+            } catch (e: Exception) {
+                Log.e("NotesViewModel", "Failed to upload photo: ${e.message}")
+                throw e
+            }
+        }
+
+        return photoUrls
+    }
+
+    suspend fun uploadDocuments(documentUris: List<Uri>): List<String> {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return emptyList()
+        val documentUrls = mutableListOf<String>()
+
+        documentUris.forEach { uri ->
+            val documentFileName = "document_${System.currentTimeMillis()}_${uri.lastPathSegment}"
+            val documentRef = storageRef.child("users/$userId/notes/documents/$documentFileName")
+
+            try {
+                val uploadTask = documentRef.putFile(uri).await()
+                val downloadUrl = documentRef.downloadUrl.await().toString()
+                documentUrls.add(downloadUrl)
+            } catch (e: Exception) {
+                Log.e("NotesViewModel", "Failed to upload document: ${e.message}")
+                throw e
+            }
+        }
+
+        return documentUrls
+    }
+
+    fun updateNote(
         updatedNote: Notes,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
@@ -112,7 +157,7 @@ class NotesViewModel : ViewModel() {
         }
     }
 
-    suspend fun deleteNote(
+    fun deleteNote(
         note: Notes,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
