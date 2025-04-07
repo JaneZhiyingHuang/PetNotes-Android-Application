@@ -131,7 +131,7 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
             if (weightEntries.isNotEmpty()) {
                 val sortedEntries = weightEntries.sortedBy { it.first }
                 val dateLabels = sortedEntries.map { (date, _) ->
-                    SimpleDateFormat("MMM dd", Locale.getDefault()).format(date)
+                    SimpleDateFormat("MM/dd", Locale.getDefault()).format(date)
                 }
 
                 val chartData = sortedEntries.mapIndexed { index, (_, weight) ->

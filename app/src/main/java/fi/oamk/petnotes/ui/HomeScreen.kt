@@ -292,7 +292,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
             Pair(dateMillis.toFloat(), weight)
         }
         val dateLabels = weightEntries.map { (dateMillis, _) ->
-            SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(dateMillis))
+            SimpleDateFormat("MM/dd", Locale.getDefault()).format(Date(dateMillis))
         }
 
         // Display the weight trend in a chart
