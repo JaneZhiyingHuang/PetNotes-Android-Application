@@ -43,6 +43,11 @@ android {
 }
 
 dependencies {
+    // For the view-based calendar library
+    implementation("com.kizitonwose.calendar:view:2.6.2")
+
+    // For the Jetpack Compose calendar library
+    implementation("com.kizitonwose.calendar:compose:2.6.2")
 
     implementation ("io.github.ehsannarmani:compose-charts:0.1.2")
     implementation(libs.coil.compose.v250)
