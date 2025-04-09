@@ -65,7 +65,7 @@ fun MapScreen(navController: NavController, context: Context) {
     var petClinics by remember { mutableStateOf<List<PetStore>>(emptyList()) }  // New state for pet clinics
     var showPetClinics by remember { mutableStateOf(false) }  // State to control visibility of pet clinics
 
-    val apiKey ="discord"
+    val apiKey ="AIzaSyBG6bx3kXG5YPinY3O759IAAzdUKH3M7eY"
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     // Replace with your API key
 

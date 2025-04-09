@@ -88,6 +88,17 @@ class MainActivity : ComponentActivity() {
                         MapScreen(navController = navController, context = context)
 
                     }
+                    composable("calendarScreen") {
+                        val context = LocalContext.current
+                        val homeScreenViewModel: HomeScreenViewModel = homeScreenViewModel
+
+                        CalendarScreen(
+                            navController = navController,
+                            context = context,
+                            homeScreenViewModel = homeScreenViewModel
+                        )
+                    }
+
                     composable("notes") {
                         NotesScreen(
                             navController = navController,

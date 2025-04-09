@@ -136,6 +136,8 @@ fun HomeScreen(
 
                     // Pass the userId to the WeightCard
                     WeightTrendCard(pet = selectedPet!!, userId = userId, navController = navController)
+                    // Show the CalendarCard
+                    CalendarCard(navController = navController)
 
                 } else {
                     NoPetsCard(navController)
@@ -358,6 +360,39 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                     }
                 }
             }
+        }
+    }
+}
+@Composable
+fun CalendarCard(navController: NavController) {
+    Card(
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        modifier = Modifier
+            .padding(top = 16.dp) // 可以根据页面排版调整
+            .width(352.dp)
+            .height(214.dp),
+        onClick = { navController.navigate("calendarScreen") }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                contentDescription = "Calendar",
+                tint = Color.Black,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "View Calendar",
+                style = TextStyle(fontWeight = FontWeight.Bold)
+            )
         }
     }
 }
