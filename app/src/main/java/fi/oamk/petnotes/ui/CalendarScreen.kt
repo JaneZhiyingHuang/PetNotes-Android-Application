@@ -351,10 +351,19 @@ fun PetTagCountsCard(viewModel: PetTagsViewModel, petId: String) {
             }
         }
     } else {
-        Text(
-            text = "No tags recorded yet.",
-            modifier = Modifier.padding(16.dp),
-            style = MaterialTheme.typography.bodyMedium
-        )
+        Card(
+            shape = RoundedCornerShape(15.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = "No tags recorded yet.",
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }

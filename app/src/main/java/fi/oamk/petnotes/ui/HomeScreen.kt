@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,6 +30,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,21 +41,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
+import com.kizitonwose.calendar.compose.HorizontalCalendar
+import com.kizitonwose.calendar.compose.rememberCalendarState
+import com.kizitonwose.calendar.core.CalendarDay
+import com.kizitonwose.calendar.core.DayPosition
+import com.kizitonwose.calendar.core.daysOfWeek
+import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.ui.theme.InputColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import fi.oamk.petnotes.viewmodel.PetTagsViewModel
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.models.DotProperties
 import ir.ehsannarmani.compose_charts.models.Line
@@ -62,6 +73,7 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Period
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Date
@@ -132,12 +144,17 @@ fun HomeScreen(
         ) {
             if (isUserLoggedIn) {
                 if (selectedPet != null) {
-                    PetCard(selectedPet!!,userId = userId, navController = navController)
+                    PetCard(selectedPet!!, navController = navController)
 
                     // Pass the userId to the WeightCard
                     WeightTrendCard(pet = selectedPet!!, userId = userId, navController = navController)
                     // Show the CalendarCard
-                    CalendarCard(navController = navController)
+                    CalendarCard(
+                        viewModel = viewModel(), // Make sure viewModel is initialized correctly
+                        petId = selectedPet!!.id, // Pass the pet's id
+                        navController = navController
+                    )
+
 
                 } else {
                     NoPetsCard(navController)
@@ -156,7 +173,7 @@ fun HomeScreen(
 
 
 @Composable
-fun PetCard(pet: Pet, userId: String, navController: NavController) {
+fun PetCard(pet: Pet, navController: NavController) {
     Card(
         onClick ={ navController.navigate("profile/${pet.id}") } ,
         shape = RoundedCornerShape(15.dp),
@@ -340,7 +357,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                     },
                     modifier = Modifier
                         .width(350.dp)
-                        .height(200.dp)
+                        .height(150.dp)
                 )
 
                 // Display Date Labels Below Chart
@@ -350,7 +367,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    dateLabels.forEachIndexed { index, dateLabel ->
+                    dateLabels.forEachIndexed { _, dateLabel ->
                         Text(
                             text = dateLabel,
                             style = MaterialTheme.typography.bodyMedium,
@@ -364,38 +381,164 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
     }
 }
 @Composable
-fun CalendarCard(navController: NavController) {
+fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, navController: NavController) {
+    val currentMonth = remember { YearMonth.now() } // Get the current month
+    val startMonth = remember { currentMonth.minusMonths(100) }
+    val endMonth = remember { currentMonth.plusMonths(100) }
+    val firstDayOfWeek = remember { firstDayOfWeekFromLocale() }
+
+    LaunchedEffect(petId) {
+        viewModel.fetchTagCountsAndDatesFromNotes(petId)
+    }
+
+    // Collecting tagDateInfoList from StateFlow
+    val tagDateInfoList by viewModel.tagDateInfoList.collectAsState()
+
+    // Ensure all dates are parsed correctly into LocalDate
+    val taggedLocalDates = remember(tagDateInfoList) {
+        tagDateInfoList.flatMap { tagDateInfo ->
+            tagDateInfo.dates.mapNotNull { dateString ->
+                try {
+                    // Parsing the date string in "yyyy-M-d" format
+                    val formatter = DateTimeFormatter.ofPattern("yyyy-M-d")
+                    LocalDate.parse(dateString, formatter)
+                } catch (e: Exception) {
+                    Log.e("CalendarCard", "Error parsing date: $dateString", e)
+                    null
+                }
+            }
+        }.toSet() // Use a set to avoid duplicate dates
+    }
+
+    val state = rememberCalendarState(
+        startMonth = startMonth,
+        endMonth = endMonth,
+        firstVisibleMonth = currentMonth,
+        firstDayOfWeek = firstDayOfWeek
+    )
+
+    val daysOfWeek = remember { daysOfWeek() }
+
+    // Card Layout
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier
-            .padding(top = 16.dp) // 可以根据页面排版调整
+            .padding(10.dp)
+            .height(300.dp)
             .width(352.dp)
-            .height(214.dp),
-        onClick = { navController.navigate("calendarScreen") }
+    ) {
+        HorizontalCalendar(
+            state = state,
+
+            monthHeader = { month ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp, bottom = 4.dp)
+                ) {
+                    // Month and Year
+                    Text(
+                        text = month.yearMonth.month.getDisplayName(java.time.format.TextStyle.FULL, Locale.getDefault()) +
+                                " " + month.yearMonth.year,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(15.dp))
+
+                    // Weekday headers
+                    val adjustedDays = remember(firstDayOfWeek) {
+                        daysOfWeek.dropWhile { it != firstDayOfWeek } +
+                                daysOfWeek.takeWhile { it != firstDayOfWeek }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        adjustedDays.forEach { dayOfWeek ->
+                            Text(
+                                text = dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()),
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+            },
+
+            monthBody = { _, content ->
+                Box(modifier = Modifier.padding(10.dp)) {
+                    content()
+                }
+            },
+
+            monthContainer = { _, container ->
+                val configuration = LocalConfiguration.current
+                val screenWidth = configuration.screenWidthDp.dp
+                Box(
+                    modifier = Modifier
+                        .width(screenWidth * 0.8f)
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                ) {
+                    container()
+                }
+            },
+
+            dayContent = { day ->
+                val isTagged = day.date in taggedLocalDates
+                Day(
+                    day = day,
+                    isTagged = isTagged, // Only show if tagged
+                    onClick = {
+                        // Navigate to calendar screen on day click
+                        navController.navigate("calendarScreen")
+                    },
+                    currentMonth = currentMonth // Pass the currentMonth here
+                )
+            }
+        )
+    }
+}
+@Composable
+fun Day(
+    day: CalendarDay,
+    isTagged: Boolean = false,
+    onClick: (CalendarDay) -> Unit,
+    currentMonth: YearMonth // Pass currentMonth to the composable
+) {
+    Box(
+        modifier = Modifier
+            .aspectRatio(1f)
+            .clip(CircleShape)
+            .background(
+                color = if (isTagged) Color(0xFFFFCD4B) else Color.Transparent // Highlight tagged days
+            )
+            .clickable(
+                enabled = day.position == DayPosition.MonthDate,
+                onClick = { onClick(day) }
+            ),
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                contentDescription = "Calendar",
-                tint = Color.Black,
-                modifier = Modifier.size(48.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "View Calendar",
-                style = TextStyle(fontWeight = FontWeight.Bold)
+                text = day.date.dayOfMonth.toString(),
+                color = if (day.date.month == currentMonth.month) Color.Black else Color.Gray // Correct comparison for current month
             )
         }
     }
 }
+
+
+
 
 
 fun calculateAge(dateOfBirth: String?): String {
