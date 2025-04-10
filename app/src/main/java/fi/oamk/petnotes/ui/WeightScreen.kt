@@ -388,7 +388,7 @@ fun WeightHistoryCard(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
@@ -426,11 +426,6 @@ fun WeightHistoryCard(
                                 Icon(Icons.Filled.Delete, contentDescription = "Delete")
                             }
                         }
-                        HorizontalDivider(
-                            thickness = 1.dp,
-                            color = Color.Gray,
-                            modifier = Modifier.offset(y = (-12).dp)
-                        )
                     }
                 }
             }

@@ -1,13 +1,21 @@
 package fi.oamk.petnotes.viewmodel
 
 import android.util.Log
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import fi.oamk.petnotes.model.Notes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class PetTagsViewModel : ViewModel() {
 
@@ -138,4 +146,41 @@ class PetTagsViewModel : ViewModel() {
 
 
     data class TagCount(val tag: String, val count: Int)
+
+
+    private val _selectedNotes = mutableStateOf<List<Notes>>(emptyList())
+    val selectedNotes: State<List<Notes>> = _selectedNotes
+
+    // Function to fetch notes for the selected date and petId
+    fun fetchNotesForSelectedDay(petId: String, selectedDay: LocalDate) {
+        viewModelScope.launch {
+            val notes = getNotesByPetIdAndDate(petId, selectedDay)
+            _selectedNotes.value = notes
+        }
+    }
+
+    suspend fun getNotesByPetIdAndDate(petId: String, date: LocalDate): List<Notes> {
+        // Format date to match the stored format in Firestore
+        val formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-M-d"))
+
+        return try {
+            val querySnapshot = FirebaseFirestore.getInstance()
+                .collection("notes")
+                .whereEqualTo("petId", petId)
+                .whereEqualTo("date", formattedDate) // Use formatted date
+                .orderBy("userSelectedTimestamp", Query.Direction.DESCENDING)
+                .get()
+                .await()
+
+            Log.d("NotesViewModel", "Fetched ${querySnapshot.size()} notes for pet $petId on date $formattedDate")
+            querySnapshot.toObjects(Notes::class.java)
+        } catch (e: Exception) {
+            Log.e("NotesViewModel", "Error fetching notes", e)
+            emptyList() // Return empty list in case of error
+        }
+    }
+
+
+
+
 }

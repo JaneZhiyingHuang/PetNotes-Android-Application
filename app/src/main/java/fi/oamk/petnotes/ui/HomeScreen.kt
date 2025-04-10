@@ -424,6 +424,10 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, navCo
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        onClick = {
+            // Navigate to calendar screen on day click
+            navController.navigate("calendarScreen")
+        },
         modifier = Modifier
             .padding(10.dp)
             .height(300.dp)
@@ -495,16 +499,15 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, navCo
                 Day(
                     day = day,
                     isTagged = isTagged, // Only show if tagged
-                    onClick = {
-                        // Navigate to calendar screen on day click
-                        navController.navigate("calendarScreen")
-                    },
-                    currentMonth = currentMonth // Pass the currentMonth here
+                    currentMonth = currentMonth, // Pass the currentMonth here
+                    onClick = { navController.navigate("calendarScreen") } // Add onClick
                 )
             }
         )
     }
 }
+
+
 @Composable
 fun Day(
     day: CalendarDay,
@@ -519,10 +522,7 @@ fun Day(
             .background(
                 color = if (isTagged) Color(0xFFFFCD4B) else Color.Transparent // Highlight tagged days
             )
-            .clickable(
-                enabled = day.position == DayPosition.MonthDate,
-                onClick = { onClick(day) }
-            ),
+            .clickable { onClick(day) }, // Make the day clickable
         contentAlignment = Alignment.Center
     ) {
         Column(

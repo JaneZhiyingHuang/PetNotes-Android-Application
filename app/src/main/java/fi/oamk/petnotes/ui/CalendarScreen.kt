@@ -1,7 +1,12 @@
 package fi.oamk.petnotes.ui
 
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,10 +20,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,18 +53,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
+import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
@@ -65,11 +83,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
-
     navController: NavController,
     context: Context,
     homeScreenViewModel: HomeScreenViewModel,
@@ -81,7 +97,7 @@ fun CalendarScreen(
     val viewModel: PetTagsViewModel = viewModel()
 
     LaunchedEffect(context) {
-        Log.d("HomeScreen", "User logged in: ${isUserLoggedIn()}")
+        Log.d("CalendarScreen", "User logged in: ${isUserLoggedIn()}")
         PetDataStore.getSelectedPetId(context).collect { petId ->
             if (isUserLoggedIn()) {
                 val fetchedPets = homeScreenViewModel.fetchPets()
@@ -95,7 +111,7 @@ fun CalendarScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { },
+                title = { Text("Calendar Screen") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -120,26 +136,25 @@ fun CalendarScreen(
             )
         }
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
         ) {
-            // Call the MainScreen composable here
-
-
-            // Pass petId from selectedPet to PetTagCountsCard
-            if (selectedPet != null) {
-                CalendarCard(viewModel,selectedPet!!.id)
-                PetTagCountsCard(viewModel, selectedPet!!.id) // Pass petId here
-            } else {
-                Text("No pet selected.")
+            item {
+                if (selectedPet != null) {
+                    // Pass petId from selectedPet to CalendarCard and PetTagCountsCard
+                    CalendarCard(viewModel, selectedPet!!.id)
+                    PetTagCountsCard(viewModel, selectedPet!!.id) // Pass petId here
+                } else {
+                    Text("No pet selected.")
+                }
             }
         }
     }
 }
+
 @Composable
 fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
     val currentMonth = remember { YearMonth.now() } // Get the current month
@@ -151,15 +166,12 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
         viewModel.fetchTagCountsAndDatesFromNotes(petId)
     }
 
-    // Collecting tagDateInfoList from StateFlow
     val tagDateInfoList by viewModel.tagDateInfoList.collectAsState()
 
-    // Ensure all dates are parsed correctly into LocalDate
     val taggedLocalDates = remember(tagDateInfoList) {
         tagDateInfoList.flatMap { tagDateInfo ->
             tagDateInfo.dates.mapNotNull { dateString ->
                 try {
-                    // Parsing the date string in "yyyy-M-d" format
                     val formatter = DateTimeFormatter.ofPattern("yyyy-M-d")
                     LocalDate.parse(dateString, formatter)
                 } catch (e: Exception) {
@@ -167,7 +179,7 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
                     null
                 }
             }
-        }.toSet() // Use a set to avoid duplicate dates
+        }.toSet()
     }
 
     val state = rememberCalendarState(
@@ -182,6 +194,13 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
     // Track selected day
     var selectedDay by remember { mutableStateOf<CalendarDay?>(null) }
 
+    // Trigger note fetching when a day is selected
+    LaunchedEffect(selectedDay) {
+        if (selectedDay != null) {
+            viewModel.fetchNotesForSelectedDay(petId, selectedDay!!.date)
+        }
+    }
+
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -193,14 +212,12 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
     ) {
         HorizontalCalendar(
             state = state,
-
             monthHeader = { month ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 12.dp, bottom = 4.dp)
                 ) {
-                    // Month and Year
                     Text(
                         text = month.yearMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault()) +
                                 " " + month.yearMonth.year,
@@ -208,10 +225,8 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         fontWeight = FontWeight.Bold
                     )
-
                     Spacer(modifier = Modifier.height(15.dp))
 
-                    // Weekday headers
                     val adjustedDays = remember(firstDayOfWeek) {
                         daysOfWeek.dropWhile { it != firstDayOfWeek } +
                                 daysOfWeek.takeWhile { it != firstDayOfWeek }
@@ -232,26 +247,11 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
                     }
                 }
             },
-
             monthBody = { _, content ->
                 Box(modifier = Modifier.padding(10.dp)) {
                     content()
                 }
             },
-
-            monthContainer = { _, container ->
-                val configuration = LocalConfiguration.current
-                val screenWidth = configuration.screenWidthDp.dp
-                Box(
-                    modifier = Modifier
-                        .width(screenWidth * 0.8f)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                ) {
-                    container()
-                }
-            },
-
             dayContent = { day ->
                 val isTagged = day.date in taggedLocalDates
                 Day(
@@ -259,12 +259,19 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
                     isSelected = selectedDay?.date == day.date && day.position == DayPosition.MonthDate,
                     isTagged = isTagged,
                     onClick = { selectedDay = it },
-                    currentMonth = currentMonth // Pass the currentMonth here
+                    currentMonth = currentMonth
                 )
             }
         )
     }
+
+    // Show NotesDetailCard if a day is selected and there are notes
+    val selectedNotes = viewModel.selectedNotes.value
+    if (selectedDay != null && selectedDay?.date in taggedLocalDates && selectedNotes.isNotEmpty()) {
+        NotesDetailCard(notes = selectedNotes)
+    }
 }
+
 @Composable
 fun Day(
     day: CalendarDay,
@@ -367,3 +374,160 @@ fun PetTagCountsCard(viewModel: PetTagsViewModel, petId: String) {
         }
     }
 }
+@Composable
+fun NotesDetailCard(
+    notes: List<Notes>,
+    onEdit: (Notes) -> Unit = {},
+    onDelete: (Notes) -> Unit = {}
+) {
+    Column(modifier = Modifier.padding(16.dp)) {
+
+        notes.forEach { note ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = note.getFormattedDate(),
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = note.tag,
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = note.description,
+                            fontSize = 16.sp
+                        )
+
+                        // Display photos if available
+                        if (note.photoUrls.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Photos:",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            LazyRow(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(note.photoUrls) { photoUrl ->
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(photoUrl)
+                                            .crossfade(true)
+                                            .build(),
+                                        contentDescription = "Pet photo",
+                                        modifier = Modifier
+                                            .height(20.dp)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            }
+                        }
+
+
+                            // Display document names if available
+                        if (note.documentUrls.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Documents:",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                            ) {
+                                note.documentUrls.forEach { documentUrl ->
+                                    val fileName = documentUrl.substringAfterLast("/")
+                                    val context = LocalContext.current
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp)
+                                            .clickable {
+                                                val intent =
+                                                    Intent(Intent.ACTION_VIEW, Uri.parse(documentUrl))
+                                                try {
+                                                    context.startActivity(intent)
+                                                } catch (e: ActivityNotFoundException) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "No application found to open this document",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            },
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
+                                            contentDescription = "Document",
+                                            tint = Color.Blue,
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = fileName,
+                                            fontSize = 14.sp,
+                                            color = Color.Blue,
+                                            textDecoration = TextDecoration.Underline
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Edit icon
+                    IconButton(onClick = { onEdit(note) }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Note",
+                            tint = Color.Gray
+                        )
+                    }
+
+                    // Delete icon
+                    IconButton(onClick = { onDelete(note) }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Note",
+                            tint = Color.Gray
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun items(count: List<String>, itemContent: @Composable() (LazyItemScope.(index: Int) -> Unit)) {
+
+
+
+}
+
+
