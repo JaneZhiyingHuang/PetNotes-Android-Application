@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.tasks.await
 
 class PetTagsViewModel : ViewModel() {
@@ -84,6 +86,55 @@ class PetTagsViewModel : ViewModel() {
             }
     }
 
+
+    private val _tagDateInfoList = MutableStateFlow<List<TagDateInfo>>(emptyList())
+    val tagDateInfoList: StateFlow<List<TagDateInfo>> = _tagDateInfoList
+
+    fun fetchTagCountsAndDatesFromNotes(petId: String) {
+        Log.d("PetTagsViewModel", "Fetching tag counts and dates for petId: $petId")
+
+        db.collection("notes")
+            .whereEqualTo("petId", petId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                Log.d("PetTagsViewModel", "Fetched ${querySnapshot.size()} notes for petId: $petId")
+
+                val tagDataMap = mutableMapOf<String, MutableList<String>>() // tag -> list of dates
+
+                for (document in querySnapshot) {
+                    Log.d("PetTagsViewModel", "Document data: ${document.data}")
+
+                    val tag = document.getString("tag")
+                    val dateString = document.getString("date") ?: "Unknown date"
+
+
+                    Log.d("PetTagsViewModel", "Tag: $tag | Date: $dateString")
+
+                    if (!tag.isNullOrEmpty()) {
+                        tagDataMap.getOrPut(tag) { mutableListOf() }.add(dateString)
+                    } else {
+                        Log.w("PetTagsViewModel", "Missing or empty tag in document ${document.id}")
+                    }
+                }
+
+                val newList = tagDataMap.map { (tag, dates) ->
+                    TagDateInfo(tag = tag, count = dates.size, dates = dates)
+                }
+
+                _tagDateInfoList.value = newList // Updating the StateFlow with the new list
+
+                Log.d("PetTagsViewModel", "Final tagDateInfoList: $_tagDateInfoList")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("PetTagsViewModel", "Error fetching tag data for petId: $petId", exception)
+            }
+    }
+
+    data class TagDateInfo(
+        val tag: String,
+        val count: Int,
+        val dates: List<String>
+    )
 
 
     data class TagCount(val tag: String, val count: Int)

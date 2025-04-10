@@ -31,6 +31,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,13 +59,17 @@ import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
+
     navController: NavController,
     context: Context,
     homeScreenViewModel: HomeScreenViewModel,
@@ -123,10 +128,11 @@ fun CalendarScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Call the MainScreen composable here
-            CalendarCard()
+
 
             // Pass petId from selectedPet to PetTagCountsCard
             if (selectedPet != null) {
+                CalendarCard(viewModel,selectedPet!!.id)
                 PetTagCountsCard(viewModel, selectedPet!!.id) // Pass petId here
             } else {
                 Text("No pet selected.")
@@ -134,13 +140,35 @@ fun CalendarScreen(
         }
     }
 }
-
 @Composable
-fun CalendarCard() {
-    val currentMonth = remember { YearMonth.now() }
+fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
+    val currentMonth = remember { YearMonth.now() } // Get the current month
     val startMonth = remember { currentMonth.minusMonths(100) }
     val endMonth = remember { currentMonth.plusMonths(100) }
     val firstDayOfWeek = remember { firstDayOfWeekFromLocale() }
+
+    LaunchedEffect(petId) {
+        viewModel.fetchTagCountsAndDatesFromNotes(petId)
+    }
+
+    // Collecting tagDateInfoList from StateFlow
+    val tagDateInfoList by viewModel.tagDateInfoList.collectAsState()
+
+    // Ensure all dates are parsed correctly into LocalDate
+    val taggedLocalDates = remember(tagDateInfoList) {
+        tagDateInfoList.flatMap { tagDateInfo ->
+            tagDateInfo.dates.mapNotNull { dateString ->
+                try {
+                    // Parsing the date string in "yyyy-M-d" format
+                    val formatter = DateTimeFormatter.ofPattern("yyyy-M-d")
+                    LocalDate.parse(dateString, formatter)
+                } catch (e: Exception) {
+                    Log.e("CalendarCard", "Error parsing date: $dateString", e)
+                    null
+                }
+            }
+        }.toSet() // Use a set to avoid duplicate dates
+    }
 
     val state = rememberCalendarState(
         startMonth = startMonth,
@@ -225,28 +253,36 @@ fun CalendarCard() {
             },
 
             dayContent = { day ->
+                val isTagged = day.date in taggedLocalDates
                 Day(
                     day = day,
                     isSelected = selectedDay?.date == day.date && day.position == DayPosition.MonthDate,
-                    onClick = { selectedDay = it }
+                    isTagged = isTagged,
+                    onClick = { selectedDay = it },
+                    currentMonth = currentMonth // Pass the currentMonth here
                 )
             }
         )
     }
 }
-
 @Composable
 fun Day(
     day: CalendarDay,
     isSelected: Boolean,
-    onClick: (CalendarDay) -> Unit
+    isTagged: Boolean = false,
+    onClick: (CalendarDay) -> Unit,
+    currentMonth: YearMonth // Pass currentMonth to the composable
 ) {
     Box(
         modifier = Modifier
             .aspectRatio(1f)
             .clip(CircleShape)
             .background(
-                color = if (isSelected) Color.Blue else Color.Transparent
+                color = when {
+                    isSelected -> Color.Blue
+                    isTagged ->  Color(0xFFFFCD4B) // Change background to red when tagged
+                    else -> Color.Transparent
+                }
             )
             .clickable(
                 enabled = day.position == DayPosition.MonthDate,
@@ -254,12 +290,20 @@ fun Day(
             ),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = day.date.dayOfMonth.toString(),
-            color = if (day.position == DayPosition.MonthDate) Color.Black else Color.Gray
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = day.date.dayOfMonth.toString(),
+                color = if (day.date.month == currentMonth.month) Color.Black else Color.Gray // Correct comparison for current month
+            )
+        }
     }
-}@Composable
+}
+
+
+@Composable
 fun PetTagCountsCard(viewModel: PetTagsViewModel, petId: String) {
     val tagCounts = viewModel.tagCounts
 
