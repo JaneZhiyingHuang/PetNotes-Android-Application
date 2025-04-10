@@ -36,6 +36,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -46,31 +47,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import fi.oamk.petnotes.viewmodel.AddNewPetViewModel
-import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import fi.oamk.petnotes.viewmodel.AddNewPetViewModel
+import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import fi.oamk.petnotes.R
 import fi.oamk.petnotes.ui.theme.ButtonColor
 import fi.oamk.petnotes.ui.theme.InputColor
-import fi.oamk.petnotes.R
-
+import java.util.*
 import android.app.DatePickerDialog
-import android.widget.DatePicker
-
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.storage.FirebaseStorage
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.launch
 
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNewPetScreen(navController: NavController) {
+fun AddNewPetScreen(
+    navController: NavController,
+    petId: String? = null,
+    homeScreenViewModel: HomeScreenViewModel
+) {
     val addnewPetViewModel: AddNewPetViewModel = viewModel()
 
     var petName by remember { mutableStateOf("") }
@@ -83,22 +86,40 @@ fun AddNewPetScreen(navController: NavController) {
     var petInsuranceCompany by remember { mutableStateOf("") }
     var petInsuranceNumber by remember { mutableStateOf("") }
 
-
     var isLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current // Access context in Compose
 
-    //for upload image to fire storage : img -> url
+    // for upload image to firebase storage : img -> url
     var imageUrl by remember { mutableStateOf<Uri?>(null) }
-    //for fetch image from fire storage: url -> img
+    // for fetch image from firebase storage: url -> img
     var petImageUri by remember { mutableStateOf("") }
+
+    // edit mode-> fetch datas from homescreenviewmodel with petId
+    if (petId != null) {
+        LaunchedEffect(petId) {
+            val pets = homeScreenViewModel.fetchPets()
+            val pet = pets.find { it.id == petId }
+            pet?.let {
+                petName = it.name
+                petGender = it.gender
+                petSpecie = it.specie
+                petDateOfBirth = it.dateOfBirth
+                petBreed = it.breed
+                petMedicalCondition = it.medicalCondition
+                petMicrochipNumber = it.microchipNumber
+                petInsuranceCompany = it.insuranceCompany
+                petInsuranceNumber = it.insuranceNumber
+                petImageUri = it.petImageUri
+            }
+        }
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         imageUrl = uri
     }
-
 
     Scaffold(
         topBar = {
@@ -116,7 +137,6 @@ fun AddNewPetScreen(navController: NavController) {
             )
         }
     ) { paddingValues ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -124,7 +144,7 @@ fun AddNewPetScreen(navController: NavController) {
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            //avatar
+            // avatar
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -143,11 +163,19 @@ fun AddNewPetScreen(navController: NavController) {
                             contentDescription = "Pet Avatar",
                             modifier = Modifier.fillMaxSize()
                         )
-                    } ?: Image(
-                        painter = painterResource(id = R.drawable.add_a_photo_24px),
-                        contentDescription = "Upload Avatar",
-                        modifier = Modifier.size(40.dp)
-                    )
+                    } ?: if (petImageUri.isNotEmpty()) {  //show current avatar
+                        Image(
+                            painter = rememberAsyncImagePainter(petImageUri),
+                            contentDescription = "Existing Pet Avatar",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.add_a_photo_24px),
+                            contentDescription = "Upload Avatar",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -160,7 +188,7 @@ fun AddNewPetScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            //Select gender
+            // Select gender
             Text(
                 text = "Gender",
                 fontWeight = FontWeight.Bold,
@@ -185,8 +213,7 @@ fun AddNewPetScreen(navController: NavController) {
                         contentColor = Color.Black
                     )
                 ) {
-                    Text("Male",
-                        fontSize = 14.sp )
+                    Text("Male", fontSize = 14.sp)
                 }
                 Button(
                     onClick = { petGender = "Female" },
@@ -199,8 +226,7 @@ fun AddNewPetScreen(navController: NavController) {
                         contentColor = Color.Black
                     )
                 ) {
-                    Text("Female",
-                        fontSize = 14.sp )
+                    Text("Female", fontSize = 14.sp)
                 }
                 Button(
                     onClick = { petGender = "Other" },
@@ -213,8 +239,7 @@ fun AddNewPetScreen(navController: NavController) {
                         contentColor = Color.Black
                     )
                 ) {
-                    Text("Other",
-                        fontSize = 14.sp )
+                    Text("Other", fontSize = 14.sp)
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -272,15 +297,61 @@ fun AddNewPetScreen(navController: NavController) {
                     if (petName.isNotBlank() &&
                         petGender.isNotBlank() &&
                         petSpecie.isNotBlank() &&
-                        petDateOfBirth.isNotBlank()) {
+                        petDateOfBirth.isNotBlank()
+                    ) {
+                        isLoading = true
 
-                            isLoading = true
                         if (imageUrl != null) {
-                            // upload image to cloud storage
                             uploadImageToFirebase(imageUrl!!, onSuccess = { remoteUrl ->
                                 petImageUri = remoteUrl
                                 coroutineScope.launch {
-                                    addnewPetViewModel.addPet(
+                                    if (petId != null) {
+                                        //edit mode
+                                        addnewPetViewModel.updatePet(
+                                            petId,
+                                            petName,
+                                            petGender,
+                                            petSpecie,
+                                            petDateOfBirth,
+                                            petBreed,
+                                            petMedicalCondition,
+                                            petMicrochipNumber,
+                                            petInsuranceCompany,
+                                            petInsuranceNumber,
+                                            petImageUri
+                                        ) {
+                                            isLoading = false
+                                            navController.popBackStack()
+                                        }
+                                    } else {
+                                        // add new mode
+                                        addnewPetViewModel.addPet(
+                                            petName,
+                                            petGender,
+                                            petSpecie,
+                                            petDateOfBirth,
+                                            petBreed,
+                                            petMedicalCondition,
+                                            petMicrochipNumber,
+                                            petInsuranceCompany,
+                                            petInsuranceNumber,
+                                            petImageUri
+                                        ) {
+                                            isLoading = false
+                                            navController.popBackStack()
+                                        }
+                                    }
+                                }
+                            }, onFailure = { exception ->
+                                isLoading = false
+                                Toast.makeText(context, "Image upload failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                            })
+                        } else {
+                            // update without new image
+                            if (petId != null && petImageUri.isNotEmpty()) {
+                                coroutineScope.launch {
+                                    addnewPetViewModel.updatePet(
+                                        petId,
                                         petName,
                                         petGender,
                                         petSpecie,
@@ -296,15 +367,18 @@ fun AddNewPetScreen(navController: NavController) {
                                         navController.popBackStack()
                                     }
                                 }
-                            }, onFailure = { exception ->
-                                isLoading = false
-                                Toast.makeText(context, "Image upload failed: ${exception.message}", Toast.LENGTH_SHORT).show()
-                            })
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Please fill all mandatory fields and upload avatar.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     } else {
                         Toast.makeText(
                             context,
-                            "Please fill all mandatory fields amd upload avatar.",
+                            "Please fill all mandatory fields and upload avatar.",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -321,13 +395,15 @@ fun AddNewPetScreen(navController: NavController) {
                 ),
                 shape = RoundedCornerShape(30.dp)
             ) {
-                Text(if (isLoading) "Saving..." else "Add New Pet")
+                Text(
+                    text = if (isLoading) "Saving..." else if (petId != null) "Update Pet" else "Add New Pet"
+                )
             }
         }
     }
 }
 
-//style management of InputFields
+// style management of InputFields
 @Composable
 fun LabeledTextField(
     label: String,
@@ -359,7 +435,7 @@ fun LabeledTextField(
     }
 }
 
-//DoB calendar datepicker
+// DoB calendar datepicker
 @Composable
 fun DatePickerField(
     label: String,
@@ -375,13 +451,12 @@ fun DatePickerField(
 
     val datePickerDialog = DatePickerDialog(
         context,
-        { _: DatePicker, selectedYear: Int, selectedMonth: Int, selectedDay: Int ->
+        { _, selectedYear: Int, selectedMonth: Int, selectedDay: Int ->
             val formattedDate = String.format("%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear)
             onDateSelected(formattedDate)
         },
         year, month, day
     )
-
 
     Column {
         Text(
@@ -406,7 +481,7 @@ fun DatePickerField(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text =date.ifEmpty { "Select Date" },
+                text = date.ifEmpty { "Select Date" },
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = Color.Black
             )
@@ -415,14 +490,11 @@ fun DatePickerField(
     }
 }
 
-//handle avatar photo upload logic:
+// handle avatar photo upload logic:
 // to fire storage-> get imageUrl -> store Url in firebase -> use Url to fetch image
-
-
 fun uploadImageToFirebase(uri: Uri, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
     val storageRef = FirebaseStorage.getInstance().reference
     val fileRef = storageRef.child("pet_images/${UUID.randomUUID()}.jpg")
-
     fileRef.putFile(uri)
         .addOnSuccessListener {
             fileRef.downloadUrl.addOnSuccessListener { downloadUri ->

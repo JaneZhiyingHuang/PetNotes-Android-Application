@@ -1,6 +1,5 @@
 package fi.oamk.petnotes.ui
 
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -58,9 +57,7 @@ class MainActivity : ComponentActivity() {
                             homeScreenViewModel = homeScreenViewModel, // Pass the ViewModel to HomeScreen
                             navController = navController
                         )
-
                     }
-
                     composable("profile/{petId}") { backStackEntry ->
                         val petId = backStackEntry.arguments?.getString("petId") ?: ""
                         ProfileScreen(
@@ -69,36 +66,28 @@ class MainActivity : ComponentActivity() {
                             homeScreenViewModel = homeScreenViewModel
                         )
                     }
-
-
                     composable("weight_screen/{userId}/{petId}") { backStackEntry ->
                         val userId = backStackEntry.arguments?.getString("userId")
                         val petId = backStackEntry.arguments?.getString("petId")
-
                         if (userId != null && petId != null) {
                             WeightScreen(navController = navController, userId = userId, petId = petId)
                         } else {
                             Text(text = "User ID or Pet ID is missing.")
                         }
                     }
-
                     composable("map") {
                         // MapScreen doesn't need any ViewModel based on your code
                         val context = LocalContext.current // Get the context here
                         MapScreen(navController = navController, context = context)
-
                     }
                     composable("calendarScreen") {
                         val context = LocalContext.current
-                        val homeScreenViewModel: HomeScreenViewModel = homeScreenViewModel
-
                         CalendarScreen(
                             navController = navController,
                             context = context,
                             homeScreenViewModel = homeScreenViewModel
                         )
                     }
-
                     composable("notes") {
                         NotesScreen(
                             navController = navController,
@@ -107,12 +96,15 @@ class MainActivity : ComponentActivity() {
                             notesViewModel = notesViewModel
                         )
                     }
-                    composable("addNewPet") {
+
+                    composable("addNewPet?petId={petId}") { backStackEntry ->
+                        val petId = backStackEntry.arguments?.getString("petId")
                         AddNewPetScreen(
-                            navController = navController
+                            navController = navController,
+                            petId = petId,
+                            homeScreenViewModel = homeScreenViewModel
                         )
                     }
-
                     composable("setting") {
                         SettingScreen(
                             navController = navController,

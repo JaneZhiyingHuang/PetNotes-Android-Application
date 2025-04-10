@@ -82,14 +82,13 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-//                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (selectedPet != null) {
                 // card for pet image
-               PetImageCard(pet = selectedPet!!)
+                PetImageCard(pet = selectedPet!!)
                 // card for pet infos
-                PetInfoCard(pet = selectedPet!!)
+                PetInfoCard(pet = selectedPet!!, navController = navController) // 传入 navController 用于导航
             } else {
                 Text(text = "Pet not found")
             }
@@ -102,7 +101,6 @@ fun PetImageCard(pet: Pet){
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-//        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
         modifier = Modifier
             .padding(top = 16.dp)
             .width(352.dp)
@@ -121,7 +119,7 @@ fun PetImageCard(pet: Pet){
 }
 
 @Composable
-fun PetInfoCard(pet: Pet) {
+fun PetInfoCard(pet: Pet, navController: NavController) {
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -145,7 +143,12 @@ fun PetInfoCard(pet: Pet) {
                 )
 
                 // Edit icon on the right
-                IconButton(onClick = { /* Handle Edit */ }) {
+                IconButton(
+                    onClick = {
+                        // pass petId to AddNewPetScreen for edit
+                        navController.navigate("addNewPet?petId=${pet.id}")
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.Filled.Edit,
                         contentDescription = "Edit Pet Profile",
@@ -200,4 +203,3 @@ fun InfoRow(label: String, text: String) {
         )
     }
 }
-
