@@ -192,22 +192,27 @@ fun NotesScreen(
                     fetchedNotes = notesViewModel.getNotesByPetId(petId)
                 }
 
-                // Reset inputs on success
                 userInput = ""
                 photoUris = emptyList()
                 documentUris = emptyList()
                 selectedTag = "All"
 
-                // Reset date to current
                 selectedDate = currentDate.get(Calendar.DAY_OF_MONTH).toString()
                 selectedMonth = (currentDate.get(Calendar.MONTH) + 1).toString()
                 selectedYear = currentDate.get(Calendar.YEAR).toString()
+
+                Toast.makeText(context,"Note added successfully!", Toast.LENGTH_SHORT).show()
             }
             is NotesViewModel.UploadState.Error -> {
-                // Show error message
-                // You could use a Snackbar or another error display mechanism
+                Toast.makeText(context,"Error: ${state.message ?: "Failed to upload note"}", Toast.LENGTH_LONG).show()
+                Log.e("NotesScreen", "Upload error: ${state.message}", state.exception)
             }
-            else -> {} // Idle or Loading states
+            is NotesViewModel.UploadState.Loading -> {
+                Log.d("NotesScreen", "Upload in progress...")
+            }
+            is NotesViewModel.UploadState.Idle -> {
+                Log.d("NotesScreen", "Upload state: Idle")
+            }
         }
     }
 
@@ -293,7 +298,8 @@ fun NotesScreen(
                                             Icon(
                                                 Icons.Filled.Delete,
                                                 contentDescription = "Delete Tag",
-                                                tint = Color.Red
+                                                tint = Color.Red,
+                                                modifier = Modifier.size(16.dp)
                                             )
                                         }
                                     }
@@ -341,25 +347,31 @@ fun NotesScreen(
                                                                     onSuccess = {
                                                                         tags = updatedTags
                                                                         selectedTag = "All"
-                                                                        showDeleteConfirmationDialog =
-                                                                            null
+                                                                        showDeleteConfirmationDialog = null
                                                                     },
-                                                                    onFailure = {
-                                                                        // Optional: Add error handling
-                                                                        showDeleteConfirmationDialog =
-                                                                            null
+                                                                    onFailure = { error ->
+                                                                        Toast.makeText(context, "Failed to delete tag: $error", Toast.LENGTH_SHORT).show()
+                                                                        showDeleteConfirmationDialog = null
                                                                     }
                                                                 )
                                                             }
                                                         }
-                                                    }
+                                                    },
+                                                    colors = ButtonDefaults.buttonColors(
+                                                        containerColor = Color(0xFFD9D9D9),
+                                                        contentColor = Color.Black
+                                                    )
                                                 ) {
                                                     Text("Yes")
                                                 }
                                                 Button(
                                                     onClick = {
                                                         showDeleteConfirmationDialog = null
-                                                    }
+                                                    },
+                                                    colors = ButtonDefaults.buttonColors(
+                                                        containerColor = Color(0xFFD9D9D9),
+                                                        contentColor = Color.Black
+                                                    )
                                                 ) {
                                                     Text("No")
                                                 }
@@ -391,7 +403,7 @@ fun NotesScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Row(
@@ -433,30 +445,40 @@ fun NotesScreen(
                         }
 
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Button(
                                 onClick = { photoPickerLauncher.launch("image/*") },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFD9D9D9),
+                                    contentColor = Color.Black
+                                ),
+                                modifier = Modifier.weight(1f).padding(end = 4.dp)
                             ) {
-                                Text("Add Photos (${photoUris.size})")
+                                Text(text = "Add Photos (${photoUris.size})", fontWeight = FontWeight.Bold)
                             }
                             Button(
                                 onClick = { documentPickerLauncher.launch("*/*") },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFD9D9D9),
+                                    contentColor = Color.Black
+                                ),
+                                modifier = Modifier.weight(1f).padding(end = 4.dp)
                             ) {
-                                Text("Add Documents (${documentUris.size})")
+                                Text(text = "Add Documents (${documentUris.size})", fontWeight = FontWeight.Bold)
                             }
                         }
 
                         Button(
                             onClick = {
                                 if (selectedPet == null) {
-                                    // Show error that no pet is selected
+                                    Toast.makeText(context, "No pet selected", Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
 
                                 if (userInput.isBlank()) {
-                                    // Show error that description is empty
+                                    Toast.makeText(context, "Description cannot be empty", Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
 
@@ -483,9 +505,13 @@ fun NotesScreen(
                                     )
                                 }
                             },
-                            modifier = Modifier.padding(vertical = 8.dp)
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFD9D9D9),
+                                contentColor = Color.Black
+                            )
                         ) {
-                            Text("Confirm")
+                            Text(text = "Confirm", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -537,7 +563,7 @@ fun NotesScreen(
                 modifier = Modifier.fillMaxWidth().padding(16.dp).height(600.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(8.dp).verticalScroll(rememberScrollState()),
+                    modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -664,14 +690,14 @@ fun NotesScreen(
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
                                         contentDescription = "Document",
-                                        tint = Color.Blue,
+                                        tint = Color.Gray,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = fileName,
                                         fontSize = 14.sp,
-                                        color = Color.Blue,
+                                        color = Color.Black,
                                         modifier = Modifier.weight(1f)
                                     )
                                     IconButton(
@@ -700,14 +726,14 @@ fun NotesScreen(
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
                                         contentDescription = "New Document",
-                                        tint = Color.Blue,
+                                        tint = Color.Gray,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = fileName,
                                         fontSize = 14.sp,
-                                        color = Color.Blue,
+                                        color = Color.Gray,
                                         modifier = Modifier.weight(1f)
                                     )
                                     IconButton(
@@ -748,23 +774,31 @@ fun NotesScreen(
 
                         Button(
                             onClick = { photoPickerLauncher.launch("image/*") },
-                            modifier = Modifier.weight(1f).padding(end = 4.dp)
+                            modifier = Modifier.weight(1f).padding(end = 4.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFD9D9D9),
+                                contentColor = Color.Black
+                            )
                         ) {
-                            Text("Add Photos")
+                            Text(text = "Add Photos", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Button(
                             onClick = { documentPickerLauncher.launch("*/*") },
-                            modifier = Modifier.weight(1f).padding(start = 4.dp)
+                            modifier = Modifier.weight(1f).padding(start = 4.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFD9D9D9),
+                                contentColor = Color.Black
+                            )
                         ) {
-                            Text(text = "Add Documents", textAlign = TextAlign.Center)
+                            Text(text = "Add Documents", textAlign = TextAlign.Center, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(1.dp)
+                        horizontalArrangement = Arrangement.spacedBy(0.9.dp)
                     ) {
                         Button(
                             onClick = {
@@ -819,9 +853,13 @@ fun NotesScreen(
                                     }
                                 }
                             },
-                            modifier = Modifier.weight(0.9f)
+                            modifier = Modifier.weight(0.9f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFD9D9D9),
+                                contentColor = Color.Black
+                            )
                         ) {
-                            Text("Save")
+                            Text(text = "Save", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = {
@@ -833,16 +871,20 @@ fun NotesScreen(
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Delete")
+                            Text(text = "Delete", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = {
                                 showEditDialog = false
                                 noteToEdit = null
                             },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFD9D9D9),
+                                contentColor = Color.Black,
+                            )
                         ) {
-                            Text("Cancel")
+                            Text(text = "Cancel", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -961,19 +1003,30 @@ fun NotesScreen(
                                                         showDialog = false
                                                     },
                                                     onFailure = { e ->
-                                                        // Handle failure
+                                                        Toast.makeText(context,"Failed to add tag: ${e.message ?: "Unknown error"}", Toast.LENGTH_SHORT).show()
+                                                        tags = tags.filter { it != newTag.text.trim() }
                                                     })
                                             }
                                         }
                                     }
                                     showDialog = false
-                                }
+                                },
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFD9D9D9),
+                                    contentColor = Color.Black
+                                )
                             ) {
                                 Text("Add")
                             }
 
                             Button(
-                                onClick = { showDialog = false }
+                                onClick = { showDialog = false },
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFD9D9D9),
+                                    contentColor = Color.Black
+                                )
                             ) {
                                 Text("Cancel")
                             }
@@ -1076,7 +1129,7 @@ fun NoteCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -1175,14 +1228,14 @@ fun NoteCard(
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
                                     contentDescription = "Document",
-                                    tint = Color.Blue,
+                                    tint = Color.Gray,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = fileName,
                                     fontSize = 14.sp,
-                                    color = Color.Blue,
+                                    color = Color.Black,
                                     textDecoration = TextDecoration.Underline
                                 )
                             }

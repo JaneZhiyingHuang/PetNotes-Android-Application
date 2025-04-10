@@ -33,7 +33,7 @@ class NotesViewModel : ViewModel() {
         object Idle : UploadState()
         object Loading : UploadState()
         data class Success(val message: String) : UploadState()
-        data class Error(val message: String) : UploadState()
+        data class Error(val message: String, val exception: Exception? = null) : UploadState()
     }
 
     private suspend fun uploadFilesToFirebase(
