@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -441,7 +442,8 @@ fun NotesDetailCard(
                                             .build(),
                                         contentDescription = "Pet photo",
                                         modifier = Modifier
-                                            .height(20.dp)
+                                            .height(120.dp)
+                                            .width(120.dp)
                                             .clip(RoundedCornerShape(8.dp)),
                                         contentScale = ContentScale.Crop
                                     )
@@ -522,12 +524,6 @@ fun NotesDetailCard(
             }
         }
     }
-}
-
-fun items(count: List<String>, itemContent: @Composable() (LazyItemScope.(index: Int) -> Unit)) {
-
-
-
 }
 
 
