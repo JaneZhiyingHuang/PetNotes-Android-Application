@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -64,7 +61,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
@@ -147,7 +143,7 @@ fun CalendarScreen(
                 if (selectedPet != null) {
                     // Pass petId from selectedPet to CalendarCard and PetTagCountsCard
                     CalendarCard(viewModel, selectedPet!!.id)
-                    PetTagCountsCard(viewModel, selectedPet!!.id) // Pass petId here
+                // Pass petId here
                 } else {
                     Text("No pet selected.")
                 }
@@ -155,10 +151,9 @@ fun CalendarScreen(
         }
     }
 }
-
 @Composable
 fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
-    val currentMonth = remember { YearMonth.now() } // Get the current month
+    val currentMonth = remember { YearMonth.now() }
     val startMonth = remember { currentMonth.minusMonths(100) }
     val endMonth = remember { currentMonth.plusMonths(100) }
     val firstDayOfWeek = remember { firstDayOfWeekFromLocale() }
@@ -197,11 +192,12 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
 
     // Trigger note fetching when a day is selected
     LaunchedEffect(selectedDay) {
-        if (selectedDay != null) {
-            viewModel.fetchNotesForSelectedDay(petId, selectedDay!!.date)
+        selectedDay?.let {
+            viewModel.fetchNotesForSelectedDay(petId, it.date)
         }
     }
 
+    // Calendar UI
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -266,12 +262,16 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
         )
     }
 
-    // Show NotesDetailCard if a day is selected and there are notes
+    // Show Tag Count Card
+    PetTagCountsCard(viewModel, petId)
+
+    // Show Notes only if selected day is tagged and has notes
     val selectedNotes = viewModel.selectedNotes.value
-    if (selectedDay != null && selectedDay?.date in taggedLocalDates && selectedNotes.isNotEmpty()) {
+    if (selectedDay?.date in taggedLocalDates && selectedNotes.isNotEmpty()) {
         NotesDetailCard(notes = selectedNotes)
     }
 }
+
 
 @Composable
 fun Day(
@@ -378,8 +378,8 @@ fun PetTagCountsCard(viewModel: PetTagsViewModel, petId: String) {
 @Composable
 fun NotesDetailCard(
     notes: List<Notes>,
-    onEdit: (Notes) -> Unit = {},
-    onDelete: (Notes) -> Unit = {}
+    onEdit: (Notes) -> Unit = {}
+
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
 
@@ -394,19 +394,22 @@ fun NotesDetailCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
+                        .padding(20.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
+
                         ) {
                             Text(
                                 text = note.getFormattedDate(),
-                                fontSize = 14.sp,
-                                color = Color.Gray
+                                fontSize = 16.sp,
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = note.tag,
@@ -512,14 +515,6 @@ fun NotesDetailCard(
                         )
                     }
 
-                    // Delete icon
-                    IconButton(onClick = { onDelete(note) }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete Note",
-                            tint = Color.Gray
-                        )
-                    }
                 }
             }
         }
