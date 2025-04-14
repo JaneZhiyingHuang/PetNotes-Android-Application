@@ -1,8 +1,10 @@
 package fi.oamk.petnotes.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import fi.oamk.petnotes.utils.LanguageManager
 
 class SettingScreenViewModel : ViewModel() {
 
@@ -80,6 +82,14 @@ class SettingScreenViewModel : ViewModel() {
                     onComplete(false, exception.message ?: "Error fetching user's pets")
                 }
         } ?: onComplete(false, "No user is currently logged in")
+    }
+
+    fun changeLanguage(context: Context, languageCode: String) {
+        LanguageManager.setLocale(context, languageCode)
+    }
+
+    fun getCurrentLanguage(context: Context): String {
+        return LanguageManager.getLanguageCode(context)
     }
 
 }

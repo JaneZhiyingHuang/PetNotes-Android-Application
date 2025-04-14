@@ -1,24 +1,36 @@
 package fi.oamk.petnotes.ui
 
+import android.app.Activity
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import fi.oamk.petnotes.utils.LanguageManager
 import fi.oamk.petnotes.viewmodel.SettingScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +52,13 @@ fun SettingScreen(
 ) {
     val isUserLoggedIn = remember { settingScreenViewModel.isUserLoggedIn() }
     val context = LocalContext.current
+    var showLanguageDialog by rememberSaveable { mutableStateOf(false) }
+    val availableLanguages = listOf(
+        "en" to "English",
+        "fi" to "Finnish",
+        "sv" to "Swedish",
+        "zh" to "Chinese",
+    )
 
     LaunchedEffect(isUserLoggedIn) {
         if (!isUserLoggedIn) {
@@ -141,7 +161,7 @@ fun SettingScreen(
                 // Change Language Button
                 Button(
                     onClick = {
-                        // Action for Change Language button
+                        showLanguageDialog = true
                     },
                     modifier = Modifier
                         .width(280.dp)
@@ -155,6 +175,35 @@ fun SettingScreen(
                     Text(
                         text = "Change Language",
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+
+                if (showLanguageDialog) {
+                    androidx.compose.material3.AlertDialog(
+                        onDismissRequest = { showLanguageDialog = false },
+                        title = { Text("Select Language") },
+                        text = {
+                            LazyColumn {
+                                items(availableLanguages) { (code, name) ->
+                                    Text(
+                                        text = name,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                LanguageManager.applyLanguageAndRecreate(context as Activity, code)
+                                                showLanguageDialog = false
+                                            }
+                                            .padding(vertical = 12.dp),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showLanguageDialog = false }) {
+                                Text("Cancel")
+                            }
+                        }
                     )
                 }
 
