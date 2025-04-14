@@ -90,7 +90,6 @@ fun WeightScreen(
     var pets by remember { mutableStateOf<List<fi.oamk.petnotes.model.Pet>>(emptyList()) }
     var selectedPet by remember { mutableStateOf<fi.oamk.petnotes.model.Pet?>(null) }
 
-    // 分页状态控制
     var currentPage by remember { mutableStateOf(0) }
 
     // Call loadPetData when the screen is launched
@@ -110,7 +109,7 @@ fun WeightScreen(
         }
     }
 
-    // 默认定位到最新页
+    // defalt: shows the newest page
     LaunchedEffect(weightEntries.size) {
         val totalItems = weightEntries.size
         currentPage = if (totalItems == 0) 0 else (totalItems - 1) / 7
@@ -166,7 +165,7 @@ fun WeightScreen(
             if (weightEntries.isNotEmpty()) {
                 val sortedEntries = weightEntries.sortedBy { it.first }
 
-                // 分页数据计算
+                // handle pages in chart
                 val pageSize = 7
                 val startIndex = (currentPage * pageSize).coerceAtLeast(0)
                 val endIndex = (startIndex + pageSize).coerceAtMost(sortedEntries.size)
@@ -180,7 +179,7 @@ fun WeightScreen(
                     index.toFloat() to weight
                 }
 
-                // 导航状态
+                // scroll <- or ->
                 val canScrollLeft = currentPage > 0
                 val canScrollRight = (currentPage + 1) * pageSize < sortedEntries.size
 
@@ -233,7 +232,6 @@ fun WeightScreen(
 fun WeightTrendCard(
     chartData: List<Pair<Float, Float>>,
     dateLabels: List<String>,
-    // 新增导航参数
     canScrollLeft: Boolean,
     canScrollRight: Boolean,
     onScrollLeft: () -> Unit,
@@ -251,7 +249,6 @@ fun WeightTrendCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(16.dp)
         ) {
-            // 标题行添加导航箭头
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -325,7 +322,6 @@ fun WeightTrendCard(
     }
 }
 
-// ... 保持NoChartCard、AddWeightCard、WeightHistoryCard等其他组件完全不变 ...
 @Composable
 fun NoChartCard() {
     Card(
