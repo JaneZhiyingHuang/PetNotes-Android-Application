@@ -228,7 +228,7 @@ fun WeightTrendCard(chartData: List<Pair<Float, Float>>, dateLabels: List<String
 
             // Line Chart
             LineChart(
-                data = remember {
+                data = remember(chartData){
                     listOf(
                         Line(
                             label = "Pet Weight",
