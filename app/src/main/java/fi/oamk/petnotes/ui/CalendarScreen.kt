@@ -41,12 +41,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -93,7 +95,7 @@ fun CalendarScreen(
     val refreshTrigger = remember { mutableIntStateOf(0) }
     val viewModel: PetTagsViewModel = viewModel()
 
-    LaunchedEffect(context) {
+    LaunchedEffect(context, selectedPet) {
         Log.d("CalendarScreen", "User logged in: ${isUserLoggedIn()}")
         PetDataStore.getSelectedPetId(context).collect { petId ->
             if (isUserLoggedIn()) {
@@ -142,8 +144,9 @@ fun CalendarScreen(
             item {
                 if (selectedPet != null) {
                     // Pass petId from selectedPet to CalendarCard and PetTagCountsCard
-                    CalendarCard(viewModel, selectedPet!!.id)
-                // Pass petId here
+                    CalendarCard(viewModel, selectedPet!!.id, refreshTrigger.intValue)
+
+                    // Pass petId here
                 } else {
                     Text("No pet selected.")
                 }
@@ -152,12 +155,36 @@ fun CalendarScreen(
     }
 }
 @Composable
-fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
+fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, refreshTrigger: Int) {
     val currentMonth = remember { YearMonth.now() }
     val startMonth = remember { currentMonth.minusMonths(100) }
     val endMonth = remember { currentMonth.plusMonths(100) }
     val firstDayOfWeek = remember { firstDayOfWeekFromLocale() }
+    val daysOfWeek = remember { daysOfWeek() }
 
+    val state = rememberCalendarState(
+        startMonth = startMonth,
+        endMonth = endMonth,
+        firstVisibleMonth = currentMonth,
+        firstDayOfWeek = firstDayOfWeek
+    )
+// 🔄 Fetch tag data when petId or refreshTrigger changes
+    LaunchedEffect(petId, refreshTrigger) {
+        viewModel.fetchTagCountsAndDatesFromNotes(petId)
+    }
+    val visibleMonth by remember {
+        derivedStateOf { state.firstVisibleMonth.yearMonth }
+    }
+
+    // ✅ Log currently visible month
+    LaunchedEffect(state) {
+        snapshotFlow { state.firstVisibleMonth }
+            .collect { month ->
+                Log.d("CalendarCard", "Currently visible month: ${month.yearMonth}")
+            }
+    }
+
+    // 🔄 Fetch tag data
     LaunchedEffect(petId) {
         viewModel.fetchTagCountsAndDatesFromNotes(petId)
     }
@@ -178,26 +205,17 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
         }.toSet()
     }
 
-    val state = rememberCalendarState(
-        startMonth = startMonth,
-        endMonth = endMonth,
-        firstVisibleMonth = currentMonth,
-        firstDayOfWeek = firstDayOfWeek
-    )
-
-    val daysOfWeek = remember { daysOfWeek() }
-
     // Track selected day
     var selectedDay by remember { mutableStateOf<CalendarDay?>(null) }
 
-    // Trigger note fetching when a day is selected
+    // 🔄 Fetch notes for selected day
     LaunchedEffect(selectedDay) {
         selectedDay?.let {
             viewModel.fetchNotesForSelectedDay(petId, it.date)
         }
     }
 
-    // Calendar UI
+    // 🗓️ Calendar UI
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -262,16 +280,15 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String) {
         )
     }
 
-    // Show Tag Count Card
-    PetTagCountsCard(viewModel, petId)
+    // 🏷️ Show tag count card
+    PetTagCountsCard(viewModel, petId, visibleMonth)
 
-    // Show Notes only if selected day is tagged and has notes
+    // 📝 Show notes if applicable
     val selectedNotes = viewModel.selectedNotes.value
     if (selectedDay?.date in taggedLocalDates && selectedNotes.isNotEmpty()) {
         NotesDetailCard(notes = selectedNotes)
     }
 }
-
 
 @Composable
 fun Day(
@@ -279,7 +296,7 @@ fun Day(
     isSelected: Boolean,
     isTagged: Boolean = false,
     onClick: (CalendarDay) -> Unit,
-    currentMonth: YearMonth // Pass currentMonth to the composable
+    currentMonth: YearMonth
 ) {
     Box(
         modifier = Modifier
@@ -288,7 +305,7 @@ fun Day(
             .background(
                 color = when {
                     isSelected -> Color.Blue
-                    isTagged ->  Color(0xFFFFCD4B) // Change background to red when tagged
+                    isTagged -> Color(0xFFFFCD4B) // Yellow highlight for tagged days
                     else -> Color.Transparent
                 }
             )
@@ -304,24 +321,25 @@ fun Day(
         ) {
             Text(
                 text = day.date.dayOfMonth.toString(),
-                color = if (day.date.month == currentMonth.month) Color.Black else Color.Gray // Correct comparison for current month
+                color = if (day.date.month == currentMonth.month) Color.Black else Color.Gray
             )
         }
     }
 }
-
-
 @Composable
-fun PetTagCountsCard(viewModel: PetTagsViewModel, petId: String) {
+fun PetTagCountsCard(
+    viewModel: PetTagsViewModel,
+    petId: String,
+    visibleMonth: YearMonth
+) {
     val tagCounts = viewModel.tagCounts
 
-    // Trigger fetching tag counts only once when this composable is first composed
-    LaunchedEffect(petId) {
-        Log.d("PetTagCountsCard", "Triggering fetch for petId: $petId")
-        viewModel.fetchTagCountsFromNotes(petId)
+    // 🔁 Re-fetch tag counts when petId or visibleMonth changes
+    LaunchedEffect(petId, visibleMonth) {
+        Log.d("PetTagCountsCard", "Fetching tag counts for petId: $petId, visibleMonth: $visibleMonth")
+        viewModel.fetchTagCountsFromNotes(petId, visibleMonth)
     }
 
-    // Log tag counts being displayed
     LaunchedEffect(tagCounts) {
         Log.d("PetTagCountsCard", "Current tag counts: $tagCounts")
     }
@@ -337,7 +355,7 @@ fun PetTagCountsCard(viewModel: PetTagsViewModel, petId: String) {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Recorded Tags",
+                    text = "Recorded Tags : ${visibleMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${visibleMonth.year}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -375,6 +393,8 @@ fun PetTagCountsCard(viewModel: PetTagsViewModel, petId: String) {
         }
     }
 }
+
+
 @Composable
 fun NotesDetailCard(
     notes: List<Notes>,

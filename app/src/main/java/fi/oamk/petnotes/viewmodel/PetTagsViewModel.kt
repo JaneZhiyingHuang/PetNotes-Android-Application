@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 class PetTagsViewModel : ViewModel() {
@@ -46,48 +47,48 @@ class PetTagsViewModel : ViewModel() {
                 onFailure(e)
             }
         }
-    }
-    fun fetchTagCountsFromNotes(petId: String) {
-        Log.d("PetTagsViewModel", "Fetching tag counts for petId: $petId")
+    }fun fetchTagCountsFromNotes(petId: String, visibleMonth: YearMonth) {
+        Log.d("PetTagsViewModel", "Fetching tag counts for petId: $petId in visibleMonth: $visibleMonth")
 
         db.collection("notes")
-            .whereEqualTo("petId", petId)  // Ensure filtering by petId
+            .whereEqualTo("petId", petId)
             .get()
             .addOnSuccessListener { querySnapshot ->
                 Log.d("PetTagsViewModel", "Fetched ${querySnapshot.size()} notes for petId: $petId")
 
                 val tagFrequencyMap = mutableMapOf<String, Int>()
+                val formatter = DateTimeFormatter.ofPattern("yyyy-M-d")
 
-                if (querySnapshot.isEmpty) {
-                    Log.d("PetTagsViewModel", "No notes found for petId: $petId")
-                }
-
-                // Iterate through the fetched notes
                 for (document in querySnapshot) {
                     Log.d("PetTagsViewModel", "Document data: ${document.data}")
-                    val tag = document.getString("tag")  // Directly retrieve the "tag" string
-                    Log.d("PetTagsViewModel", "Tag found in note ${document.id}: $tag")
+                    val tag = document.getString("tag")
+                    val dateString = document.getString("date")
 
-                    if (!tag.isNullOrEmpty()) {
-                        tagFrequencyMap[tag] = tagFrequencyMap.getOrDefault(tag, 0) + 1
+                    if (!tag.isNullOrEmpty() && !dateString.isNullOrEmpty()) {
+                        try {
+                            val noteDate = LocalDate.parse(dateString, formatter)
+                            val noteMonth = YearMonth.from(noteDate)
+
+                            if (noteMonth == visibleMonth) {
+                                tagFrequencyMap[tag] = tagFrequencyMap.getOrDefault(tag, 0) + 1
+                            } else {
+                                Log.d("PetTagsViewModel", "Skipping note not in $visibleMonth: $dateString")
+                            }
+                        } catch (e: Exception) {
+                            Log.e("PetTagsViewModel", "Error parsing date: $dateString", e)
+                        }
                     } else {
-                        Log.w("PetTagsViewModel", "Invalid or empty tag found in note ${document.id}")
+                        Log.w("PetTagsViewModel", "Invalid tag or date in note ${document.id}")
                     }
                 }
 
-                // Log tag frequency map before updating _tagCounts
-                Log.d("PetTagsViewModel", "Tag frequency map before updating: $tagFrequencyMap")
-
-                // Update the state with the fetched tag counts
+                // Update the tag counts
                 _tagCounts.clear()
                 if (tagFrequencyMap.isNotEmpty()) {
                     _tagCounts.addAll(tagFrequencyMap.map { TagCount(it.key, it.value) })
-                } else {
-                    Log.d("PetTagsViewModel", "No tags to update in _tagCounts")
                 }
 
-                // Log the final result
-                Log.d("PetTagsViewModel", "Final tag counts: $_tagCounts")
+                Log.d("PetTagsViewModel", "Final tag counts for $visibleMonth: $_tagCounts")
             }
             .addOnFailureListener { exception ->
                 Log.e("PetTagsViewModel", "Error fetching tags for petId: $petId", exception)
