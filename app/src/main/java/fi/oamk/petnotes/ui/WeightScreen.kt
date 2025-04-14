@@ -1,3 +1,4 @@
+// WeightScreen.kt
 package fi.oamk.petnotes.ui
 
 import android.app.DatePickerDialog
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -88,6 +90,8 @@ fun WeightScreen(
     var pets by remember { mutableStateOf<List<fi.oamk.petnotes.model.Pet>>(emptyList()) }
     var selectedPet by remember { mutableStateOf<fi.oamk.petnotes.model.Pet?>(null) }
 
+    // 分页状态控制
+    var currentPage by remember { mutableStateOf(0) }
 
     // Call loadPetData when the screen is launched
     LaunchedEffect(context) {
@@ -106,6 +110,11 @@ fun WeightScreen(
         }
     }
 
+    // 默认定位到最新页
+    LaunchedEffect(weightEntries.size) {
+        val totalItems = weightEntries.size
+        currentPage = if (totalItems == 0) 0 else (totalItems - 1) / 7
+    }
 
     // Initialize SnackbarHostState
     val snackbarHostState = remember { SnackbarHostState() }
@@ -156,17 +165,35 @@ fun WeightScreen(
             // Display the Weight Trend or NoChartCard based on data availability
             if (weightEntries.isNotEmpty()) {
                 val sortedEntries = weightEntries.sortedBy { it.first }
-                val dateLabels = sortedEntries.map { (date, _) ->
+
+                // 分页数据计算
+                val pageSize = 7
+                val startIndex = (currentPage * pageSize).coerceAtLeast(0)
+                val endIndex = (startIndex + pageSize).coerceAtMost(sortedEntries.size)
+                val visibleEntries = sortedEntries.subList(startIndex, endIndex)
+
+                val dateLabels = visibleEntries.map { (date, _) ->
                     SimpleDateFormat("MM/dd", Locale.getDefault()).format(date)
                 }
 
-                val chartData = sortedEntries.mapIndexed { index, (_, weight) ->
+                val chartData = visibleEntries.mapIndexed { index, (_, weight) ->
                     index.toFloat() to weight
                 }
 
+                // 导航状态
+                val canScrollLeft = currentPage > 0
+                val canScrollRight = (currentPage + 1) * pageSize < sortedEntries.size
+
                 Spacer(modifier = Modifier.height(20.dp))
 
-                WeightTrendCard(chartData = chartData, dateLabels = dateLabels)
+                WeightTrendCard(
+                    chartData = chartData,
+                    dateLabels = dateLabels,
+                    canScrollLeft = canScrollLeft,
+                    canScrollRight = canScrollRight,
+                    onScrollLeft = { if (canScrollLeft) currentPage-- },
+                    onScrollRight = { if (canScrollRight) currentPage++ }
+                )
             } else {
                 NoChartCard()
             }
@@ -203,9 +230,15 @@ fun WeightScreen(
 }
 
 @Composable
-fun WeightTrendCard(chartData: List<Pair<Float, Float>>, dateLabels: List<String>) {
-    // Wrap the chart in a Card with the style you requested
-
+fun WeightTrendCard(
+    chartData: List<Pair<Float, Float>>,
+    dateLabels: List<String>,
+    // 新增导航参数
+    canScrollLeft: Boolean,
+    canScrollRight: Boolean,
+    onScrollLeft: () -> Unit,
+    onScrollRight: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -218,13 +251,43 @@ fun WeightTrendCard(chartData: List<Pair<Float, Float>>, dateLabels: List<String
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(16.dp)
         ) {
-            // Title Text
-            Text(
-                "Weight Trend",
-                style = MaterialTheme.typography.titleMedium,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            // 标题行添加导航箭头
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = onScrollLeft,
+                    enabled = canScrollLeft,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Previous",
+                        tint = if (canScrollLeft) Color.Blue else Color.Gray
+                    )
+                }
+
+                Text(
+                    "Weight Trend",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                IconButton(
+                    onClick = onScrollRight,
+                    enabled = canScrollRight,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Next",
+                        tint = if (canScrollRight) Color.Blue else Color.Gray
+                    )
+                }
+            }
 
             // Line Chart
             LineChart(
@@ -262,6 +325,7 @@ fun WeightTrendCard(chartData: List<Pair<Float, Float>>, dateLabels: List<String
     }
 }
 
+// ... 保持NoChartCard、AddWeightCard、WeightHistoryCard等其他组件完全不变 ...
 @Composable
 fun NoChartCard() {
     Card(
