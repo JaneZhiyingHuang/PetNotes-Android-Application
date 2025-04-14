@@ -26,7 +26,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,24 +64,49 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import fi.oamk.petnotes.model.PetDataStore
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeightScreen(navController: NavController, petId: String, userId: String) {
+fun WeightScreen(
+    navController: NavController,
+    userId: String,
+) {
     val viewModel: WeightViewModel = viewModel()
+    val homeScreenViewModel: HomeScreenViewModel = viewModel()
 
     // Correct way to observe ViewModel state with collectAsState or observeAsState for LiveData
-    val petName by viewModel.petName.collectAsState(initial = null)
     val snackbarMessage by viewModel.snackbarMessage.collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
     var selectedDate by remember { mutableStateOf<Date?>(null) }
     var newWeight by remember { mutableStateOf("") }
     val weightEntries by viewModel.weightEntries.collectAsState()
+
+    val context = LocalContext.current
+    var pets by remember { mutableStateOf<List<fi.oamk.petnotes.model.Pet>>(emptyList()) }
+    var selectedPet by remember { mutableStateOf<fi.oamk.petnotes.model.Pet?>(null) }
+
+
     // Call loadPetData when the screen is launched
-    LaunchedEffect(petId, userId) {
-        viewModel.loadPetData(petId, userId)
+    LaunchedEffect(context) {
+        PetDataStore.getSelectedPetId(context).collect { storedPetId ->
+            if (homeScreenViewModel.isUserLoggedIn()) {
+                val fetchedPets = homeScreenViewModel.fetchPets()
+                pets = fetchedPets
+                selectedPet = fetchedPets.find { it.id == storedPetId } ?: fetchedPets.firstOrNull()
+            }
+        }
     }
+
+    LaunchedEffect(selectedPet, userId) {
+        selectedPet?.let { pet ->
+            viewModel.loadPetData(pet.id, userId)
+        }
+    }
+
+
     // Initialize SnackbarHostState
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -98,22 +122,24 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = " ${petName ?: "Loading..."}",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
-                            modifier = Modifier.padding(start = 130.dp)
-                        )
-                    }
-                },
+                title = {  },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    if (pets.isNotEmpty()) {
+                        SelectedPetDropdown(
+                            pets = pets,
+                            selectedPet = selectedPet,
+                            onPetSelected = { pet ->
+                                selectedPet = pet
+                                coroutineScope.launch {
+                                    PetDataStore.setSelectedPetId(context, pet.id)
+                                }
+                            }
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
@@ -155,7 +181,12 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                 addWeight = {
                     val weightValue = newWeight.toFloatOrNull()
                     if (weightValue != null && weightValue > 0) {
-                        viewModel.addWeight(petId, userId, weightValue, selectedDate)
+                        selectedPet?.let { pet ->
+                            viewModel.addWeight(pet.id, userId, weightValue, selectedDate)
+
+                            //refresh after new weight added
+                            viewModel.loadPetData(pet.id, userId)
+                        }
                     }
                 }
             )
@@ -163,7 +194,9 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
             // Weight History (Scrollable)
             WeightHistoryCard(
                 weightEntries = weightEntries,
-                deleteWeightEntry = { date -> viewModel.deleteWeightEntry(petId, userId, date) }
+                deleteWeightEntry = { date ->
+                    viewModel.deleteWeightEntry(selectedPet?.id ?: "", userId, date)
+                }
             )
         }
     }

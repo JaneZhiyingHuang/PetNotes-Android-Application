@@ -3,7 +3,6 @@ package fi.oamk.petnotes.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -59,21 +58,17 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("profile/{petId}") { backStackEntry ->
-                        val petId = backStackEntry.arguments?.getString("petId") ?: ""
                         ProfileScreen(
-                            petId = petId,
                             navController = navController,
                             homeScreenViewModel = homeScreenViewModel
                         )
                     }
                     composable("weight_screen/{userId}/{petId}") { backStackEntry ->
-                        val userId = backStackEntry.arguments?.getString("userId")
-                        val petId = backStackEntry.arguments?.getString("petId")
-                        if (userId != null && petId != null) {
-                            WeightScreen(navController = navController, userId = userId, petId = petId)
-                        } else {
-                            Text(text = "User ID or Pet ID is missing.")
-                        }
+                        val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                        WeightScreen(
+                            userId = userId,
+                            navController = navController,
+                        )
                     }
                     composable("map") {
                         // MapScreen doesn't need any ViewModel based on your code
