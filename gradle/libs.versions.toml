@@ -4,6 +4,7 @@ agp = "8.7.3"
 charty = "2.0.0"
 coilCompose = "2.4.0"
 coilComposeVersion = "2.5.0"
+compose = "2.6.2"
 composeCharts = "1.0.1"
 composeChartsVersion = "1.9.24"
 credentials = "1.5.0"
@@ -16,6 +17,7 @@ googlePlayServicesMaps = "18.1.0"
 himanshoeComposeCharts = "1.0.4"
 ioGithubEhsannarmaniComposeCharts = "latest_version"
 ioGithubEhsannarmaniComposeCharts2 = "2.0.0"
+ioGithubEhsannarmaniComposeCharts3 = "0.1.2"
 kotlin = "2.0.0"
 mapsCompose = "2.2.0"
 mapsComposeVersion = "2.1.0"
@@ -61,7 +63,9 @@ bytebeats-compose-charts = { module = "io.github.bytebeats:compose-charts", vers
 charty = { module = "com.himanshoe:charty", version.ref = "charty" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 coil-compose-v250 = { module = "io.coil-kt:coil-compose", version.ref = "coilComposeVersion" }
+compose = { module = "com.kizitonwose.calendar:compose", version.ref = "compose" }
 compose-charts = { module = "com.github.bytebeats:compose-charts", version.ref = "composeCharts" }
+compose-charts-v012 = { module = "io.github.ehsannarmani:compose-charts", version.ref = "ioGithubEhsannarmaniComposeCharts3" }
 compose-charts-v021 = { module = "io.github.bytebeats:compose-charts", version.ref = "githubComposeCharts" }
 compose-charts-v167 = { module = "io.github.bytebeats:compose-charts", version.ref = "githubComposeChartsVersion" }
 compose-charts-v200 = { module = "io.github.ehsannarmani:compose-charts", version.ref = "ioGithubEhsannarmaniComposeCharts2" }
@@ -107,6 +111,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 androidx-benchmark-macro = { group = "androidx.benchmark", name = "benchmark-macro", version.ref = "benchmarkMacro" }
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpandroidchart" }
+view = { module = "com.kizitonwose.calendar:view", version.ref = "compose" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

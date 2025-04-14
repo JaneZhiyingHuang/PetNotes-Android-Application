@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,7 +58,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
-import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import fi.oamk.petnotes.R
@@ -136,10 +137,14 @@ fun HomeScreen(
         },
         bottomBar = { BottomNavigationBar(navController = navController) }
     ) { paddingValues ->
+
+        val scrollState = rememberScrollState()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (isUserLoggedIn) {
@@ -429,8 +434,6 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, navCo
             navController.navigate("calendarScreen")
         },
         modifier = Modifier
-            .padding(10.dp)
-            .height(300.dp)
             .width(352.dp)
     ) {
         HorizontalCalendar(
@@ -486,7 +489,7 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, navCo
                 val screenWidth = configuration.screenWidthDp.dp
                 Box(
                     modifier = Modifier
-                        .width(screenWidth * 0.8f)
+                        .width(352.dp)
                         .padding(8.dp)
                         .clip(RoundedCornerShape(8.dp))
                 ) {
