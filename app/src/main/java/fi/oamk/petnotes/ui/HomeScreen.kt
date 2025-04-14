@@ -275,7 +275,14 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                 }
             }
 
-            weightEntries = fetchedEntries.sortedBy { it.first } // Sort entries by date
+            // show newest page in WeishtScreen
+            val pageSize = 7
+            val totalItems = fetchedEntries.size
+            val lastPage = if (totalItems == 0) 0 else (totalItems - 1) / pageSize
+            val startIndex = (lastPage * pageSize).coerceAtLeast(0)
+            val endIndex = (startIndex + pageSize).coerceAtMost(totalItems)
+
+            weightEntries = fetchedEntries.subList(startIndex, endIndex)
         } catch (e: Exception) {
             Log.e("WeightTrendCard", "Error fetching weight data", e)
         }
@@ -312,7 +319,6 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
     } else {
         // Process the data for charting
         val chartData = weightEntries.map { (dateMillis, weight) ->
-            // Convert to X-Y pairs where X is the time (in millis) and Y is the weight
             Pair(dateMillis.toFloat(), weight)
         }
         val dateLabels = weightEntries.map { (dateMillis, _) ->
@@ -372,7 +378,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    dateLabels.forEachIndexed { _, dateLabel ->
+                    dateLabels.forEach { dateLabel ->
                         Text(
                             text = dateLabel,
                             style = MaterialTheme.typography.bodyMedium,

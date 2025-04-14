@@ -31,7 +31,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    petId: String,
     homeScreenViewModel: HomeScreenViewModel,
     navController: NavController
 ) {

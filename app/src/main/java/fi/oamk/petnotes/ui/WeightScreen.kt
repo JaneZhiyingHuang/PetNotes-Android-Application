@@ -1,3 +1,4 @@
+// WeightScreen.kt
 package fi.oamk.petnotes.ui
 
 import android.app.DatePickerDialog
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -26,7 +28,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,24 +66,55 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
+import fi.oamk.petnotes.model.PetDataStore
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeightScreen(navController: NavController, petId: String, userId: String) {
+fun WeightScreen(
+    navController: NavController,
+    userId: String,
+) {
     val viewModel: WeightViewModel = viewModel()
+    val homeScreenViewModel: HomeScreenViewModel = viewModel()
 
     // Correct way to observe ViewModel state with collectAsState or observeAsState for LiveData
-    val petName by viewModel.petName.collectAsState(initial = null)
     val snackbarMessage by viewModel.snackbarMessage.collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
     var selectedDate by remember { mutableStateOf<Date?>(null) }
     var newWeight by remember { mutableStateOf("") }
     val weightEntries by viewModel.weightEntries.collectAsState()
+
+    val context = LocalContext.current
+    var pets by remember { mutableStateOf<List<fi.oamk.petnotes.model.Pet>>(emptyList()) }
+    var selectedPet by remember { mutableStateOf<fi.oamk.petnotes.model.Pet?>(null) }
+
+    var currentPage by remember { mutableStateOf(0) }
+
     // Call loadPetData when the screen is launched
-    LaunchedEffect(petId, userId) {
-        viewModel.loadPetData(petId, userId)
+    LaunchedEffect(context) {
+        PetDataStore.getSelectedPetId(context).collect { storedPetId ->
+            if (homeScreenViewModel.isUserLoggedIn()) {
+                val fetchedPets = homeScreenViewModel.fetchPets()
+                pets = fetchedPets
+                selectedPet = fetchedPets.find { it.id == storedPetId } ?: fetchedPets.firstOrNull()
+            }
+        }
     }
+
+    LaunchedEffect(selectedPet, userId) {
+        selectedPet?.let { pet ->
+            viewModel.loadPetData(pet.id, userId)
+        }
+    }
+
+    // defalt: shows the newest page
+    LaunchedEffect(weightEntries.size) {
+        val totalItems = weightEntries.size
+        currentPage = if (totalItems == 0) 0 else (totalItems - 1) / 7
+    }
+
     // Initialize SnackbarHostState
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -98,22 +130,24 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = " ${petName ?: "Loading..."}",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
-                            modifier = Modifier.padding(start = 130.dp)
-                        )
-                    }
-                },
+                title = {  },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    if (pets.isNotEmpty()) {
+                        SelectedPetDropdown(
+                            pets = pets,
+                            selectedPet = selectedPet,
+                            onPetSelected = { pet ->
+                                selectedPet = pet
+                                coroutineScope.launch {
+                                    PetDataStore.setSelectedPetId(context, pet.id)
+                                }
+                            }
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
@@ -130,17 +164,35 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
             // Display the Weight Trend or NoChartCard based on data availability
             if (weightEntries.isNotEmpty()) {
                 val sortedEntries = weightEntries.sortedBy { it.first }
-                val dateLabels = sortedEntries.map { (date, _) ->
+
+                // handle pages in chart
+                val pageSize = 7
+                val startIndex = (currentPage * pageSize).coerceAtLeast(0)
+                val endIndex = (startIndex + pageSize).coerceAtMost(sortedEntries.size)
+                val visibleEntries = sortedEntries.subList(startIndex, endIndex)
+
+                val dateLabels = visibleEntries.map { (date, _) ->
                     SimpleDateFormat("MM/dd", Locale.getDefault()).format(date)
                 }
 
-                val chartData = sortedEntries.mapIndexed { index, (_, weight) ->
+                val chartData = visibleEntries.mapIndexed { index, (_, weight) ->
                     index.toFloat() to weight
                 }
 
+                // scroll <- or ->
+                val canScrollLeft = currentPage > 0
+                val canScrollRight = (currentPage + 1) * pageSize < sortedEntries.size
+
                 Spacer(modifier = Modifier.height(20.dp))
 
-                WeightTrendCard(chartData = chartData, dateLabels = dateLabels)
+                WeightTrendCard(
+                    chartData = chartData,
+                    dateLabels = dateLabels,
+                    canScrollLeft = canScrollLeft,
+                    canScrollRight = canScrollRight,
+                    onScrollLeft = { if (canScrollLeft) currentPage-- },
+                    onScrollRight = { if (canScrollRight) currentPage++ }
+                )
             } else {
                 NoChartCard()
             }
@@ -155,7 +207,12 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
                 addWeight = {
                     val weightValue = newWeight.toFloatOrNull()
                     if (weightValue != null && weightValue > 0) {
-                        viewModel.addWeight(petId, userId, weightValue, selectedDate)
+                        selectedPet?.let { pet ->
+                            viewModel.addWeight(pet.id, userId, weightValue, selectedDate)
+
+                            //refresh after new weight added
+                            viewModel.loadPetData(pet.id, userId)
+                        }
                     }
                 }
             )
@@ -163,16 +220,23 @@ fun WeightScreen(navController: NavController, petId: String, userId: String) {
             // Weight History (Scrollable)
             WeightHistoryCard(
                 weightEntries = weightEntries,
-                deleteWeightEntry = { date -> viewModel.deleteWeightEntry(petId, userId, date) }
+                deleteWeightEntry = { date ->
+                    viewModel.deleteWeightEntry(selectedPet?.id ?: "", userId, date)
+                }
             )
         }
     }
 }
 
 @Composable
-fun WeightTrendCard(chartData: List<Pair<Float, Float>>, dateLabels: List<String>) {
-    // Wrap the chart in a Card with the style you requested
-
+fun WeightTrendCard(
+    chartData: List<Pair<Float, Float>>,
+    dateLabels: List<String>,
+    canScrollLeft: Boolean,
+    canScrollRight: Boolean,
+    onScrollLeft: () -> Unit,
+    onScrollRight: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -185,17 +249,46 @@ fun WeightTrendCard(chartData: List<Pair<Float, Float>>, dateLabels: List<String
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(16.dp)
         ) {
-            // Title Text
-            Text(
-                "Weight Trend",
-                style = MaterialTheme.typography.titleMedium,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = onScrollLeft,
+                    enabled = canScrollLeft,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Previous",
+                        tint = if (canScrollLeft) Color.Blue else Color.Gray
+                    )
+                }
+
+                Text(
+                    "Weight Trend",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                IconButton(
+                    onClick = onScrollRight,
+                    enabled = canScrollRight,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Next",
+                        tint = if (canScrollRight) Color.Blue else Color.Gray
+                    )
+                }
+            }
 
             // Line Chart
             LineChart(
-                data = remember {
+                data = remember(chartData){
                     listOf(
                         Line(
                             label = "Pet Weight",
