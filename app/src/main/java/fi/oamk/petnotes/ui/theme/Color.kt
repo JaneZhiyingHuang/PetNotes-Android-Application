@@ -19,3 +19,5 @@ val BgColor = Color (0xFFC7C7C7)
 val InputColor = Color(0xFFECECEC)
 
 val ButtonColor = Color(0xFFD3D3D3)
+
+val DarkRed = Color(0xFFA91515)

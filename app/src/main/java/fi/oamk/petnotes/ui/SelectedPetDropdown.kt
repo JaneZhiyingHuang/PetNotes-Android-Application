@@ -15,7 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.compose.material.icons.outlined.Pets
+import androidx.compose.ui.unit.DpOffset
 
 
 @Composable
@@ -32,9 +33,19 @@ fun SelectedPetDropdown(
             .wrapContentSize(Alignment.Center)
     ) {
         Row(
-            modifier = Modifier.padding(top = 4.dp),
+            modifier = Modifier
+                .padding(start = 40.dp, top = 4.dp)
+                .wrapContentWidth(Alignment.Start),
             verticalAlignment = Alignment.CenterVertically
+
         ) {
+            Icon(
+                imageVector = Icons.Outlined.Pets,
+                contentDescription = "Pet Icon",
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+
             Text(
                 text = selectedPet?.name ?: "Select Pet",
                 fontWeight = FontWeight.Bold,
@@ -46,7 +57,8 @@ fun SelectedPetDropdown(
         }
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            offset = DpOffset(x = 30.dp, y = 0.dp)
         ) {
             pets.forEach { pet ->
                 DropdownMenuItem(

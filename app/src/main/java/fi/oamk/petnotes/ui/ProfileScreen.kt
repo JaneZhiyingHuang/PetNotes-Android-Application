@@ -25,6 +25,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
+import fi.oamk.petnotes.ui.theme.DarkRed
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import kotlinx.coroutines.launch
 
@@ -91,7 +92,7 @@ fun ProfileScreen(
                 // card for pet image
                 PetImageCard(pet = selectedPet!!)
                 // card for pet infos
-                PetInfoCard(pet = selectedPet!!, navController = navController) // 传入 navController 用于导航
+                PetInfoCard(pet = selectedPet!!, navController = navController)
             } else {
                 Text(text = "Pet not found")
             }
@@ -135,7 +136,6 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
         Column(modifier = Modifier
             .padding(16.dp)
         )
-//            .verticalScroll(rememberScrollState()))
             {
 
             // title (Pet Profile)
@@ -143,7 +143,10 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
                 Text(
                     text = "Pet Profile",
                     style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 16.sp),
-                    modifier = Modifier.align(Alignment.CenterVertically).weight(1f),
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .weight(1f)
+                        .padding(start= 50.dp),
                     textAlign = TextAlign.Center
                 )
 
@@ -182,7 +185,7 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "*Delete profile of this pet.",
-                    style = TextStyle(fontSize = 16.sp, color = Color.DarkGray),
+                    style = TextStyle(fontSize = 16.sp, color = DarkRed),
                     modifier = Modifier.align(Alignment.CenterVertically).weight(1f),
                     textAlign = TextAlign.Center
                 )
