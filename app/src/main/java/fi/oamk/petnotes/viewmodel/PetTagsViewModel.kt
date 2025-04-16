@@ -26,6 +26,37 @@ class PetTagsViewModel : ViewModel() {
     private val _tagCounts = mutableStateListOf<TagCount>()
     val tagCounts: List<TagCount> = _tagCounts
 
+    // Function to fetch pet tags from Firestore
+    suspend fun fetchPetTags(
+        petId: String,
+        onSuccess: (List<String>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId != null) {
+            try {
+                // Fetch the pet document from Firestore
+                val petDocument = db.collection("users")
+                    .document(userId)
+                    .collection("pets")
+                    .document(petId)
+                    .get()
+                    .await()
+
+                // Retrieve the tags from the document (default to an empty list if not present)
+                val tags = petDocument.get("tags") as? List<String> ?: emptyList()
+
+                // Pass the tags to the onSuccess callback
+                onSuccess(tags)
+            } catch (e: Exception) {
+                // Handle failure and pass the exception to onFailure callback
+                onFailure(e)
+            }
+        } else {
+            // Handle the case where the user is not logged in
+            onFailure(Exception("User is not logged in"))
+        }
+    }
     // Function to update tags field in the pet document (if needed)
     suspend fun updatePetTags(
         petId: String,
@@ -47,7 +78,8 @@ class PetTagsViewModel : ViewModel() {
                 onFailure(e)
             }
         }
-    }fun fetchTagCountsFromNotes(petId: String, visibleMonth: YearMonth) {
+    }
+    fun fetchTagCountsFromNotes(petId: String, visibleMonth: YearMonth) {
         Log.d("PetTagsViewModel", "Fetching tag counts for petId: $petId in visibleMonth: $visibleMonth")
 
         db.collection("notes")

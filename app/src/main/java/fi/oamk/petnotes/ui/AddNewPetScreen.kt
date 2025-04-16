@@ -64,6 +64,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.storage.FirebaseStorage
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 
@@ -428,12 +429,14 @@ fun LabeledTextField(
             modifier = Modifier
                 .width(280.dp)
                 .padding(top = 3.dp)
-                .height(56.dp)
+                .defaultMinSize(minHeight = 56.dp)
                 .align(Alignment.CenterHorizontally)
                 .fillMaxWidth()
                 .background(InputColor, RoundedCornerShape(40.dp)),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
-            shape = RoundedCornerShape(40.dp)
+            shape = RoundedCornerShape(40.dp),
+            singleLine = false,
+            maxLines = Int.MAX_VALUE
         )
     }
 }

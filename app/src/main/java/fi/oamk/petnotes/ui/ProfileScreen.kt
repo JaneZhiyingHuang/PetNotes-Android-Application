@@ -77,10 +77,14 @@ fun ProfileScreen(
             )
         }
     ) { padding ->
+
+        val scrollState = rememberScrollState()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (selectedPet != null) {
@@ -130,7 +134,9 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
         // Wrap in a scrollable column to avoid content being cut off
         Column(modifier = Modifier
             .padding(16.dp)
-            .verticalScroll(rememberScrollState())) {
+        )
+//            .verticalScroll(rememberScrollState()))
+            {
 
             // title (Pet Profile)
             Row(modifier = Modifier.fillMaxWidth()) {
