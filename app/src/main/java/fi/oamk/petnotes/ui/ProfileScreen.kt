@@ -1,6 +1,7 @@
 package fi.oamk.petnotes.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,11 +22,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.ui.theme.DarkRed
+import fi.oamk.petnotes.viewmodel.AddNewPetViewModel
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import kotlinx.coroutines.launch
 
@@ -40,6 +43,7 @@ fun ProfileScreen(
     var pets by remember { mutableStateOf(listOf<Pet>()) }
     var selectedPet by remember { mutableStateOf<Pet?>(null) }
     val coroutineScope = rememberCoroutineScope()
+
 
     LaunchedEffect(context) {
         PetDataStore.getSelectedPetId(context).collect { storedPetId ->
@@ -124,6 +128,11 @@ fun PetImageCard(pet: Pet){
 
 @Composable
 fun PetInfoCard(pet: Pet, navController: NavController) {
+
+    val addnewPetViewModel: AddNewPetViewModel = viewModel()
+    var showDialog by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -182,19 +191,51 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
             Spacer(modifier = Modifier.height(30.dp))
 
             // Delete button
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "*Delete profile of this pet.",
-                    style = TextStyle(fontSize = 16.sp, color = DarkRed),
-                    modifier = Modifier.align(Alignment.CenterVertically).weight(1f),
-                    textAlign = TextAlign.Center
-                )
-            }
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "*Delete profile of this pet.",
+                        style = TextStyle(fontSize = 16.sp, color = DarkRed),
+                        modifier = Modifier
+                            .weight(1f)
+                            .align(Alignment.CenterVertically)
+                            .clickable { showDialog = true },
+                        textAlign = TextAlign.Center
+                    )
+                }
 
+                if (showDialog) {
+
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("* Warning") },
+                        text = { Text("Are you sure to DELETE profile of this pet?" +
+                                "This will delete all data related to this pet. ") },
+
+
+                        confirmButton = {
+                            TextButton(onClick = {
+                                showDialog = false
+                                coroutineScope.launch {
+                                    addnewPetViewModel.deletePetAndRelatedData(petId = pet.id) {
+                                        navController.popBackStack()
+                                    }
+                                }
+                            }) {
+                                Text("DELETE")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("CANCEL")
+                            }
+                        }
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(30.dp))
         }
     }
-}
+
 
 //for info card style
 @Composable

@@ -95,4 +95,47 @@ class AddNewPetViewModel : ViewModel() {
             }
         }
     }
+
+    // delete pet
+    suspend fun deletePetAndRelatedData(petId: String, onSuccess: () -> Unit) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId != null) {
+            try {
+                // 1. pets
+                db.collection("users")
+                    .document(userId)
+                    .collection("pets")
+                    .document(petId)
+                    .delete()
+                    .await()
+
+                // 2. pet_weights
+                val weightSnapshots = db.collection("pet_weights")
+                    .whereEqualTo("petId", petId)
+                    .get()
+                    .await()
+
+                for (doc in weightSnapshots.documents) {
+                    doc.reference.delete().await()
+                }
+
+                // 3. notes
+                val noteSnapshots = db.collection("notes")
+                    .whereEqualTo("petId", petId)
+                    .get()
+                    .await()
+
+                for (doc in noteSnapshots.documents) {
+                    doc.reference.delete().await()
+                }
+
+                onSuccess()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("DeletePet", "Error deleting pet and related data", e)
+            }
+        }
+    }
+
+
 }
