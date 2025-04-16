@@ -70,6 +70,7 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -80,6 +81,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
+import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
@@ -104,7 +106,8 @@ fun NotesScreen(
     var selectedPet by remember { mutableStateOf<Pet?>(null) }
     var expanded by remember { mutableStateOf(false) }
     var dropdownWidth by remember { mutableStateOf(0.dp) }
-    var selectedTag by remember { mutableStateOf("All") }
+    val defaultTag = stringResource(R.string.all)
+    var selectedTag by remember { mutableStateOf(defaultTag) }
     var tags by remember { mutableStateOf(listOf<String>()) }
     var showDialog by remember { mutableStateOf(false) }
     var newTag by remember { mutableStateOf(TextFieldValue("")) }
@@ -133,7 +136,10 @@ fun NotesScreen(
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteNoteDialog by remember { mutableStateOf<Notes?>(null) }
 
-    val defaultTags = listOf("All", "Vomit", "Stool", "Cough", "Vet", "Water Intake", "Emotion")
+    val defaultTags = listOf(
+        stringResource(R.string.all), stringResource(R.string.vomit), stringResource(R.string.stool),
+        stringResource(R.string.cough), stringResource(R.string.vet), stringResource(R.string.water_intake), stringResource(R.string.emotion)
+    )
 
     // State to track photo and document URIs
     var photoUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
@@ -195,7 +201,7 @@ fun NotesScreen(
                 userInput = ""
                 photoUris = emptyList()
                 documentUris = emptyList()
-                selectedTag = "All"
+                selectedTag = context.getString(R.string.all)
 
                 selectedDate = currentDate.get(Calendar.DAY_OF_MONTH).toString()
                 selectedMonth = (currentDate.get(Calendar.MONTH) + 1).toString()
@@ -267,14 +273,14 @@ fun NotesScreen(
                         ) {
                             // Always show the "All" tag first
                             FilterChip(
-                                selected = selectedTag == "All",
-                                onClick = { selectedTag = "All" },
-                                label = { Text("All") },
+                                selected = selectedTag == stringResource(R.string.all),
+                                onClick = { selectedTag = context.getString(R.string.all) },
+                                label = { Text(stringResource(R.string.all)) },
                                 modifier = Modifier.padding(end = 4.dp)
                             )
 
                             // Display other tags with delete functionality
-                            tags.filter { it != "All" }.forEach { tag ->
+                            tags.filter { it != stringResource(R.string.all) }.forEach { tag ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center
@@ -320,12 +326,15 @@ fun NotesScreen(
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
                                             Text(
-                                                text = "*Warning",
+                                                text = stringResource(R.string.warning),
                                                 color = Color.Red,
                                                 modifier = Modifier.padding(bottom = 16.dp)
                                             )
                                             Text(
-                                                text = "Are you sure to DELETE all the notes of the tag '${showDeleteConfirmationDialog}'?",
+                                                text = stringResource(
+                                                    R.string.tag_delete_alert,
+                                                    showDeleteConfirmationDialog!!
+                                                ),
                                                 modifier = Modifier.padding(bottom = 16.dp)
                                             )
                                             Row(
@@ -346,7 +355,7 @@ fun NotesScreen(
                                                                     updatedTags,
                                                                     onSuccess = {
                                                                         tags = updatedTags
-                                                                        selectedTag = "All"
+                                                                        selectedTag = context.getString(R.string.all)
                                                                         showDeleteConfirmationDialog = null
                                                                     },
                                                                     onFailure = { error ->
@@ -362,7 +371,7 @@ fun NotesScreen(
                                                         contentColor = Color.Black
                                                     )
                                                 ) {
-                                                    Text("Yes")
+                                                    Text(stringResource(R.string.yes))
                                                 }
                                                 Button(
                                                     onClick = {
@@ -373,7 +382,7 @@ fun NotesScreen(
                                                         contentColor = Color.Black
                                                     )
                                                 ) {
-                                                    Text("No")
+                                                    Text(stringResource(R.string.no))
                                                 }
                                             }
                                         }
@@ -384,14 +393,14 @@ fun NotesScreen(
                             FilterChip(
                                 selected = false,
                                 onClick = { showDialog = true },
-                                label = { Text("Add +") }
+                                label = { Text(stringResource(R.string.add2)) }
                             )
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Add New Abnormal Behaviors:",
+                    text = stringResource(R.string.add_new_abnormal_behaviors),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     fontWeight = FontWeight.Bold
                 )
@@ -403,7 +412,9 @@ fun NotesScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Row(
@@ -414,8 +425,8 @@ fun NotesScreen(
                             val months = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12")
                             val years = (2020..2030).map { it.toString() }
                             val displayTag =
-                                if (selectedTag == "All") tags.firstOrNull { it != "All" }
-                                    ?: "Vomit" else selectedTag
+                                if (selectedTag == stringResource(R.string.all)) tags.firstOrNull { it != context.getString(R.string.all) }
+                                    ?: stringResource(R.string.vomit) else selectedTag
 
                             DateSelector(selectedDate) { selectedDate = it }
                             DropdownSelector(selectedValue = selectedMonth, options = months, onValueChange = { selectedMonth = it }, modifier = Modifier.weight(0.7f))
@@ -439,13 +450,15 @@ fun NotesScreen(
                                     .fillMaxWidth()
                                     .height(200.dp)
                                     .padding(12.dp),
-                                placeholder = { Text("Write the description of your pet's abnormal behaviors") },
+                                placeholder = { Text(stringResource(R.string.description_placeholder)) },
                                 singleLine = false
                             )
                         }
 
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Button(
@@ -454,9 +467,11 @@ fun NotesScreen(
                                     containerColor = Color(0xFFD9D9D9),
                                     contentColor = Color.Black
                                 ),
-                                modifier = Modifier.weight(1f).padding(end = 4.dp)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 4.dp)
                             ) {
-                                Text(text = "Add Photos (${photoUris.size})", fontWeight = FontWeight.Bold)
+                                Text(text = stringResource(R.string.add_photos, photoUris.size), fontWeight = FontWeight.Bold)
                             }
                             Button(
                                 onClick = { documentPickerLauncher.launch("*/*") },
@@ -464,9 +479,14 @@ fun NotesScreen(
                                     containerColor = Color(0xFFD9D9D9),
                                     contentColor = Color.Black
                                 ),
-                                modifier = Modifier.weight(1f).padding(end = 4.dp)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 4.dp)
                             ) {
-                                Text(text = "Add Documents (${documentUris.size})", fontWeight = FontWeight.Bold)
+                                Text(text = stringResource(
+                                    R.string.add_documents,
+                                    documentUris.size
+                                ), fontWeight = FontWeight.Bold)
                             }
                         }
 
@@ -478,7 +498,8 @@ fun NotesScreen(
                                 }
 
                                 if (userInput.isBlank()) {
-                                    Toast.makeText(context, "Description cannot be empty", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context,
+                                        context.getString(R.string.description_cannot_be_empty), Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
 
@@ -511,7 +532,7 @@ fun NotesScreen(
                                 contentColor = Color.Black
                             )
                         ) {
-                            Text(text = "Confirm", fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.confirm), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -519,7 +540,7 @@ fun NotesScreen(
                 if (fetchedNotes.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Your Pet's Notes:",
+                        text = stringResource(R.string.your_pet_s_notes),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
@@ -529,7 +550,7 @@ fun NotesScreen(
 
             // Display notes
             items(fetchedNotes.filter { note ->
-                selectedTag == "All" || note.tag == selectedTag
+                selectedTag == context.getString(R.string.all) || note.tag == selectedTag
             }) { note ->
                 NoteCard(
                     note = note,
@@ -560,21 +581,26 @@ fun NotesScreen(
             }
         ) {
             Card(
-                modifier = Modifier.fillMaxWidth().padding(16.dp).height(600.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(600.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState()),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Edit Note",
+                        text = stringResource(R.string.edit_note),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     DropdownSelector(
                         selectedValue = editedTag,
-                        options = tags.filter { it != "All" },
+                        options = tags.filter { it != stringResource(R.string.all) },
                         onValueChange = { editedTag = it },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -582,20 +608,25 @@ fun NotesScreen(
                     OutlinedTextField(
                         value = editedDescription,
                         onValueChange = { editedDescription = it },
-                        label = { Text("Description") },
-                        modifier = Modifier.fillMaxWidth().height(200.dp),
+                        label = { Text(stringResource(R.string.description)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
                         singleLine = false
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     if (existingPhotoUrls.isNotEmpty() || editedPhotoUris.isNotEmpty()) {
                         Text(
-                            text = "Photos",
+                            text = stringResource(R.string.photos),
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
                             modifier = Modifier.align(Alignment.Start)
                         )
                         LazyRow(
-                            modifier = Modifier.fillMaxWidth().height(120.dp).padding(vertical = 8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(existingPhotoUrls.filter {url ->
@@ -609,7 +640,9 @@ fun NotesScreen(
                                             .crossfade(true)
                                             .build(),
                                         contentDescription = "Pet photo",
-                                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(8.dp)),
                                         contentScale = ContentScale.Crop,
                                         placeholder = ColorPainter(Color(0xFFE0E0E0))
                                     )
@@ -617,7 +650,10 @@ fun NotesScreen(
                                         onClick = {
                                             removedPhotoUrls = removedPhotoUrls + photoUrl
                                         },
-                                        modifier = Modifier.align(Alignment.TopEnd).size(24.dp).background(Color.White, CircleShape)
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .size(24.dp)
+                                            .background(Color.White, CircleShape)
                                     ) {
                                         Icon(
                                             Icons.Default.Delete,
@@ -665,7 +701,7 @@ fun NotesScreen(
 
                     if (existingDocumentUrls.isNotEmpty() || editedDocumentUris.isNotEmpty()) {
                         Text(
-                            text = "Documents",
+                            text = stringResource(R.string.documents),
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
                             modifier = Modifier.align(Alignment.Start)
@@ -716,7 +752,7 @@ fun NotesScreen(
                             }
                             editedDocumentUris.forEach { uri ->
                                 val context = LocalContext.current
-                                val fileName = uri.lastPathSegment ?: "Document"
+                                val fileName = uri.lastPathSegment ?: stringResource(R.string.document)
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -774,24 +810,28 @@ fun NotesScreen(
 
                         Button(
                             onClick = { photoPickerLauncher.launch("image/*") },
-                            modifier = Modifier.weight(1f).padding(end = 4.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 4.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFFD9D9D9),
                                 contentColor = Color.Black
                             )
                         ) {
-                            Text(text = "Add Photos", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.add_photos2), textAlign = TextAlign.Center, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Button(
                             onClick = { documentPickerLauncher.launch("*/*") },
-                            modifier = Modifier.weight(1f).padding(start = 4.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 4.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFFD9D9D9),
                                 contentColor = Color.Black
                             )
                         ) {
-                            Text(text = "Add Documents", textAlign = TextAlign.Center, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.add_documents2), textAlign = TextAlign.Center, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -812,7 +852,11 @@ fun NotesScreen(
                                                     notesViewModel.uploadPhotos(editedPhotoUris)
                                                 )
                                             } catch (e: Exception) {
-                                                Toast.makeText(context, "Failed to upload photos: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context,
+                                                    context.getString(
+                                                        R.string.failed_to_upload_photos,
+                                                        e.message
+                                                    ), Toast.LENGTH_SHORT).show()
                                             }
                                         }
                                         if (editedDocumentUris.isNotEmpty()) {
@@ -821,7 +865,11 @@ fun NotesScreen(
                                                     notesViewModel.uploadDocuments(editedDocumentUris)
                                                 )
                                             } catch (e: Exception) {
-                                                Toast.makeText(context, "Failed to upload documents: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context,
+                                                    context.getString(
+                                                        R.string.failed_to_upload_documents,
+                                                        e.message
+                                                    ), Toast.LENGTH_SHORT).show()
                                             }
                                         }
 
@@ -842,12 +890,17 @@ fun NotesScreen(
                                         notesViewModel.updateNote(
                                             updatedNote,
                                             onSuccess = {
-                                                Toast.makeText(context, "Note updated successfully", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context,
+                                                    context.getString(R.string.note_updated_successfully), Toast.LENGTH_SHORT).show()
                                                 refreshTrigger++
                                                 showEditDialog = false
                                             },
                                             onFailure = { error ->
-                                                Toast.makeText(context, "Failed to update note: $error", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context,
+                                                    context.getString(
+                                                        R.string.failed_to_update_note,
+                                                        error
+                                                    ), Toast.LENGTH_SHORT).show()
                                             }
                                         )
                                     }
@@ -859,7 +912,7 @@ fun NotesScreen(
                                 contentColor = Color.Black
                             )
                         ) {
-                            Text(text = "Save", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.save), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = {
@@ -871,7 +924,7 @@ fun NotesScreen(
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(text = "Delete", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.delete), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = {
@@ -884,7 +937,7 @@ fun NotesScreen(
                                 contentColor = Color.Black,
                             )
                         ) {
-                            Text(text = "Cancel", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.cancel), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -906,13 +959,13 @@ fun NotesScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "*Warning",
+                        text = stringResource(R.string.warning),
                         color = Color.Red,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     Text(
-                        text = "Are you sure you want to delete this note? This action cannot be undone.",
+                        text = stringResource(R.string.note_deletion_alert),
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     Row(
@@ -926,12 +979,17 @@ fun NotesScreen(
                                         notesViewModel.deleteNote(
                                             note,
                                             onSuccess = {
-                                                Toast.makeText(context, "Note deleted successfully", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context,
+                                                    context.getString(R.string.note_deleted_successfully), Toast.LENGTH_SHORT).show()
                                                 refreshTrigger++
                                                 showDeleteNoteDialog = null
                                             },
                                             onFailure = { error ->
-                                                Toast.makeText(context, "Failed to delete note: $error", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context,
+                                                    context.getString(
+                                                        R.string.failed_to_delete_note,
+                                                        error
+                                                    ), Toast.LENGTH_SHORT).show()
                                             }
                                         )
                                     }
@@ -941,12 +999,16 @@ fun NotesScreen(
                                 containerColor = Color.Red
                             )
                         ) {
-                            Text("Delete")
+                            Text(stringResource(R.string.delete))
                         }
                         Button(
-                            onClick = { showDeleteNoteDialog = null }
+                            onClick = { showDeleteNoteDialog = null },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFD9D9D9),
+                                contentColor = Color.Black
+                            )
                         ) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.cancel))
                         }
                     }
                 }
@@ -972,14 +1034,14 @@ fun NotesScreen(
                         modifier = Modifier.padding(16.dp), // Ensure proper padding inside the Card
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Add a new tag")
+                        Text(stringResource(R.string.add_a_new_tag))
 
                         Spacer(modifier = Modifier.height(12.dp))
 
                         OutlinedTextField(
                             value = newTag,
                             onValueChange = { newTag = it },
-                            placeholder = { Text("Enter tag name") },
+                            placeholder = { Text(stringResource(R.string.enter_tag_name)) },
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -1003,7 +1065,11 @@ fun NotesScreen(
                                                         showDialog = false
                                                     },
                                                     onFailure = { e ->
-                                                        Toast.makeText(context,"Failed to add tag: ${e.message ?: "Unknown error"}", Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context,
+                                                            context.getString(
+                                                                R.string.failed_to_add_tag,
+                                                                e.message ?: "Unknown error"
+                                                            ), Toast.LENGTH_SHORT).show()
                                                         tags = tags.filter { it != newTag.text.trim() }
                                                     })
                                             }
@@ -1017,7 +1083,7 @@ fun NotesScreen(
                                     contentColor = Color.Black
                                 )
                             ) {
-                                Text("Add")
+                                Text(stringResource(R.string.add))
                             }
 
                             Button(
@@ -1028,7 +1094,7 @@ fun NotesScreen(
                                     contentColor = Color.Black
                                 )
                             ) {
-                                Text("Cancel")
+                                Text(stringResource(R.string.cancel))
                             }
                         }
                     }
@@ -1167,12 +1233,14 @@ fun NoteCard(
                 if (note.photoUrls.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Photos:",
+                        text = stringResource(R.string.photos2),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
                     LazyRow(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(note.photoUrls) { photoUrl ->
@@ -1196,12 +1264,14 @@ fun NoteCard(
                 if (note.documentUrls.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Documents:",
+                        text = stringResource(R.string.documents2),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
                     ) {
                         note.documentUrls.forEach { documentUrl ->
                             val fileName = documentUrl.substringAfterLast("/")
