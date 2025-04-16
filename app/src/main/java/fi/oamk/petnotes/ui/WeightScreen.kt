@@ -51,12 +51,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import fi.oamk.petnotes.R
 import fi.oamk.petnotes.viewmodel.WeightViewModel
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.models.DotProperties
@@ -237,6 +239,8 @@ fun WeightTrendCard(
     onScrollLeft: () -> Unit,
     onScrollRight: () -> Unit
 ) {
+    val petWeightLabel = stringResource(R.string.pet_weight)
+
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -267,7 +271,7 @@ fun WeightTrendCard(
                 }
 
                 Text(
-                    "Weight Trend",
+                    stringResource(R.string.weight_trend),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -291,7 +295,7 @@ fun WeightTrendCard(
                 data = remember(chartData){
                     listOf(
                         Line(
-                            label = "Pet Weight",
+                            label = petWeightLabel,
                             values = chartData.map { it.second.toDouble() },
                             color = SolidColor(Color.Blue),
                             dotProperties = DotProperties(
@@ -339,7 +343,7 @@ fun NoChartCard() {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                "Start adding your first pet weight data",
+                stringResource(R.string.start_adding_your_first_pet_weight_data),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
@@ -378,7 +382,10 @@ fun AddWeightCard(
                     horizontalArrangement = Arrangement.spacedBy(70.dp)
                 ) {
                     Text(
-                        text = "Date: ${dateFormatforselect.format(selectedDate ?: currentDate)}",
+                        text = stringResource(
+                            R.string.date,
+                            dateFormatforselect.format(selectedDate ?: currentDate)
+                        ),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -389,7 +396,7 @@ fun AddWeightCard(
                             contentColor = Color.Black
                         )
                     ) {
-                        Text("Select Date", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.select_date), fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -443,7 +450,7 @@ fun AddWeightCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Add",
+                                text = stringResource(R.string.add),
                                 fontWeight = FontWeight.Bold
                             )
                             Icon(
@@ -476,7 +483,7 @@ fun WeightHistoryCard(
         ) {
             Column(modifier = Modifier.padding(30.dp)) {
                 Text(
-                    "Weight History",
+                    stringResource(R.string.weight_history),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -539,7 +546,7 @@ fun WeightHistoryCard(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "No weight data available",
+                    stringResource(R.string.no_weight_data_available),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )

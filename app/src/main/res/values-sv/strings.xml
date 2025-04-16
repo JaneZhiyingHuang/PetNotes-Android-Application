@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PetNotes</string>
+    <string name="welcome_user">Välkomna, %1$s</string>
+    <string name="pet_name">Husdjurets namn</string>
+    <string name="gender">Kön</string>
+    <string name="male">Manlig</string>
+    <string name="female">Kvinnlig</string>
+    <string name="other">Andra</string>
+    <string name="specie">Art</string>
+    <string name="breed">*Ras</string>
+    <string name="medical_condition">*Medicinskt tillstånd</string>
+    <string name="microchip_id_number">*Mikrochips/ID nummer</string>
+    <string name="insurance_company">*Försökringsbolag</string>
+    <string name="insurance_number">*Försökringsnummer</string>
+    <string name="date_of_birth">Födelsedatum</string>
+    <string name="select_date">Välj datum</string>
+    <string name="saving">Sparar...</string>
+    <string name="update_pet">"Uppdatera husdjur  "</string>
+    <string name="add_new_pet">"Lägg till nytt husdjur  "</string>
+    <string name="please_fill_all_mandatory_fields_and_upload_avatar">Fyll i alla obligatoriska fält och ladda upp en avatar.</string>
+    <string name="no_user_logged_in">Ingen användare inloggad</string>
+    <string name="home">Hem</string>
+    <string name="notes">Anteckningar</string>
+    <string name="map">Karta</string>
+    <string name="setting">Inställningar</string>
+    <string name="please_log_in_to_continue">Logga in för att fortsätta.</string>
+    <string name="add_your_first_pet_to_start">Lägg till ditt första husdjur för att börja!</string>
+    <string name="start_adding_your_first_pet_weight_data">Börja med att lägga till din första husdjurs viktdata</string>
+    <string name="weight_trend">"Vikttrend  "</string>
+    <string name="pet_weight">Husdjurets vikt</string>
+    <string name="date">Datum: %1$s</string>
+    <string name="add">Lägg till</string>
+    <string name="weight_history">Painohistoria</string>
+    <string name="no_weight_data_available">Ingen viktdata tillgänglig</string>
+</resources>

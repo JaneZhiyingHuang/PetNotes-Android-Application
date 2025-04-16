@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PetNotes</string>
+    <string name="welcome_user">Tervetuloa, %1$s</string>
+    <string name="pet_name">Lemmikin nimi</string>
+    <string name="gender">Sukupuoli</string>
+    <string name="female">Naaras</string>
+    <string name="other">Muu</string>
+    <string name="male">Uros</string>
+    <string name="specie">Laji</string>
+    <string name="breed">*Rotu</string>
+    <string name="medical_condition">*Sairaus</string>
+    <string name="microchip_id_number">*Mikrosirun/ID numero</string>
+    <string name="insurance_company">*Vakuutusyhtiö</string>
+    <string name="insurance_number">*Vakuutusnumero</string>
+    <string name="date_of_birth">Syntymäaika</string>
+    <string name="select_date">Valitse päivämäärä</string>
+    <string name="saving">Tallennetaan...</string>
+    <string name="update_pet">Päivitä lemmikki</string>
+    <string name="add_new_pet">Lisää uusi lemmikki</string>
+    <string name="please_fill_all_mandatory_fields_and_upload_avatar">Täytä kaikki pakolliset kentät ja lataa profiilikuva.</string>
+    <string name="no_user_logged_in">Ei käyttäjää kirjautuneena</string>
+    <string name="home">Koti</string>
+    <string name="notes">Muistiinpanot</string>
+    <string name="map">Kartta</string>
+    <string name="setting">Asetukset</string>
+    <string name="please_log_in_to_continue">Kirjaudu sisään jatkaaksesi.</string>
+    <string name="add_your_first_pet_to_start">Lisää ensimmäinen lemmikkisi aloittaaksesi!</string>
+    <string name="start_adding_your_first_pet_weight_data">Aloita lisäämällä ensimmäisen lemmikkisi painotiedot</string>
+    <string name="weight_trend">Painon kehitys</string>
+    <string name="pet_weight">Lemmikin paino</string>
+    <string name="date">Päivämäärä: %1$s</string>
+    <string name="add">Lisää</string>
+    <string name="weight_history">Painohistoria</string>
+    <string name="no_weight_data_available">Ei painotietoja saatavilla</string>
+</resources>

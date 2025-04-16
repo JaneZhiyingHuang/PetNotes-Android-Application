@@ -1,5 +1,7 @@
 package fi.oamk.petnotes.ui
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import fi.oamk.petnotes.ui.theme.PetNotesTheme
+import fi.oamk.petnotes.utils.LanguageManager
 import fi.oamk.petnotes.viewmodel.GoogleSignInViewModel
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.NotesViewModel
@@ -18,8 +21,16 @@ import fi.oamk.petnotes.viewmodel.SignInViewModel
 import fi.oamk.petnotes.viewmodel.SignUpViewModel
 
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageManager.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val languageCode = LanguageManager.getLanguageCode(this)
+        LanguageManager.setLocale(this, languageCode)
+
         setContent {
             PetNotesTheme {
                 // Remember the NavController
@@ -116,5 +127,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Re-apply locale when configuration changes
+        val languageCode = LanguageManager.getLanguageCode(this)
+        LanguageManager.setLocale(this, languageCode)
     }
 }

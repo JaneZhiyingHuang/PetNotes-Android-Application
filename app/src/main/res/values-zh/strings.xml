@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PetNotes</string>
+    <string name="welcome_user">欢迎， %1$s</string>
+    <string name="pet_name">宠物名</string>
+    <string name="gender">性别</string>
+    <string name="male">男</string>
+    <string name="female">女</string>
+    <string name="other">其他</string>
+    <string name="specie">物种</string>
+    <string name="breed">*品种</string>
+    <string name="medical_condition">*医疗状况</string>
+    <string name="microchip_id_number">*芯片/ID 编号</string>
+    <string name="insurance_company">*保险公司</string>
+    <string name="insurance_number">*保险号码</string>
+    <string name="date_of_birth">生日</string>
+    <string name="select_date">选择日期</string>
+    <string name="saving">保存中...</string>
+    <string name="update_pet">更新宠物</string>
+    <string name="add_new_pet">加新宠物</string>
+    <string name="please_fill_all_mandatory_fields_and_upload_avatar">请填写所有必填字段并上传头像。</string>
+    <string name="no_user_logged_in">未登录用户</string>
+    <string name="home">主页</string>
+    <string name="notes">笔记</string>
+    <string name="map">地图</string>
+    <string name="setting">设置</string>
+    <string name="please_log_in_to_continue">请登录以继续。</string>
+    <string name="add_your_first_pet_to_start">添加你的第一只宠物开始吧！</string>
+    <string name="start_adding_your_first_pet_weight_data">开始添加你的第一只宠物的体重数据</string>
+    <string name="weight_trend">体重趋势</string>
+    <string name="pet_weight">宠物体重</string>
+    <string name="date">日期：%1$s</string>
+    <string name="add">添加</string>
+    <string name="weight_history">体重记录</string>
+    <string name="no_weight_data_available">暂无体重数据</string>
+</resources>

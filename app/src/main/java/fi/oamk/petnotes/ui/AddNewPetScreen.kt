@@ -64,6 +64,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.storage.FirebaseStorage
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 
 
@@ -182,7 +183,7 @@ fun AddNewPetScreen(
 
             // Reusable labeled text fields
             LabeledTextField(
-                label = "Pet Name",
+                label = stringResource(R.string.pet_name),
                 value = petName,
                 onValueChange = { petName = it }
             )
@@ -190,7 +191,7 @@ fun AddNewPetScreen(
 
             // Select gender
             Text(
-                text = "Gender",
+                text = stringResource(R.string.gender),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(bottom = 2.dp)
@@ -203,90 +204,90 @@ fun AddNewPetScreen(
                 horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
             ) {
                 Button(
-                    onClick = { petGender = "Male" },
+                    onClick = { petGender = context.getString(R.string.male) },
                     modifier = Modifier
                         .height(35.dp)
                         .weight(1f),
                     contentPadding = PaddingValues(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (petGender == "Male") ButtonColor else InputColor,
+                        containerColor = if (petGender == context.getString(R.string.male)) ButtonColor else InputColor,
                         contentColor = Color.Black
                     )
                 ) {
-                    Text("Male", fontSize = 14.sp)
+                    Text(context.getString(R.string.male), fontSize = 14.sp)
                 }
                 Button(
-                    onClick = { petGender = "Female" },
+                    onClick = { petGender = context.getString(R.string.female) },
                     modifier = Modifier
                         .height(35.dp)
                         .weight(1f),
                     contentPadding = PaddingValues(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (petGender == "Female") ButtonColor else InputColor,
+                        containerColor = if (petGender == context.getString(R.string.female)) ButtonColor else InputColor,
                         contentColor = Color.Black
                     )
                 ) {
-                    Text("Female", fontSize = 14.sp)
+                    Text(context.getString(R.string.female), fontSize = 14.sp)
                 }
                 Button(
-                    onClick = { petGender = "Other" },
+                    onClick = { petGender = context.getString(R.string.other) },
                     modifier = Modifier
                         .height(35.dp)
                         .weight(1f),
                     contentPadding = PaddingValues(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (petGender == "Other") ButtonColor else InputColor,
+                        containerColor = if (petGender == context.getString(R.string.other)) ButtonColor else InputColor,
                         contentColor = Color.Black
                     )
                 ) {
-                    Text("Other", fontSize = 14.sp)
+                    Text(context.getString(R.string.other), fontSize = 14.sp)
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
 
             LabeledTextField(
-                label = "Specie",
+                label = stringResource(R.string.specie),
                 value = petSpecie,
                 onValueChange = { petSpecie = it }
             )
             Spacer(modifier = Modifier.height(12.dp))
 
             DatePickerField(
-                label = "Date of Birth",
+                label = stringResource(R.string.date_of_birth),
                 date = petDateOfBirth,
                 onDateSelected = { petDateOfBirth = it }
             )
 
             LabeledTextField(
-                label = "*Breed",
+                label = stringResource(R.string.breed),
                 value = petBreed,
                 onValueChange = { petBreed = it }
             )
             Spacer(modifier = Modifier.height(12.dp))
 
             LabeledTextField(
-                label = "*Medical Condition",
+                label = stringResource(R.string.medical_condition),
                 value = petMedicalCondition,
                 onValueChange = { petMedicalCondition = it }
             )
             Spacer(modifier = Modifier.height(12.dp))
 
             LabeledTextField(
-                label = "*Microchip/ID Number",
+                label = stringResource(R.string.microchip_id_number),
                 value = petMicrochipNumber,
                 onValueChange = { petMicrochipNumber = it }
             )
             Spacer(modifier = Modifier.height(12.dp))
 
             LabeledTextField(
-                label = "*Insurance Company",
+                label = stringResource(R.string.insurance_company),
                 value = petInsuranceCompany,
                 onValueChange = { petInsuranceCompany = it }
             )
             Spacer(modifier = Modifier.height(12.dp))
 
             LabeledTextField(
-                label = "*Insurance Number",
+                label = stringResource(R.string.insurance_number),
                 value = petInsuranceNumber,
                 onValueChange = { petInsuranceNumber = it }
             )
@@ -370,7 +371,7 @@ fun AddNewPetScreen(
                             } else {
                                 Toast.makeText(
                                     context,
-                                    "Please fill all mandatory fields and upload avatar.",
+                                    context.getString(R.string.please_fill_all_mandatory_fields_and_upload_avatar),
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -378,7 +379,7 @@ fun AddNewPetScreen(
                     } else {
                         Toast.makeText(
                             context,
-                            "Please fill all mandatory fields and upload avatar.",
+                            context.getString(R.string.please_fill_all_mandatory_fields_and_upload_avatar),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -396,7 +397,9 @@ fun AddNewPetScreen(
                 shape = RoundedCornerShape(30.dp)
             ) {
                 Text(
-                    text = if (isLoading) "Saving..." else if (petId != null) "Update Pet" else "Add New Pet"
+                    text = if (isLoading) stringResource(R.string.saving) else if (petId != null) stringResource(
+                        R.string.update_pet
+                    ) else stringResource(R.string.add_new_pet)
                 )
             }
         }
@@ -481,7 +484,7 @@ fun DatePickerField(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = date.ifEmpty { "Select Date" },
+                text = date.ifEmpty { stringResource(R.string.select_date) },
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = Color.Black
             )

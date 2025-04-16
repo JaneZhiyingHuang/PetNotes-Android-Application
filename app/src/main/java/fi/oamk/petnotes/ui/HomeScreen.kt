@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -166,7 +167,7 @@ fun HomeScreen(
                 }
             } else {
                 Text(
-                    text = "Please log in to continue.",
+                    text = stringResource(R.string.please_log_in_to_continue),
                     style = TextStyle(fontWeight = FontWeight.Bold),
                     modifier = Modifier.padding(16.dp)
                 )
@@ -214,7 +215,7 @@ fun PetCard(pet: Pet, navController: NavController) {
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Text(text = "*Medical Condition: ${pet.medicalCondition}", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
+            Text(text = "${stringResource(R.string.medical_condition)}: ${pet.medicalCondition}", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
@@ -226,17 +227,22 @@ fun NoPetsCard(navController: NavController) {
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-        modifier = Modifier.padding(top = 150.dp).width(352.dp).height(214.dp),
+        modifier = Modifier
+            .padding(top = 150.dp)
+            .width(352.dp)
+            .height(214.dp),
         onClick = { navController.navigate("addNewPet") }
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(painter = painterResource(id = R.drawable.baseline_add_circle_outline_26), contentDescription = "Add New Pet")
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Add your first pet to start!", style = TextStyle(fontWeight = FontWeight.Bold))
+            Text(text = stringResource(R.string.add_your_first_pet_to_start), style = TextStyle(fontWeight = FontWeight.Bold))
         }
     }
 }
@@ -245,6 +251,7 @@ fun NoPetsCard(navController: NavController) {
 fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
     // Store the weight entries to plot the trend
     var weightEntries by remember { mutableStateOf<List<Pair<Long, Float>>>(emptyList()) }
+    val petWeightLabel = stringResource(R.string.pet_weight)
 
     // Fetch the weight entries from Firestore
     LaunchedEffect(pet.id) {
@@ -309,7 +316,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                 contentAlignment = Alignment.Center // Center the content
             ) {
                 Text(
-                    text = "Start adding your first pet weight data", // Text to be centered
+                    text = stringResource(R.string.start_adding_your_first_pet_weight_data), // Text to be centered
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
@@ -344,7 +351,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
             ) {
                 // Title Text
                 Text(
-                    "Weight Trend",
+                    stringResource(R.string.weight_trend),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -355,7 +362,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                     data = remember {
                         listOf(
                             Line(
-                                label = "Pet Weight",
+                                label = petWeightLabel,
                                 values = chartData.map { it.second.toDouble() },
                                 color = SolidColor(Color.Blue),
                                 dotProperties = DotProperties(

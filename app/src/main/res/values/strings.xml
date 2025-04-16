@@ -1,7 +1,37 @@
 <resources>
     <string name="app_name">PetNotes</string>
-    <string name="default_web_client_id">674752977371-us9ltiie28jcu0h1va1uvavkl4g55q4o.apps.googleusercontent.com</string>
+    <string name="default_web_client_id" translatable="false">674752977371-us9ltiie28jcu0h1va1uvavkl4g55q4o.apps.googleusercontent.com</string>
     <string name="welcome_user">Welcome, %1$s</string>
     <string name="no_user_logged_in">No user logged in</string>
-    <string name="google_maps_api_key">AIzaSyBG6bx3kXG5YPinY3O759IAAzdUKH3M7eY</string>
+    <string name="google_maps_api_key" translatable="false">AIzaSyBG6bx3kXG5YPinY3O759IAAzdUKH3M7eY</string>
+    <string name="pet_name">Pet Name</string>
+    <string name="gender">Gender</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="other">Other</string>
+    <string name="specie">Specie</string>
+    <string name="breed">*Breed</string>
+    <string name="medical_condition">*Medical Condition</string>
+    <string name="microchip_id_number">*Microchip/ID Number</string>
+    <string name="insurance_company">*Insurance Company</string>
+    <string name="insurance_number">*Insurance Number</string>
+    <string name="date_of_birth">Date of Birth</string>
+    <string name="select_date">Select Date</string>
+    <string name="saving">Saving...</string>
+    <string name="update_pet">Update Pet</string>
+    <string name="add_new_pet">Add New Pet</string>
+    <string name="please_fill_all_mandatory_fields_and_upload_avatar">Please fill all mandatory fields and upload avatar.</string>
+    <string name="home">Home</string>
+    <string name="notes">Notes</string>
+    <string name="map">Map</string>
+    <string name="setting">Setting</string>
+    <string name="please_log_in_to_continue">Please log in to continue.</string>
+    <string name="add_your_first_pet_to_start">Add your first pet to start!</string>
+    <string name="start_adding_your_first_pet_weight_data">Start adding your first pet weight data</string>
+    <string name="weight_trend">Weight Trend</string>
+    <string name="pet_weight">Pet Weight</string>
+    <string name="date">Date: %1$s</string>
+    <string name="add">Add</string>
+    <string name="weight_history">Weight History</string>
+    <string name="no_weight_data_available">No weight data available</string>
 </resources>
