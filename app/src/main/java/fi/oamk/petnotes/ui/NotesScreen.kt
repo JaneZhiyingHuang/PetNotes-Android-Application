@@ -1,6 +1,7 @@
 package fi.oamk.petnotes.ui
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
 import android.net.Uri
@@ -8,6 +9,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +34,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,9 +42,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -46,6 +56,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -57,6 +69,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -117,6 +130,14 @@ fun NotesScreen(
     var refreshTrigger by remember { mutableStateOf(0) }
     val context = LocalContext.current
 
+    val lazyListState = rememberLazyListState()
+    // Show scroll to top button when scrolled down
+    val showScrollToTop by remember {
+        derivedStateOf {
+            lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > 0
+        }
+    }
+
     // Date
     val currentDate = remember { Calendar.getInstance() }
     var selectedDate by remember { mutableStateOf(currentDate.get(Calendar.DAY_OF_MONTH).toString()) }
@@ -135,6 +156,8 @@ fun NotesScreen(
     var removedDocumentUrls by remember { mutableStateOf<List<String>>(emptyList()) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteNoteDialog by remember { mutableStateOf<Notes?>(null) }
+    var addNoteExpanded by remember { mutableStateOf(true) }
+    var viewNotesExpanded by remember { mutableStateOf(true) }
 
     val defaultTags = listOf(
         stringResource(R.string.all), stringResource(R.string.vomit), stringResource(R.string.stool),
@@ -160,6 +183,19 @@ fun NotesScreen(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris: List<Uri> ->
         documentUris = uris
+    }
+
+    fun getTagColor(tag: String, context: Context): Color {
+        return when (tag) {
+            context.getString(R.string.all) -> Color(0xFF757575) // Medium Gray
+            context.getString(R.string.vomit) -> Color(0xFFE57373) // Light red
+            context.getString(R.string.stool) -> Color(0xFF81C784) // Light green
+            context.getString(R.string.cough) -> Color(0xFF64B5F6) // Light blue
+            context.getString(R.string.vet) -> Color(0xFFFFB74D) // Light orange
+            context.getString(R.string.water_intake) -> Color(0xFF4FC3F7) // Sky blue
+            context.getString(R.string.emotion) -> Color(0xFFBA68C8) // Light purple
+            else -> Color(0xFF9E9E9E) // Gray for default/custom tags
+        }
     }
 
     LaunchedEffect(isUserLoggedIn) {
@@ -249,9 +285,38 @@ fun NotesScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
             )
         },
-        bottomBar = { BottomNavigationBar(navController = navController) }
+        bottomBar = { BottomNavigationBar(navController = navController) },
+        floatingActionButton = {
+            // Scroll to top floating action button
+            AnimatedVisibility(
+                visible = showScrollToTop,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut()
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            // Smooth scroll to top
+                            lazyListState.animateScrollToItem(0)
+                        }
+                    },
+                    containerColor = Color(0xFFD9D9D9),
+                    contentColor = Color.Black,
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .padding(bottom = 70.dp, end = 16.dp)
+                        .size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Scroll to top"
+                    )
+                }
+            }
+        }
     ) { paddingValues ->
         LazyColumn(
+            state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -291,7 +356,14 @@ fun NotesScreen(
                                             selectedTag = tag
                                         },
                                         label = { Text(tag) },
-                                        modifier = Modifier.padding(end = 4.dp)
+                                        modifier = Modifier.padding(end = 4.dp),
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            containerColor = getTagColor(tag, context).copy(alpha = 0.2f),
+                                            labelColor = getTagColor(tag, context),
+                                            selectedContainerColor = getTagColor(tag, context).copy(alpha = 0.7f),
+                                            selectedLabelColor = Color.White,
+                                        ),
+                                        border = BorderStroke(0.dp, Color.Transparent)
                                     )
 
                                     // Only show delete icon when this specific tag is selected
@@ -399,151 +471,213 @@ fun NotesScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = stringResource(R.string.add_new_abnormal_behaviors),
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Card(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        .clickable { addNoteExpanded = !addNoteExpanded }
+                        .padding(vertical = 8.dp)
                 ) {
-                    Column(
+                    Icon(
+                        imageVector = if (addNoteExpanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
+                        contentDescription = if (addNoteExpanded) "Collapse Add Notes Box" else "Expand Add Notes Box",
+                        tint = Color.Black
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.add_new_abnormal_behaviors),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                AnimatedVisibility(visible = addNoteExpanded) {
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            // Date Selection
-                            val months = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12")
-                            val years = (2020..2030).map { it.toString() }
-                            val displayTag =
-                                if (selectedTag == stringResource(R.string.all)) tags.firstOrNull { it != context.getString(R.string.all) }
-                                    ?: stringResource(R.string.vomit) else selectedTag
-
-                            DateSelector(selectedDate) { selectedDate = it }
-                            DropdownSelector(selectedValue = selectedMonth, options = months, onValueChange = { selectedMonth = it }, modifier = Modifier.weight(0.7f))
-                            DropdownSelector(selectedValue = selectedYear, options = years, onValueChange = { selectedYear = it }, modifier = Modifier.weight(1f))
-                            DropdownSelector(selectedValue = selectedTag, options = tags, onValueChange = { selectedTag = it }, modifier = Modifier.weight(1.2f))
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Card(
+                        Column(
                             modifier = Modifier
-                                .padding(8.dp)
                                 .fillMaxWidth()
-                                .height(200.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                .padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            TextField(
-                                value = userInput,
-                                onValueChange = { userInput = it },
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                // Date Selection
+                                val months = listOf("1","2","3","4","5","6", "7","8","9","10","11","12")
+                                val years = (2020..2030).map { it.toString() }
+                                val displayTag =
+                                    if (selectedTag == stringResource(R.string.all)) tags.firstOrNull {
+                                        it != context.getString(
+                                            R.string.all
+                                        )
+                                    }
+                                        ?: stringResource(R.string.vomit) else selectedTag
+
+                                DateSelector(selectedDate) { selectedDate = it }
+                                DropdownSelector(
+                                    selectedValue = selectedMonth,
+                                    options = months,
+                                    onValueChange = { selectedMonth = it },
+                                    modifier = Modifier.weight(0.7f)
+                                )
+                                DropdownSelector(
+                                    selectedValue = selectedYear,
+                                    options = years,
+                                    onValueChange = { selectedYear = it },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                DropdownSelector(
+                                    selectedValue = selectedTag,
+                                    options = tags,
+                                    onValueChange = { selectedTag = it },
+                                    modifier = Modifier.weight(1.2f)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Card(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            ) {
+                                TextField(
+                                    value = userInput,
+                                    onValueChange = { userInput = it },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                        .padding(12.dp),
+                                    placeholder = { Text(stringResource(R.string.description_placeholder)) },
+                                    singleLine = false
+                                )
+                            }
+
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp)
-                                    .padding(12.dp),
-                                placeholder = { Text(stringResource(R.string.description_placeholder)) },
-                                singleLine = false
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Button(
-                                onClick = { photoPickerLauncher.launch("image/*") },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFD9D9D9),
-                                    contentColor = Color.Black
-                                ),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 4.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = stringResource(R.string.add_photos, photoUris.size), fontWeight = FontWeight.Bold)
-                            }
-                            Button(
-                                onClick = { documentPickerLauncher.launch("*/*") },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFD9D9D9),
-                                    contentColor = Color.Black
-                                ),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 4.dp)
-                            ) {
-                                Text(text = stringResource(
-                                    R.string.add_documents,
-                                    documentUris.size
-                                ), fontWeight = FontWeight.Bold)
-                            }
-                        }
-
-                        Button(
-                            onClick = {
-                                if (selectedPet == null) {
-                                    Toast.makeText(context, "No pet selected", Toast.LENGTH_SHORT).show()
-                                    return@Button
-                                }
-
-                                if (userInput.isBlank()) {
-                                    Toast.makeText(context,
-                                        context.getString(R.string.description_cannot_be_empty), Toast.LENGTH_SHORT).show()
-                                    return@Button
-                                }
-
-                                // Create a Calendar instance for the timestamp
-                                val calendar = Calendar.getInstance()
-                                calendar.set(
-                                    selectedYear.toInt(),
-                                    selectedMonth.toInt() - 1,
-                                    selectedDate.toInt()
-                                )
-                                val userSelectedTimestamp = calendar.timeInMillis
-
-                                coroutineScope.launch {
-                                    notesViewModel.uploadAndCreateNote(
-                                        photoUris = photoUris,
-                                        documentUris = documentUris,
-                                        selectedPet = selectedPet,
-                                        userInput = userInput,
-                                        selectedYear = selectedYear.toInt(),
-                                        selectedMonth = selectedMonth.toInt(),
-                                        selectedDate = selectedDate.toInt(),
-                                        selectedTag = selectedTag,
-                                        userSelectedTimestamp = userSelectedTimestamp
+                                Button(
+                                    onClick = { photoPickerLauncher.launch("image/*") },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFD9D9D9),
+                                        contentColor = Color.Black
+                                    ),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(end = 4.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.add_photos, photoUris.size),
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
-                            },
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFD9D9D9),
-                                contentColor = Color.Black
-                            )
-                        ) {
-                            Text(text = stringResource(R.string.confirm), fontWeight = FontWeight.Bold)
+                                Button(
+                                    onClick = { documentPickerLauncher.launch("*/*") },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFD9D9D9),
+                                        contentColor = Color.Black
+                                    ),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(end = 4.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(
+                                            R.string.add_documents,
+                                            documentUris.size
+                                        ), fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            Button(
+                                onClick = {
+                                    if (selectedPet == null) {
+                                        Toast.makeText(
+                                            context,
+                                            "No pet selected",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        return@Button
+                                    }
+
+                                    if (userInput.isBlank()) {
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.description_cannot_be_empty),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        return@Button
+                                    }
+
+                                    // Create a Calendar instance for the timestamp
+                                    val calendar = Calendar.getInstance()
+                                    calendar.set(
+                                        selectedYear.toInt(),
+                                        selectedMonth.toInt() - 1,
+                                        selectedDate.toInt()
+                                    )
+                                    val userSelectedTimestamp = calendar.timeInMillis
+
+                                    coroutineScope.launch {
+                                        notesViewModel.uploadAndCreateNote(
+                                            photoUris = photoUris,
+                                            documentUris = documentUris,
+                                            selectedPet = selectedPet,
+                                            userInput = userInput,
+                                            selectedYear = selectedYear.toInt(),
+                                            selectedMonth = selectedMonth.toInt(),
+                                            selectedDate = selectedDate.toInt(),
+                                            selectedTag = selectedTag,
+                                            userSelectedTimestamp = userSelectedTimestamp
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFD9D9D9),
+                                    contentColor = Color.Black
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.confirm),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }
 
                 if (fetchedNotes.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.your_pet_s_notes),
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { viewNotesExpanded = !viewNotesExpanded }
+                            .padding(vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (viewNotesExpanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
+                            contentDescription = if (viewNotesExpanded) "Collapse Notes" else "Expand Notes",
+                            tint = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.your_pet_s_notes),
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -552,22 +686,24 @@ fun NotesScreen(
             items(fetchedNotes.filter { note ->
                 selectedTag == context.getString(R.string.all) || note.tag == selectedTag
             }) { note ->
-                NoteCard(
-                    note = note,
-                    onEdit = {
-                        noteToEdit = it
-                        editedDescription = it.description
-                        editedTag = it.tag
-                        existingPhotoUrls = it.photoUrls
-                        existingDocumentUrls = it.documentUrls
-                        editedPhotoUris = emptyList()
-                        editedDocumentUris = emptyList()
-                        removedPhotoUrls = emptyList()
-                        removedDocumentUrls = emptyList()
-                        showEditDialog = true
-                    },
-                    onDelete = { showDeleteNoteDialog = it }
-                )
+                AnimatedVisibility(visible = viewNotesExpanded) {
+                    NoteCard(
+                        note = note,
+                        onEdit = {
+                            noteToEdit = it
+                            editedDescription = it.description
+                            editedTag = it.tag
+                            existingPhotoUrls = it.photoUrls
+                            existingDocumentUrls = it.documentUrls
+                            editedPhotoUris = emptyList()
+                            editedDocumentUris = emptyList()
+                            removedPhotoUrls = emptyList()
+                            removedDocumentUrls = emptyList()
+                            showEditDialog = true
+                        },
+                        onDelete = { showDeleteNoteDialog = it }
+                    )
+                }
             }
             Log.d("NotesScreen", "Displaying ${fetchedNotes.size} notes")
         }
@@ -1192,6 +1328,19 @@ fun NoteCard(
     onEdit: (Notes) -> Unit = {},
     onDelete: (Notes) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    fun getTagColor(tag: String, context: Context): Color {
+        return when (tag) {
+            context.getString(R.string.all) -> Color(0xFF757575) // Medium Gray
+            context.getString(R.string.vomit) -> Color(0xFFE57373) // Light red
+            context.getString(R.string.stool) -> Color(0xFF81C784) // Light green
+            context.getString(R.string.cough) -> Color(0xFF64B5F6) // Light blue
+            context.getString(R.string.vet) -> Color(0xFFFFB74D) // Light orange
+            context.getString(R.string.water_intake) -> Color(0xFF4FC3F7) // Sky blue
+            context.getString(R.string.emotion) -> Color(0xFFBA68C8) // Light purple
+            else -> Color(0xFF9E9E9E) // Gray for default/custom tags
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1218,7 +1367,7 @@ fun NoteCard(
                     Text(
                         text = note.tag,
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = getTagColor(note.tag, context)
                     )
                 }
 
