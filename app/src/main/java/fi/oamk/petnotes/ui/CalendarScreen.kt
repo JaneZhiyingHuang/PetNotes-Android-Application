@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,8 +27,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -387,40 +390,69 @@ fun PetTagCountsCard(
     LaunchedEffect(tagCounts) {
         Log.d("PetTagCountsCard", "Current tag counts: $tagCounts")
     }
+    var expanded by remember { mutableStateOf(true) } // State to toggle card visibility
 
     if (tagCounts.isNotEmpty()) {
-        Card(
-            shape = RoundedCornerShape(15.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+        // Header with expandable functionality
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(16.dp)
                 .fillMaxWidth()
+                .clickable { expanded = !expanded } // Toggle on row click
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Recorded Tags : ${visibleMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${visibleMonth.year}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+            Icon(
+                imageVector = if (expanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
+                contentDescription = if (expanded) "Collapse" else "Expand",
+                tint = Color.Black
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Recorded Tags : ${visibleMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${visibleMonth.year}",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-                Spacer(modifier = Modifier.height(12.dp))
+        AnimatedVisibility(
+            visible = expanded,
+             // Slide out from top to bottom
+        )  {
+            Card(
+                shape = RoundedCornerShape(15.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                tagCounts.sortedByDescending { it.count }.forEach { tagCount ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = tagCount.tag)
-                        Text(text = "${tagCount.count} times", color = Color.Gray)
+                    // Displaying tags sorted by count
+                    tagCounts.sortedByDescending { it.count }.forEach { tagCount ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = tagCount.tag,
+                                fontWeight = FontWeight.Bold  // Make this text bold
+                            )
+                            Text(
+                                text = "${tagCount.count} times",
+                                color = Color.Gray,
+                                fontWeight = FontWeight.Bold  // Make this text bold as well
+                            )
+                        }
                     }
                 }
             }
         }
     } else {
+        // Display message when no tags are recorded
         Card(
             shape = RoundedCornerShape(15.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -436,6 +468,8 @@ fun PetTagCountsCard(
             )
         }
     }
+
+
 }
 @Composable
 fun NotesDetailCard(
@@ -471,88 +505,141 @@ fun NotesDetailCard(
         )
     }
 
+    var expanded by remember { mutableStateOf(true) }
+
     Column(
         modifier = Modifier
-            .padding(10.dp)
+            .padding(16.dp)
             .fillMaxSize()
     ) {
-        notes.forEach { note ->
-            Card(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+        // Foldable Header
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(vertical = 8.dp)
+        ) {
+            Icon(
+                imageVector = if (expanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
+                contentDescription = if (expanded) "Collapse Notes" else "Expand Notes",
+                tint = Color.Black
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "NotesDetail",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        // Notes list with fold animation
+        AnimatedVisibility(visible = expanded) {
+            Column {
+                notes.forEach { note ->
+                    Card(
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                     ) {
-                        Text(note.tag, style = MaterialTheme.typography.titleMedium)
-                        Row {
-                            IconButton(onClick = {
-                                noteBeingEdited = note
-                                editedDescription = note.description
-                                editedTag = note.tag
-                                editedPhotoUris = listOf()
-                                editedDocumentUris = listOf()
-                                removedPhotoUrls = listOf()
-                                removedDocumentUrls = listOf()
-                                showEditDialog = true
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = "Edit Note",
-                                    tint = Color.Gray
-                                )
-                            }
-                            IconButton(onClick = {
-                                onDelete(note)
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete Note",
-                                    tint = Color.Gray
-                                )
-                            }
-                        }
-                    }
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                note.date?.let {
+                                    Text(
+                                        it,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier.padding(top = 10.dp)
+                                    )
+                                }
 
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(note.description)
-                    if (note.photoUrls.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Photos:", fontWeight = FontWeight.Bold)
-                        note.photoUrls.forEach { photoUrl ->
-                            AsyncImage(
-                                model = photoUrl,
-                                contentDescription = null,
+                                Spacer(modifier = Modifier.weight(0.8f))
+
+                                Text(
+                                    note.tag,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier
+                                        .padding(top = 10.dp)
+                                        .background(Color(0xFFFFCD4B), shape = RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+
+                                Spacer(modifier = Modifier.weight(0.1f))
+                                Row {
+                                    IconButton(onClick = {
+                                        noteBeingEdited = note
+                                        editedDescription = note.description
+                                        editedTag = note.tag
+                                        editedPhotoUris = listOf()
+                                        editedDocumentUris = listOf()
+                                        removedPhotoUrls = listOf()
+                                        removedDocumentUrls = listOf()
+                                        showEditDialog = true
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit Note",
+                                            tint = Color.Gray
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Card(
                                 modifier = Modifier
-                                    .padding(4.dp)
-                                    .fillMaxWidth(1f) // Scale to 50% of the parent width
-                                    .height(150.dp) // Set the height to 100.dp (adjustable)
-                            )
-                        }
-                    }
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    note.description,
+                                    modifier = Modifier.padding(12.dp),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
 
-                    if (note.documentUrls.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Documents:", fontWeight = FontWeight.Bold)
-                        note.documentUrls.forEach { documentUrl ->
-                            val fileName = documentUrl.substringAfterLast("/")
-                            Text(
-                                text = fileName,
-                                style = androidx.compose.ui.text.TextStyle(textDecoration = TextDecoration.Underline),
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            if (note.photoUrls.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("Photos:", fontWeight = FontWeight.Bold)
+                                note.photoUrls.forEach { photoUrl ->
+                                    AsyncImage(
+                                        model = photoUrl,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .padding(4.dp)
+                                            .fillMaxWidth()
+                                            .height(150.dp)
+                                    )
+                                }
+                            }
+
+                            if (note.documentUrls.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("Documents:", fontWeight = FontWeight.Bold)
+                                note.documentUrls.forEach { documentUrl ->
+                                    val fileName = documentUrl.substringAfterLast("/")
+                                    Text(
+                                        text = fileName,
+                                        style = androidx.compose.ui.text.TextStyle(textDecoration = TextDecoration.Underline),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
         }
     }
+
+
 
     // Edit Dialog
     if (showEditDialog && noteBeingEdited != null) {
