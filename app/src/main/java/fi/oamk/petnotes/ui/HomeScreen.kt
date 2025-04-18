@@ -20,9 +20,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Female
+import androidx.compose.material.icons.filled.Male
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +72,7 @@ import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.ui.theme.InputColor
+import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
 import ir.ehsannarmani.compose_charts.LineChart
@@ -81,6 +88,12 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.draw.clip
+import androidx.compose.material3.Surface
+import fi.oamk.petnotes.ui.theme.ButtonColor
+import fi.oamk.petnotes.ui.theme.LightRed
+import fi.oamk.petnotes.ui.theme.LineColor
+import fi.oamk.petnotes.ui.theme.SecondaryColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,32 +123,38 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = "") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigate("addNewPet") }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_add_circle_outline_26),
-                            contentDescription = "Add New Pet"
-                        )
-                    }
-                },
-                actions = {
-                    if (pets.isNotEmpty()) {
-                        SelectedPetDropdown(
-                            pets = pets,
-                            selectedPet = selectedPet,
-                            onPetSelected = { pet ->
-                                selectedPet = pet
-                                coroutineScope.launch {
-                                    PetDataStore.setSelectedPetId(context, pet.id)
+            Column {
+                TopAppBar(
+
+
+                    title = { Text(text = "") },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.navigate("addNewPet") }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_add_circle_outline_26),
+                                contentDescription = "Add New Pet",
+                            )
+                        }
+                    },
+                    actions = {
+                        if (pets.isNotEmpty()) {
+                            SelectedPetDropdown(
+                                pets = pets,
+                                selectedPet = selectedPet,
+                                onPetSelected = { pet ->
+                                    selectedPet = pet
+                                    coroutineScope.launch {
+                                        PetDataStore.setSelectedPetId(context, pet.id)
+                                    }
                                 }
-                            }
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
-            )
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
+                )
+                //line
+                HorizontalDivider(thickness = 1.dp, color = LineColor)
+            }
         },
         bottomBar = { BottomNavigationBar(navController = navController) }
     ) { paddingValues ->
@@ -182,14 +201,13 @@ fun HomeScreen(
 @Composable
 fun PetCard(pet: Pet, navController: NavController) {
     Card(
-        onClick ={ navController.navigate("profile/${pet.id}") } ,
+        onClick = { navController.navigate("profile/${pet.id}") },
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
         modifier = Modifier
             .padding(top = 10.dp)
-            .width(352.dp)
-
+            .width(400.dp)
     ) {
         Column(modifier = Modifier.padding(22.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -210,14 +228,53 @@ fun PetCard(pet: Pet, navController: NavController) {
                 }
                 Spacer(modifier = Modifier.width(26.dp))
                 Column {
-                    Text(text = pet.name, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp))
-                    Text(text = pet.gender, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
+                    Text(
+                        text = pet.name,
+                        style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp),
+                        color = SecondaryColor
+                    )
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    // Gender Icon Display using Material3 Icons
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+
+                        Text(text = pet.gender, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
+
+                        when (pet.gender) {
+                            "Male" -> Icon(
+                                imageVector = Icons.Filled.Male,
+                                contentDescription = "Male",
+                                tint = ButtonColor
+                            )
+                            "Female" -> Icon(
+                                imageVector = Icons.Filled.Female,
+                                contentDescription = "Female",
+                                tint = ButtonColor
+                            )
+                            "Other" -> Icon(
+                                imageVector = Icons.Filled.Person,
+                                contentDescription = "Other",
+                                tint = ButtonColor
+                            )
+                            else -> {}
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
                     Text(text = pet.dateOfBirth, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
                     Text(text = calculateAge(pet.dateOfBirth), style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Text(text = "${stringResource(R.string.medical_condition)}: ${pet.medicalCondition}", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
+
+            Text(
+                text = "${stringResource(R.string.medical_condition)}: ${pet.medicalCondition}",
+                style = TextStyle(fontWeight = FontWeight.Normal, fontSize = 16.sp, color = Color.Red),
+                modifier = Modifier
+                    .background(LightRed, shape = RoundedCornerShape(15.dp))
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
@@ -340,8 +397,8 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             modifier = Modifier
-                .padding(20.dp)
-                .width(352.dp)
+                .padding(top= 10.dp)
+                .width(400.dp)
                 .clickable {
                     // Navigate to weight screen when clicked
                     navController.navigate("weight_screen/$userId/${pet.id}")
@@ -376,7 +433,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                         )
                     },
                     modifier = Modifier
-                        .width(350.dp)
+                        .width(400.dp)
                         .height(150.dp)
                 )
 
@@ -449,7 +506,8 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, navCo
             navController.navigate("calendarScreen")
         },
         modifier = Modifier
-            .width(352.dp)
+            .width(400.dp)
+            .padding(top= 10.dp)
     ) {
         HorizontalCalendar(
             state = state,
@@ -504,7 +562,7 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, navCo
                 val screenWidth = configuration.screenWidthDp.dp
                 Box(
                     modifier = Modifier
-                        .width(352.dp)
+                        .width(400.dp)
                         .padding(8.dp)
                         .clip(RoundedCornerShape(8.dp))
                 ) {

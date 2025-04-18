@@ -98,6 +98,7 @@ import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
+import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.NotesViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
@@ -282,7 +283,7 @@ fun NotesScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
         },
         bottomBar = { BottomNavigationBar(navController = navController) },
@@ -319,14 +320,18 @@ fun NotesScreen(
             state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        .padding(8.dp)
+                        .width(400.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                    )
                 ) {
                     Column(modifier = Modifier.padding(4.dp)) {
                         FlowRow(
@@ -391,7 +396,10 @@ fun NotesScreen(
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(16.dp)
+                                            .padding(16.dp),
+                                        colors = CardDefaults.cardColors(
+                                        containerColor = Color.White
+                                        )
                                     ) {
                                         Column(
                                             modifier = Modifier.padding(16.dp),
@@ -476,7 +484,7 @@ fun NotesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { addNoteExpanded = !addNoteExpanded }
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 8.dp, horizontal = 20.dp)
                 ) {
                     Icon(
                         imageVector = if (addNoteExpanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
@@ -493,9 +501,12 @@ fun NotesScreen(
                 AnimatedVisibility(visible = addNoteExpanded) {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            .padding(8.dp)
+                            .width(400.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        )
                     ) {
                         Column(
                             modifier = Modifier
@@ -545,8 +556,9 @@ fun NotesScreen(
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .fillMaxWidth()
-                                    .height(200.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                    .height(200.dp)
+                                    .width(400.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             ) {
                                 TextField(
                                     value = userInput,
@@ -665,7 +677,7 @@ fun NotesScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { viewNotesExpanded = !viewNotesExpanded }
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 8.dp, horizontal = 20.dp)
                     ) {
                         Icon(
                             imageVector = if (viewNotesExpanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
@@ -720,7 +732,10 @@ fun NotesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .height(600.dp)
+                    .height(600.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                )
             ) {
                 Column(
                     modifier = Modifier
@@ -1088,7 +1103,10 @@ fun NotesScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -1343,9 +1361,12 @@ fun NoteCard(
     }
     Card(
         modifier = Modifier
-            .fillMaxWidth()
+            .width(400.dp)
             .padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
     ) {
         Row(
             modifier = Modifier

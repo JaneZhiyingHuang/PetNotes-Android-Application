@@ -65,7 +65,13 @@ import com.google.firebase.storage.FirebaseStorage
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import fi.oamk.petnotes.ui.theme.PrimaryColor
+import fi.oamk.petnotes.ui.theme.SecondaryColor
 import kotlinx.coroutines.launch
 
 
@@ -125,26 +131,45 @@ fun AddNewPetScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
-            )
+            Surface(
+                shape = RoundedCornerShape(bottomStart = 15.dp, bottomEnd = 15.dp),
+            ) {
+                TopAppBar(
+                    title = {
+                            Text(
+                                "Add A New Pet",
+                                fontWeight = FontWeight.Bold,
+                                color = SecondaryColor,
+                                modifier = Modifier.padding(start = 95.dp)
+                            )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
+                )
+            }
         }
     ) { paddingValues ->
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(paddingValues)
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
+                .background(Color.White)
         ) {
             // avatar
             Row(
@@ -163,13 +188,14 @@ fun AddNewPetScreen(
                         Image(
                             painter = rememberAsyncImagePainter(uri),
                             contentDescription = "Pet Avatar",
-                            modifier = Modifier.fillMaxSize()
-                        )
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop                        )
                     } ?: if (petImageUri.isNotEmpty()) {  //show current avatar
                         Image(
                             painter = rememberAsyncImagePainter(petImageUri),
                             contentDescription = "Existing Pet Avatar",
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
                     } else {
                         Image(
@@ -200,7 +226,7 @@ fun AddNewPetScreen(
             )
             Row(
                 modifier = Modifier
-                    .padding(start = 50.dp)
+                    .padding(start = 69.dp)
                     .width(280.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
             ) {
@@ -392,7 +418,7 @@ fun AddNewPetScreen(
                     .align(Alignment.CenterHorizontally),
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isLoading) InputColor else ButtonColor,
+                    containerColor = if (isLoading) InputColor else SecondaryColor,
                     contentColor = Color.Black
                 ),
                 shape = RoundedCornerShape(30.dp)
@@ -436,7 +462,11 @@ fun LabeledTextField(
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
             shape = RoundedCornerShape(40.dp),
             singleLine = false,
-            maxLines = Int.MAX_VALUE
+            maxLines = Int.MAX_VALUE,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = SecondaryColor,
+                unfocusedBorderColor = Color.White
+            )
         )
     }
 }

@@ -79,6 +79,7 @@ import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
+import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.NotesViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
@@ -140,9 +141,10 @@ fun CalendarScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
-        }
+        },
+        bottomBar = { BottomNavigationBar(navController = navController) }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             LazyColumn(

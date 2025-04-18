@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 
 class AddNewPetViewModel : ViewModel() {
@@ -97,11 +98,20 @@ class AddNewPetViewModel : ViewModel() {
     }
 
     // delete pet
-    suspend fun deletePetAndRelatedData(petId: String, onSuccess: () -> Unit) {
+    suspend fun deletePetAndRelatedData(
+        petId: String,
+//        petImageUri: String,
+        onSuccess: () -> Unit) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId != null) {
             try {
                 // 1. pets
+//
+//                if (petImageUri.isNotEmpty()) {
+//                    val storageRef = FirebaseStorage.getInstance().getReference(petImageUri)
+//                    storageRef.delete().await()
+//                }
+
                 db.collection("users")
                     .document(userId)
                     .collection("pets")

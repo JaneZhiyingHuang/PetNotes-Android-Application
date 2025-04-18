@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.utils.LanguageManager
 import fi.oamk.petnotes.viewmodel.SettingScreenViewModel
 
@@ -71,7 +72,7 @@ fun SettingScreen(
             TopAppBar(
                 title = { Text("", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFEFEFEF)
+                    containerColor = PrimaryColor
                 )
             )
         },

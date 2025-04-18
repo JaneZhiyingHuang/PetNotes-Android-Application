@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.ui.unit.DpOffset
+import fi.oamk.petnotes.ui.theme.PrimaryColor
+import fi.oamk.petnotes.ui.theme.SecondaryColor
 
 
 @Composable
@@ -42,7 +44,8 @@ fun SelectedPetDropdown(
             Icon(
                 imageVector = Icons.Outlined.Pets,
                 contentDescription = "Pet Icon",
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
+                tint = SecondaryColor
             )
             Spacer(modifier = Modifier.width(10.dp))
 
@@ -58,7 +61,7 @@ fun SelectedPetDropdown(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            offset = DpOffset(x = 30.dp, y = 0.dp)
+            offset = DpOffset(x = 40.dp, y = 0.dp)
         ) {
             pets.forEach { pet ->
                 DropdownMenuItem(

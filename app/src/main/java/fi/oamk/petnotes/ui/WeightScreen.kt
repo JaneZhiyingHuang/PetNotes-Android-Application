@@ -155,7 +155,8 @@ fun WeightScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = { BottomNavigationBar(navController = navController) }
     ) { innerPadding ->
         Column(
             modifier = Modifier

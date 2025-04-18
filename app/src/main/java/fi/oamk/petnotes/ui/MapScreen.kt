@@ -48,6 +48,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import fi.oamk.petnotes.model.PetStore
+import fi.oamk.petnotes.ui.theme.PrimaryColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -146,7 +147,7 @@ fun MapScreen(navController: NavController, context: Context) {
         topBar = {
             TopAppBar(
                 title = { Text(text = "") },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
         },
         bottomBar = {
