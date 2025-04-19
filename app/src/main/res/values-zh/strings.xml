@@ -28,6 +28,7 @@
     <string name="add_your_first_pet_to_start">添加你的第一只宠物开始吧！</string>
     <string name="start_adding_your_first_pet_weight_data">开始添加你的第一只宠物的体重数据</string>
     <string name="weight_trend">体重趋势</string>
+    <string name="add_new_weight">添加体重</string>
     <string name="pet_weight">宠物体重</string>
     <string name="date">日期：%1$s</string>
     <string name="add">添加</string>

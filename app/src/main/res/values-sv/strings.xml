@@ -28,6 +28,7 @@
     <string name="add_your_first_pet_to_start">Lägg till ditt första husdjur för att börja!</string>
     <string name="start_adding_your_first_pet_weight_data">Börja med att lägga till din första husdjurs viktdata</string>
     <string name="weight_trend">"Vikttrend  "</string>
+    <string name="add_new_weight">lägga till ny vikt</string>
     <string name="pet_weight">Husdjurets vikt</string>
     <string name="date">Datum: %1$s</string>
     <string name="add">Lägg till</string>

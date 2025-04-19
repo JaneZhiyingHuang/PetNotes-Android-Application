@@ -418,8 +418,8 @@ fun AddNewPetScreen(
                     .align(Alignment.CenterHorizontally),
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isLoading) InputColor else SecondaryColor,
-                    contentColor = Color.Black
+                    containerColor = if (isLoading) InputColor else Color.Black,
+                    contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(30.dp)
             ) {

@@ -333,7 +333,7 @@ fun NotesScreen(
                     containerColor = Color.White
                     )
                 ) {
-                    Column(modifier = Modifier.padding(4.dp)) {
+                    Column(modifier = Modifier.padding(6.dp)) {
                         FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -478,7 +478,7 @@ fun NotesScreen(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(5.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -491,13 +491,13 @@ fun NotesScreen(
                         contentDescription = if (addNoteExpanded) "Collapse Add Notes Box" else "Expand Add Notes Box",
                         tint = Color.Black
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = stringResource(R.string.add_new_abnormal_behaviors),
                         fontWeight = FontWeight.Bold
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(5.dp))
                 AnimatedVisibility(visible = addNoteExpanded) {
                     Card(
                         modifier = Modifier
@@ -511,11 +511,10 @@ fun NotesScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp),
+                                .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 // Date Selection
@@ -534,27 +533,27 @@ fun NotesScreen(
                                     selectedValue = selectedMonth,
                                     options = months,
                                     onValueChange = { selectedMonth = it },
-                                    modifier = Modifier.weight(0.7f)
+                                    modifier = Modifier.weight(0.6f)
                                 )
                                 DropdownSelector(
                                     selectedValue = selectedYear,
                                     options = years,
                                     onValueChange = { selectedYear = it },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(0.6f)
                                 )
                                 DropdownSelector(
                                     selectedValue = selectedTag,
                                     options = tags,
                                     onValueChange = { selectedTag = it },
-                                    modifier = Modifier.weight(1.2f)
+                                    modifier = Modifier.weight(0.8f)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
 
                             Card(
                                 modifier = Modifier
-                                    .padding(8.dp)
+                                    .padding(16.dp)
                                     .fillMaxWidth()
                                     .height(200.dp)
                                     .width(400.dp),
@@ -581,7 +580,7 @@ fun NotesScreen(
                                 Button(
                                     onClick = { photoPickerLauncher.launch("image/*") },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFFD9D9D9),
+                                        containerColor = Color(0xFFD7D5D5),
                                         contentColor = Color.Black
                                     ),
                                     modifier = Modifier
@@ -754,6 +753,7 @@ fun NotesScreen(
                         options = tags.filter { it != stringResource(R.string.all) },
                         onValueChange = { editedTag = it },
                         modifier = Modifier.fillMaxWidth()
+
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
@@ -985,7 +985,7 @@ fun NotesScreen(
                             Text(text = stringResource(R.string.add_documents2), textAlign = TextAlign.Center, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1059,8 +1059,8 @@ fun NotesScreen(
                             },
                             modifier = Modifier.weight(0.9f),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFD9D9D9),
-                                contentColor = Color.Black
+                                containerColor = Color.Black,
+                                contentColor = Color.White
                             )
                         ) {
                             Text(text = stringResource(R.string.save), fontSize = 12.sp, fontWeight = FontWeight.Bold)

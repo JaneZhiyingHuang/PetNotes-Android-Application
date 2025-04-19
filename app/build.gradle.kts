@@ -43,6 +43,12 @@ android {
 }
 
 dependencies {
+
+    // for blur ui
+//    implementation(libs.accompanist.systemuicontroller)
+//    implementation(libs.accompanist.blur)
+
+
     // For the view-based calendar library
     implementation(libs.view)
 

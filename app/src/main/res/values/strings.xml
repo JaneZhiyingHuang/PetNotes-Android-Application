@@ -32,6 +32,7 @@
     <string name="pet_weight">Pet Weight</string>
     <string name="date">Date: %1$s</string>
     <string name="add">Add</string>
+    <string name="add_new_weight">Add New Weight</string>
     <string name="weight_history">Weight History</string>
     <string name="no_weight_data_available">No weight data available</string>
     <string name="all">All</string>

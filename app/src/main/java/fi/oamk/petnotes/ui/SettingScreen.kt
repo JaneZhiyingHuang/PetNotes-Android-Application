@@ -2,8 +2,11 @@ package fi.oamk.petnotes.ui
 
 import android.app.Activity
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,16 +36,25 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import fi.oamk.petnotes.R
+import fi.oamk.petnotes.ui.theme.LightBlue
+import fi.oamk.petnotes.ui.theme.LightRed
+import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.PrimaryColor
+import fi.oamk.petnotes.ui.theme.SecondaryColor
 import fi.oamk.petnotes.utils.LanguageManager
 import fi.oamk.petnotes.viewmodel.SettingScreenViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,21 +82,33 @@ fun SettingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("", fontWeight = FontWeight.Bold) },
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "Setting",
+                            color = SecondaryColor,
+                            fontSize = 20.sp  ,
+                            fontWeight = FontWeight.Bold
+
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = PrimaryColor
                 )
             )
         },
-        bottomBar = { BottomNavigationBar(navController = navController) }
+        bottomBar = { BottomNavigationBar(navController = navController) },
+
     ) { paddingValues ->
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues), // Center buttons horizontally
-            verticalArrangement = Arrangement.Top
-        ) {
+                .padding(paddingValues)
+                .background(Color.White),
+            ) {
+
             if (isUserLoggedIn) {
                 val user = FirebaseAuth.getInstance().currentUser
                 val email = user?.email ?: "Unknown Email"
@@ -147,7 +171,7 @@ fun SettingScreen(
                         .height(48.dp)
                         .align(Alignment.CenterHorizontally),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD9D9D9),
+                        containerColor = LightRed,
                         contentColor = Color.Black
                     )
                 ) {
@@ -169,7 +193,7 @@ fun SettingScreen(
                         .height(48.dp)
                         .align(Alignment.CenterHorizontally),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD9D9D9),
+                        containerColor = LightYellow,
                         contentColor = Color.Black
                     )
                 ) {
@@ -220,7 +244,7 @@ fun SettingScreen(
                         .height(48.dp)
                         .align(Alignment.CenterHorizontally),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD9D9D9),
+                        containerColor = LightBlue,
                         contentColor = Color.Black
                     )
                 ) {
@@ -243,8 +267,8 @@ fun SettingScreen(
                         .height(48.dp)
                         .align(Alignment.CenterHorizontally),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD9D9D9),
-                        contentColor = Color.Black
+                        containerColor = Color.Black,
+                        contentColor = Color.White
                     )
                 ) {
                     Text(

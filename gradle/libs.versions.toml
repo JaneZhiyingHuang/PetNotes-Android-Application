@@ -1,4 +1,5 @@
 [versions]
+accompanistSystemuicontroller = "0.34.0"
 activityComposeVersion = "1.6.0"
 agp = "8.7.3"
 charty = "2.0.0"
@@ -52,6 +53,8 @@ firebaseStorageKtx = "21.0.1"
 uiVersion = "1.67"
 
 [libraries]
+accompanist-blur = { module = "com.google.accompanist:accompanist-blur", version.ref = "accompanistSystemuicontroller" }
+accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
 androidx-activity-compose-v160 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }

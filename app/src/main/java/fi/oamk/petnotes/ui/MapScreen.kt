@@ -6,8 +6,11 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,6 +52,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import fi.oamk.petnotes.model.PetStore
 import fi.oamk.petnotes.ui.theme.PrimaryColor
+import fi.oamk.petnotes.ui.theme.SecondaryColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -146,15 +150,30 @@ fun MapScreen(navController: NavController, context: Context) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "") },
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "Find Pet Services",
+                            color = SecondaryColor,
+                            fontSize = 20.sp  ,
+                            fontWeight = FontWeight.Bold
+
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
         },
+
         bottomBar = {
             BottomNavigationBar(navController = navController)
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color.White)
+        ) {
             // Display the address instead of latitude and longitude
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -166,22 +185,39 @@ fun MapScreen(navController: NavController, context: Context) {
                         .padding(horizontal = 30.dp),
                 ) {
                     Button(
-                        onClick = { showPetStores = !showPetStores },
+                        onClick = {
+                            showPetStores = true
+                            showPetClinics = false
+                        },
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(0.dp)), // Set shape to rectangle (no rounded corners)
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD3D3D3))  // Set button color to #D3D3D3
+                            .clip(RoundedCornerShape(30.dp))
+                            .border(1.dp, Color.Black,RoundedCornerShape(30.dp)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (showPetStores) Color.Black else Color.White,
+                            contentColor = if (showPetStores) Color.White else Color.Black
+                        ),
+                        contentPadding = PaddingValues(0.dp)
                     ) {
-                        Text("Find Pet Stores", color = Color.Black)  // Set text color to black
+                        Text("Find Pet Stores")
                     }
+
                     Button(
-                        onClick = { showPetClinics = !showPetClinics },
+                        onClick = {
+                            showPetClinics = true
+                            showPetStores = false
+                        },
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(0.dp)), // Set shape to rectangle (no rounded corners)
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD3D3D3))  // Set button color to #D3D3D3
+                            .clip(RoundedCornerShape(30.dp))
+                            .border(1.dp, Color.Black,RoundedCornerShape(30.dp)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (showPetClinics) Color.Black else Color.White,
+                            contentColor = if (showPetClinics) Color.White else Color.Black
+                        ),
+                        contentPadding = PaddingValues(0.dp)
                     ) {
-                        Text("Find Pet Clinics", color = Color.Black)  // Set text color to black
+                        Text("Find Pet Clinics")
                     }
 
                 }

@@ -91,9 +91,13 @@ import java.util.Locale
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Surface
 import fi.oamk.petnotes.ui.theme.ButtonColor
+import fi.oamk.petnotes.ui.theme.LightBlue
 import fi.oamk.petnotes.ui.theme.LightRed
+import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.LineColor
+import fi.oamk.petnotes.ui.theme.Red
 import fi.oamk.petnotes.ui.theme.SecondaryColor
+import fi.oamk.petnotes.ui.theme.Yellow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -226,53 +230,72 @@ fun PetCard(pet: Pet, navController: NavController) {
                         )
                     }
                 }
+
                 Spacer(modifier = Modifier.width(26.dp))
+
                 Column {
-                    Text(
-                        text = pet.name,
-                        style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp),
-                        color = SecondaryColor
-                    )
-                    Spacer(modifier = Modifier.height(5.dp))
 
-                    // Gender Icon Display using Material3 Icons
                     Row(verticalAlignment = Alignment.CenterVertically) {
-
-                        Text(text = pet.gender, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
-
-                        when (pet.gender) {
-                            "Male" -> Icon(
-                                imageVector = Icons.Filled.Male,
-                                contentDescription = "Male",
-                                tint = ButtonColor
-                            )
-                            "Female" -> Icon(
-                                imageVector = Icons.Filled.Female,
-                                contentDescription = "Female",
-                                tint = ButtonColor
-                            )
-                            "Other" -> Icon(
-                                imageVector = Icons.Filled.Person,
-                                contentDescription = "Other",
-                                tint = ButtonColor
-                            )
-                            else -> {}
+                        Text(
+                            text = pet.name,
+                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp),
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Column {
+//                            Text(
+//                                text = pet.gender,
+//                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
+//                            )
+                            when (pet.gender) {
+                                "Male" -> Icon(
+                                    imageVector = Icons.Filled.Male,
+                                    contentDescription = "Male",
+                                    tint = Red
+                                )
+                                "Female" -> Icon(
+                                    imageVector = Icons.Filled.Female,
+                                    contentDescription = "Female",
+                                    tint = LightBlue
+                                )
+                                "Other" -> Icon(
+                                    imageVector = Icons.Filled.Person,
+                                    contentDescription = "Other",
+                                    tint = Yellow
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
                     }
 
-                    Text(text = pet.dateOfBirth, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
-                    Text(text = calculateAge(pet.dateOfBirth), style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp))
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // 第二行：DOB 和 Age
+                        Text(
+                            text = pet.specie,
+                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        )
+//                        Spacer(modifier = Modifier.height(20.dp))
+                        Text(
+                            text = pet.dateOfBirth,
+                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        )
+//                        Spacer(modifier = Modifier.width(20.dp))
+                        Text(
+                            text = calculateAge(pet.dateOfBirth),
+                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        )
+//                        Spacer(modifier = Modifier.height(20.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "${stringResource(R.string.medical_condition)}: ${pet.medicalCondition}",
-                style = TextStyle(fontWeight = FontWeight.Normal, fontSize = 16.sp, color = Color.Red),
+                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black),
                 modifier = Modifier
-                    .background(LightRed, shape = RoundedCornerShape(15.dp))
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                    .background(LightYellow, shape = RoundedCornerShape(15.dp))
+                    .padding(horizontal = 20.dp, vertical = 15.dp)
             )
 
             Spacer(modifier = Modifier.height(8.dp))

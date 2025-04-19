@@ -1,7 +1,10 @@
 package fi.oamk.petnotes.ui
 
 import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -13,12 +16,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import fi.oamk.petnotes.R
+import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.viewmodel.GoogleSignInViewModel
 
 @Composable
@@ -37,6 +48,58 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
         }
     }
 
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(650.dp)
+                .align(Alignment.BottomCenter)
+        )
+        {
+            Image(
+                painter = painterResource(id = R.drawable.bgpurple),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+                    .alpha(0.7f)
+                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+
+            )
+
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .align(Alignment.TopCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(Color.White, Color.Transparent)
+                        )
+                    )
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+        )
+        {
+            Image(
+                painter = painterResource(id = R.drawable.logopurple),
+                contentDescription = null,
+                modifier = Modifier.align(Alignment.TopCenter)
+                    .padding(top=95.dp)
+            )
+
+
+        }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -44,7 +107,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Welcome to PetNotes!", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+        Text(text = "Welcome to PetNotes!", fontWeight = FontWeight.ExtraBold, fontSize = 36.sp,    fontFamily = FontFamily.Cursive )
         Spacer(modifier = Modifier.height(8.dp))
         Text("Let's login to continue")
         Spacer(modifier = Modifier.height(50.dp))
@@ -99,7 +162,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                         .width(280.dp)
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD9D9D9),
+                        containerColor = Color.White.copy(alpha = 0.8f),
                         contentColor = Color.Black
                     )
                 ) {
@@ -118,7 +181,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                         .width(280.dp)
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD9D9D9),
+                        containerColor = Color.White.copy(alpha = 0.8f),
                         contentColor = Color.Black
                     )
                 ) {
@@ -133,7 +196,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Sign Up Button
-                Text(text = "Don't have an account?", color = Color.LightGray)
+                Text(text = "Don't have an account?", color = Color.Black)
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { navController.navigate("sign_up") },
@@ -141,8 +204,8 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                         .width(280.dp)
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD9D9D9),
-                        contentColor = Color.Black
+                        containerColor = Color.Black,
+                        contentColor = Color.White
                     )
                 ) {
                     Text(
@@ -153,4 +216,5 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
             }
         }
     }
+}
 }

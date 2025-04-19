@@ -14,10 +14,14 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -41,6 +45,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,6 +75,12 @@ import java.util.Date
 import java.util.Locale
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.model.PetDataStore
+import fi.oamk.petnotes.ui.theme.PrimaryColor
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.ui.text.TextStyle
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,6 +104,11 @@ fun WeightScreen(
     var selectedPet by remember { mutableStateOf<fi.oamk.petnotes.model.Pet?>(null) }
 
     var currentPage by remember { mutableStateOf(0) }
+
+    val scrollState = rememberScrollState()
+    val showScrollToTop by remember {
+        derivedStateOf { scrollState.value > 200 }
+    }
 
     // Call loadPetData when the screen is launched
     LaunchedEffect(context) {
@@ -152,16 +168,51 @@ fun WeightScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFEFEFEF))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = { BottomNavigationBar(navController = navController) }
+        bottomBar = { BottomNavigationBar(navController = navController) },
+
+        floatingActionButton = {
+            // Scroll to top floating action button
+            AnimatedVisibility(
+                visible = showScrollToTop,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut()
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            // Smooth scroll to top
+                            scrollState.animateScrollTo(0)
+                        }
+                    },
+                    containerColor = Color(0xFFD9D9D9),
+                    contentColor = Color.Black,
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .padding(bottom = 70.dp, end = 16.dp)
+                        .size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Scroll to top"
+                    )
+                }
+            }
+        }
+
+
     ) { innerPadding ->
+
+//        val scrollState = rememberScrollState()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Display the Weight Trend or NoChartCard based on data availability
@@ -186,7 +237,6 @@ fun WeightScreen(
                 val canScrollLeft = currentPage > 0
                 val canScrollRight = (currentPage + 1) * pageSize < sortedEntries.size
 
-                Spacer(modifier = Modifier.height(20.dp))
 
                 WeightTrendCard(
                     chartData = chartData,
@@ -199,6 +249,12 @@ fun WeightScreen(
             } else {
                 NoChartCard()
             }
+
+            Text(
+                text = stringResource(R.string.add_new_weight),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.Start).padding(start= 30.dp)
+            )
 
             // Add Weight Card
             AddWeightCard(
@@ -219,6 +275,14 @@ fun WeightScreen(
                     }
                 }
             )
+
+            Text(
+                stringResource(R.string.weight_history),
+                style = MaterialTheme.typography.titleMedium,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.Start).padding(start= 30.dp)
+        )
 
             // Weight History (Scrollable)
             WeightHistoryCard(
@@ -273,9 +337,8 @@ fun WeightTrendCard(
 
                 Text(
                     stringResource(R.string.weight_trend),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp),
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 IconButton(
@@ -429,7 +492,7 @@ fun AddWeightCard(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier
                             .width(140.dp)
-                            .padding(start = 30.dp)
+                            .padding(start = 15.dp)
                             .height(50.dp),
                         shape = RoundedCornerShape(40.dp)
                     )
@@ -442,8 +505,8 @@ fun AddWeightCard(
                         onClick = { addWeight() },
                         modifier = Modifier.padding(start = 33.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFD9D9D9),
-                            contentColor = Color.Black
+                            containerColor = Color.Black,
+                            contentColor = Color.White
                         )
                     ) {
                         Row(
@@ -483,19 +546,14 @@ fun WeightHistoryCard(
                 .width(400.dp)
         ) {
             Column(modifier = Modifier.padding(30.dp)) {
-                Text(
-                    stringResource(R.string.weight_history),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(20.dp))
 
-                LazyColumn(
+//                Spacer(modifier = Modifier.height(20.dp))
+
+                Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(1.dp)
                 ) {
-                    items(weightEntries.sortedByDescending { it.first }) { (date, weight) ->
+                    weightEntries.forEach { (date, weight) ->
                         Row(
                             modifier = Modifier
                                 .width(400.dp)

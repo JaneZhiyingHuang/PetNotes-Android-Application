@@ -113,7 +113,7 @@ fun PetImageCard(pet: Pet){
         colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = Modifier
             .padding(top = 16.dp)
-            .width(352.dp)
+            .width(400.dp)
     ) {
         Image(
             painter = rememberAsyncImagePainter(pet.petImageUri),
@@ -140,7 +140,7 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
         modifier = Modifier
-            .width(352.dp)
+            .width(400.dp)
             .offset(y = (-30).dp)
     ) {
         // Wrap in a scrollable column to avoid content being cut off
@@ -153,7 +153,7 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Pet Profile",
-                    style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 16.sp),
+                    style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 20.sp),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .weight(1f)
@@ -196,7 +196,7 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "*Delete profile of this pet.",
-                        style = TextStyle(fontSize = 16.sp, color = DarkRed),
+                        style = TextStyle(fontSize = 16.sp, color = DarkRed, fontWeight = FontWeight.Bold),
                         modifier = Modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically)
@@ -242,15 +242,15 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
 //for info card style
 @Composable
 fun InfoRow(label: String, text: String) {
-    Column(modifier = Modifier.padding(vertical = 6.dp, horizontal = 40.dp)) {
+    Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 40.dp)) {
         Text(
             text = label,
-            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Gray)
+            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Gray)
         )
         Spacer(modifier =Modifier.height(1.dp))
         Text(
             text = text,
-            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
         )
     }
 }

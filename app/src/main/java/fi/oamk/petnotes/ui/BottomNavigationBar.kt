@@ -41,8 +41,8 @@ fun BottomNavigationBar(navController: NavController) {
         NavigationBar(containerColor = PrimaryColor) {
             val items = listOf(
                 NavigationItem("home", R.string.home, R.drawable.baseline_home_24),
-                NavigationItem("notes", R.string.notes, R.drawable.baseline_speaker_notes_24),
-                NavigationItem("map", R.string.map, R.drawable.baseline_map_24),
+                NavigationItem("notes", R.string.notes, R.drawable.import_contacts_24px),
+                NavigationItem("map", R.string.map, R.drawable.explore_24px),
                 NavigationItem("setting", R.string.setting, R.drawable.baseline_settings_24)
             )
 
@@ -74,7 +74,7 @@ fun BottomNavigationBar(navController: NavController) {
                         unselectedIconColor = Color.Gray,
                         selectedTextColor = SecondaryColor,
                         unselectedTextColor = Color.Gray,
-                        indicatorColor = InputColor
+                        indicatorColor = Color.Transparent
                     )
                 )
             }

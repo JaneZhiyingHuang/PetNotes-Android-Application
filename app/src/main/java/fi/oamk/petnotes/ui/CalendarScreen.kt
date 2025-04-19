@@ -79,7 +79,9 @@ import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
+import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.PrimaryColor
+import fi.oamk.petnotes.ui.theme.SecondaryColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.NotesViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
@@ -150,7 +152,7 @@ fun CalendarScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()  // Ensures the LazyColumn takes up the full available space
-                    .padding(16.dp) // Apply padding inside the list
+                    .padding(2.dp)
             ) {
                 item {
                     if (selectedPet != null) {
@@ -236,8 +238,7 @@ fun CalendarCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier
             .padding(20.dp)
-            .width(370.dp)
-            .height(350.dp)
+            .width(400.dp)
     ) {
         HorizontalCalendar(
             state = state,
@@ -353,8 +354,8 @@ fun Day(
             .clip(CircleShape)
             .background(
                 color = when {
-                    isSelected -> Color.Blue
-                    isTagged -> Color(0xFFFFCD4B) // Yellow highlight for tagged days
+                    isSelected -> SecondaryColor
+                    isTagged -> LightYellow
                     else -> Color.Transparent
                 }
             )
@@ -401,7 +402,7 @@ fun PetTagCountsCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { expanded = !expanded } // Toggle on row click
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp)
         ) {
             Icon(
                 imageVector = if (expanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
@@ -428,25 +429,25 @@ fun PetTagCountsCard(
                     .padding(20.dp)
                     .fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Spacer(modifier = Modifier.height(12.dp))
+                Column(modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp)) {
+
 
                     // Displaying tags sorted by count
                     tagCounts.sortedByDescending { it.count }.forEach { tagCount ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = 6.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
                                 text = tagCount.tag,
-                                fontWeight = FontWeight.Bold  // Make this text bold
+                                fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = "${tagCount.count} times",
                                 color = Color.Gray,
-                                fontWeight = FontWeight.Bold  // Make this text bold as well
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -511,7 +512,7 @@ fun NotesDetailCard(
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
             .fillMaxSize()
     ) {
         // Foldable Header
@@ -520,7 +521,7 @@ fun NotesDetailCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { expanded = !expanded }
-                .padding(vertical = 8.dp)
+                .padding(vertical = 4.dp)
         ) {
             Icon(
                 imageVector = if (expanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
@@ -547,7 +548,7 @@ fun NotesDetailCard(
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
