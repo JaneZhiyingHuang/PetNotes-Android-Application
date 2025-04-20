@@ -27,7 +27,9 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
+import fi.oamk.petnotes.ui.theme.CardBG
 import fi.oamk.petnotes.ui.theme.DarkRed
+import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.viewmodel.AddNewPetViewModel
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
@@ -81,6 +83,8 @@ fun ProfileScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
+            //line
+            HorizontalDivider(thickness = 1.dp, color = LineColor)
         },
         bottomBar = { BottomNavigationBar(navController = navController) }
     ) { padding ->
@@ -110,7 +114,7 @@ fun ProfileScreen(
 fun PetImageCard(pet: Pet){
     Card(
         shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardBG),
         modifier = Modifier
             .padding(top = 16.dp)
             .width(400.dp)
@@ -245,12 +249,12 @@ fun InfoRow(label: String, text: String) {
     Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 40.dp)) {
         Text(
             text = label,
-            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Gray)
+            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 16.sp, color = Color.Gray)
         )
         Spacer(modifier =Modifier.height(1.dp))
         Text(
             text = text,
-            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
+            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp, color = Color.Black)
         )
     }
 }

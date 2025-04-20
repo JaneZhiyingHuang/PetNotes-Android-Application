@@ -37,6 +37,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -80,8 +81,10 @@ import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.LightGrey
 import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LightYellow
+import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
@@ -147,6 +150,8 @@ fun CalendarScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
+            //line
+            HorizontalDivider(thickness = 1.dp, color = LineColor)
         },
         bottomBar = { BottomNavigationBar(navController = navController) }
     ) { innerPadding ->
@@ -532,7 +537,7 @@ fun NotesDetailCard(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "NotesDetail",
+                text = "Notes Detail",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -553,13 +558,14 @@ fun NotesDetailCard(
                         Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 note.date?.let {
                                     Text(
                                         it,
                                         style = MaterialTheme.typography.titleMedium,
-                                        modifier = Modifier.padding(top = 10.dp)
+//                                        modifier = Modifier.padding(top = 8.dp)
                                     )
                                 }
 
@@ -569,8 +575,8 @@ fun NotesDetailCard(
                                     note.tag,
                                     style = MaterialTheme.typography.titleMedium,
                                     modifier = Modifier
-                                        .padding(top = 10.dp)
-                                        .background(Color(0xFFFFCD4B), shape = RoundedCornerShape(4.dp))
+//                                        .padding(top = 4.dp)
+                                        .background(LightRed, shape = RoundedCornerShape(8.dp))
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
 
@@ -599,14 +605,15 @@ fun NotesDetailCard(
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0)),
-                                shape = RoundedCornerShape(8.dp)
+                                    .padding(vertical = 12.dp),
+                                colors = CardDefaults.cardColors(containerColor = LightGrey),
+                                shape = RoundedCornerShape(10.dp)
                             ) {
                                 Text(
                                     note.description,
                                     modifier = Modifier.padding(12.dp),
-                                    style = MaterialTheme.typography.bodyMedium
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color=(Color.Black)
                                 )
                             }
 

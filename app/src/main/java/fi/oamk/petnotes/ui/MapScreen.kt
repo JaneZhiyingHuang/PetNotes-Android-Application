@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -51,6 +52,9 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import fi.oamk.petnotes.model.PetStore
+import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.LightYellow
+import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import kotlinx.coroutines.Dispatchers
@@ -163,6 +167,8 @@ fun MapScreen(navController: NavController, context: Context) {
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
+            //line
+            HorizontalDivider(thickness = 1.dp, color = LineColor)
         },
 
         bottomBar = {
@@ -172,7 +178,7 @@ fun MapScreen(navController: NavController, context: Context) {
         Column(modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.White)
+                .background(CardBG)
         ) {
             // Display the address instead of latitude and longitude
             Spacer(modifier = Modifier.height(30.dp))
@@ -182,7 +188,7 @@ fun MapScreen(navController: NavController, context: Context) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 30.dp),
+                        .padding(horizontal = 40.dp),
                 ) {
                     Button(
                         onClick = {
@@ -191,13 +197,11 @@ fun MapScreen(navController: NavController, context: Context) {
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(30.dp))
-                            .border(1.dp, Color.Black,RoundedCornerShape(30.dp)),
+                            .clip(RoundedCornerShape(30.dp)),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (showPetStores) Color.Black else Color.White,
+                            containerColor = if (showPetStores) Color.Black else LightYellow,
                             contentColor = if (showPetStores) Color.White else Color.Black
                         ),
-                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Text("Find Pet Stores")
                     }
@@ -209,13 +213,11 @@ fun MapScreen(navController: NavController, context: Context) {
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(30.dp))
-                            .border(1.dp, Color.Black,RoundedCornerShape(30.dp)),
+                            .clip(RoundedCornerShape(30.dp)),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (showPetClinics) Color.Black else Color.White,
+                            containerColor = if (showPetClinics) Color.Black else LightYellow,
                             contentColor = if (showPetClinics) Color.White else Color.Black
                         ),
-                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Text("Find Pet Clinics")
                     }

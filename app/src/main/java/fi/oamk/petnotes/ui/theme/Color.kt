@@ -40,4 +40,4 @@ val LightBlue = Color(0xFFB3E4FF)
 
 val Blue = Color(0xFF2196F3)
 
-val LightGrey = Color.Gray
+val LightGrey =  Color(0xFFECECEC)

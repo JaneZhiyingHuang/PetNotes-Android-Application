@@ -149,7 +149,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                 ) {
                     Text(
                         text = "Retry",
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Normal)
                     )
                 }
 
@@ -181,7 +181,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                         Text(
                             text = "Continue with Google",
                             style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Normal,
                                 fontSize = 18.sp
                             )
                         )
@@ -213,7 +213,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                         Text(
                             text = "Continue with Email",
                             style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Normal,
                                 fontSize = 18.sp
                             )
                         )

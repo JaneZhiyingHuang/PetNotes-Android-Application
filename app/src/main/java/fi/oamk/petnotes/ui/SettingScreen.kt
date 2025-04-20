@@ -1,5 +1,6 @@
 package fi.oamk.petnotes.ui
 
+import android.R.attr.thickness
 import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -21,6 +22,7 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,22 +40,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import fi.oamk.petnotes.R
+import fi.oamk.petnotes.ui.theme.CardBG
 import fi.oamk.petnotes.ui.theme.LightBlue
 import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LightYellow
+import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import fi.oamk.petnotes.utils.LanguageManager
 import fi.oamk.petnotes.viewmodel.SettingScreenViewModel
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,26 +82,32 @@ fun SettingScreen(
         }
     }
 
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "Setting",
-                            color = SecondaryColor,
-                            fontSize = 20.sp  ,
-                            fontWeight = FontWeight.Bold
-
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PrimaryColor
+            Column {
+                TopAppBar(
+                    title = {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Setting",
+                                color = SecondaryColor,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = PrimaryColor
+                    )
                 )
-            )
+                HorizontalDivider(thickness = 1.dp, color = LineColor)
+            }
         },
-        bottomBar = { BottomNavigationBar(navController = navController) },
+        bottomBar = { BottomNavigationBar(navController = navController) }
 
     ) { paddingValues ->
 
@@ -106,7 +115,7 @@ fun SettingScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.White),
+                .background(CardBG),
             ) {
 
             if (isUserLoggedIn) {
@@ -193,7 +202,7 @@ fun SettingScreen(
                         .height(48.dp)
                         .align(Alignment.CenterHorizontally),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = LightYellow,
+                        containerColor = PrimaryColor,
                         contentColor = Color.Black
                     )
                 ) {
@@ -244,7 +253,7 @@ fun SettingScreen(
                         .height(48.dp)
                         .align(Alignment.CenterHorizontally),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = LightBlue,
+                        containerColor = PrimaryColor,
                         contentColor = Color.Black
                     )
                 ) {

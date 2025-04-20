@@ -3,6 +3,7 @@ package fi.oamk.petnotes.ui
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.hardware.lights.Light
 import android.icu.util.Calendar
 import android.net.Uri
 import android.util.Log
@@ -58,12 +59,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -80,6 +83,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -98,6 +102,10 @@ import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
+import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.LightGrey
+import fi.oamk.petnotes.ui.theme.LightYellow
+import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.NotesViewModel
@@ -285,6 +293,8 @@ fun NotesScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
+            //line
+            HorizontalDivider(thickness = 1.dp, color = LineColor)
         },
         bottomBar = { BottomNavigationBar(navController = navController) },
         floatingActionButton = {
@@ -323,21 +333,24 @@ fun NotesScreen(
                 .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            item{Spacer(modifier=Modifier.height(8.dp))}
+
             item {
                 Card(
                     modifier = Modifier
-                        .padding(8.dp)
+                        .padding(6.dp)
                         .width(400.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = CardBG
                     )
                 ) {
                     Column(modifier = Modifier.padding(6.dp)) {
                         FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 8.dp)
+                                .padding(horizontal = 16.dp)
                                 .wrapContentHeight(align = Alignment.Top),
                             maxItemsInEachRow = 6
                         ) {
@@ -361,7 +374,7 @@ fun NotesScreen(
                                             selectedTag = tag
                                         },
                                         label = { Text(tag) },
-                                        modifier = Modifier.padding(end = 4.dp),
+                                        modifier = Modifier.padding(end = 3.dp),
                                         colors = FilterChipDefaults.filterChipColors(
                                             containerColor = getTagColor(tag, context).copy(alpha = 0.2f),
                                             labelColor = getTagColor(tag, context),
@@ -398,7 +411,7 @@ fun NotesScreen(
                                             .fillMaxWidth()
                                             .padding(16.dp),
                                         colors = CardDefaults.cardColors(
-                                        containerColor = Color.White
+                                        containerColor = CardBG
                                         )
                                     ) {
                                         Column(
@@ -501,21 +514,24 @@ fun NotesScreen(
                 AnimatedVisibility(visible = addNoteExpanded) {
                     Card(
                         modifier = Modifier
-                            .padding(8.dp)
+//                            .padding(8.dp)
                             .width(400.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color.White
+                            containerColor = CardBG
                         )
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(horizontal = 22.dp,vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Row(
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding()
+
                             ) {
                                 // Date Selection
                                 val months = listOf("1","2","3","4","5","6", "7","8","9","10","11","12")
@@ -533,7 +549,7 @@ fun NotesScreen(
                                     selectedValue = selectedMonth,
                                     options = months,
                                     onValueChange = { selectedMonth = it },
-                                    modifier = Modifier.weight(0.6f)
+                                    modifier = Modifier.weight(0.5f)
                                 )
                                 DropdownSelector(
                                     selectedValue = selectedYear,
@@ -553,19 +569,25 @@ fun NotesScreen(
 
                             Card(
                                 modifier = Modifier
-                                    .padding(16.dp)
+                                    .padding(top=8.dp,bottom=10.dp)
                                     .fillMaxWidth()
                                     .height(200.dp)
                                     .width(400.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+//                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             ) {
                                 TextField(
                                     value = userInput,
                                     onValueChange = { userInput = it },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(200.dp)
-                                        .padding(12.dp),
+                                        .height(200.dp),
+//                                        .padding(10.dp),
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = LightGrey,
+                                        unfocusedContainerColor = LightGrey,
+                                        disabledContainerColor = LightYellow,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent),
                                     placeholder = { Text(stringResource(R.string.description_placeholder)) },
                                     singleLine = false
                                 )
@@ -574,42 +596,50 @@ fun NotesScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    .padding( vertical = 4.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Button(
                                     onClick = { photoPickerLauncher.launch("image/*") },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFFD7D5D5),
+                                        containerColor = PrimaryColor,
                                         contentColor = Color.Black
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
-                                        .padding(end = 4.dp)
                                 ) {
                                     Text(
                                         text = stringResource(R.string.add_photos, photoUris.size),
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp
                                     )
                                 }
+
+                                Spacer(modifier = Modifier.width(3.dp))
+
                                 Button(
                                     onClick = { documentPickerLauncher.launch("*/*") },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFFD9D9D9),
+                                        containerColor = PrimaryColor,
                                         contentColor = Color.Black
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
-                                        .padding(end = 4.dp)
                                 ) {
                                     Text(
                                         text = stringResource(
                                             R.string.add_documents,
                                             documentUris.size
-                                        ), fontWeight = FontWeight.Bold
+                                        ),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp
+
                                     )
                                 }
-                            }
+
+
+
+                        }
 
                             Button(
                                 onClick = {
@@ -654,15 +684,17 @@ fun NotesScreen(
                                         )
                                     }
                                 },
-                                modifier = Modifier.padding(vertical = 8.dp),
+                                modifier = Modifier.padding(vertical = 8.dp)
+                                    .width(150.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFD9D9D9),
-                                    contentColor = Color.Black
+                                    containerColor = Color.Black,
+                                    contentColor = Color.White
                                 )
                             ) {
                                 Text(
                                     text = stringResource(R.string.confirm),
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
                                 )
                             }
                         }
@@ -733,7 +765,7 @@ fun NotesScreen(
                     .padding(16.dp)
                     .height(600.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = CardBG
                 )
             ) {
                 Column(
@@ -742,6 +774,7 @@ fun NotesScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Row(){
                     Text(
                         text = stringResource(R.string.edit_note),
                         fontWeight = FontWeight.Bold,
@@ -755,6 +788,7 @@ fun NotesScreen(
                         modifier = Modifier.fillMaxWidth()
 
                     )
+                        }
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = editedDescription,
@@ -1105,7 +1139,7 @@ fun NotesScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = CardBG
                 )
             ) {
                 Column(
@@ -1266,10 +1300,11 @@ fun DateSelector(selectedValue: String, onValueChange: (String) -> Unit) {
     Box {
         Card(
             modifier = Modifier
-                .width(80.dp)
+                .width(70.dp)
+                .height(45.dp)
                 .clickable { expanded = true }
-                .padding(4.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                .padding(2.dp),
+//            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -1306,15 +1341,17 @@ fun DropdownSelector(modifier: Modifier = Modifier, selectedValue: String, optio
     Box(modifier = modifier) {
         Card(
             modifier = Modifier
-                .fillMaxWidth()
                 .clickable { expanded = true }
-                .padding(4.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                .height(45.dp)
+                .padding(2.dp),
+
+//            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
+//                    .fillMaxWidth()
                     .padding(8.dp),
+//                    .background(LightGrey),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -1325,7 +1362,7 @@ fun DropdownSelector(modifier: Modifier = Modifier, selectedValue: String, optio
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth(0.9f)
+//            modifier = Modifier.fillMaxWidth(0.9f).background(LightGrey)
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -1365,7 +1402,7 @@ fun NoteCard(
             .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = CardBG
         )
     ) {
         Row(

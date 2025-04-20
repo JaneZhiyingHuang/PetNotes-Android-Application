@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -88,17 +87,13 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Date
 import java.util.Locale
-import androidx.compose.ui.draw.clip
-import androidx.compose.material3.Surface
-import fi.oamk.petnotes.ui.theme.ButtonColor
+
 import fi.oamk.petnotes.ui.theme.CardBG
-import fi.oamk.petnotes.ui.theme.LightBlue
 import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.LineColor
-import fi.oamk.petnotes.ui.theme.Red
 import fi.oamk.petnotes.ui.theme.SecondaryColor
-import fi.oamk.petnotes.ui.theme.Yellow
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

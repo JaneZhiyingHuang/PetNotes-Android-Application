@@ -80,8 +80,10 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.text.TextStyle
 import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import ir.ehsannarmani.compose_charts.models.DrawStyle.Fill
 
@@ -173,6 +175,8 @@ fun WeightScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
+            //line
+            HorizontalDivider(thickness = 1.dp, color = LineColor)
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = { BottomNavigationBar(navController = navController) },
