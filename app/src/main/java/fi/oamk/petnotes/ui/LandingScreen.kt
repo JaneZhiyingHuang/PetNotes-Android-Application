@@ -5,9 +5,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -66,7 +68,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
-                    .alpha(0.7f)
+                    .alpha(0.3f)
                     .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
 
             )
@@ -94,7 +96,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                 painter = painterResource(id = R.drawable.logopurple),
                 contentDescription = null,
                 modifier = Modifier.align(Alignment.TopCenter)
-                    .padding(top=95.dp)
+                    .padding(top=90.dp, bottom = 25.dp)
             )
 
 
@@ -140,7 +142,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                     onClick = { googleSignInViewModel.retry() },
                     modifier = Modifier
                         .width(280.dp)
-                        .height(48.dp),
+                        .height(60.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
@@ -159,36 +161,63 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                 Button(
                     onClick = { googleSignInViewModel.startGoogleSignIn() },
                     modifier = Modifier
-                        .width(280.dp)
-                        .height(48.dp),
+                        .width(300.dp)
+                        .height(60.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White.copy(alpha = 0.8f),
+                        containerColor = Color.White.copy(alpha = 0.9f),
                         contentColor = Color.Black
                     )
                 ) {
-                    Text(
-                        text = "Continue with Google",
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.icons8_google_24_2),
+                            contentDescription = "Google Icon",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Continue with Google",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        )
+                    }
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Email Sign-In Button
                 Button(
                     onClick = { navController.navigate("sign_in") },
                     modifier = Modifier
-                        .width(280.dp)
-                        .height(48.dp),
+                        .width(300.dp)
+                        .height(60.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White.copy(alpha = 0.8f),
+                        containerColor = Color.White.copy(alpha = 0.9f),
                         contentColor = Color.Black
                     )
                 ) {
-                    Text(
-                        text = "Continue with Email",
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.mail_24px),
+                            contentDescription = "Email",
+                            modifier = Modifier.size(24.dp)
+                                        .offset(x = (-3).dp))
+                        Spacer(modifier = Modifier.width(14.dp))
+                        Text(
+                            text = "Continue with Email",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -201,8 +230,8 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                 Button(
                     onClick = { navController.navigate("sign_up") },
                     modifier = Modifier
-                        .width(280.dp)
-                        .height(48.dp),
+                        .width(300.dp)
+                        .height(60.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Black,
                         contentColor = Color.White
@@ -210,7 +239,7 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                 ) {
                     Text(
                         text = "Sign up with a new account",
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     )
                 }
             }

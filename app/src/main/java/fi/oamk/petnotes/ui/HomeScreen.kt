@@ -91,6 +91,7 @@ import java.util.Locale
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Surface
 import fi.oamk.petnotes.ui.theme.ButtonColor
+import fi.oamk.petnotes.ui.theme.CardBG
 import fi.oamk.petnotes.ui.theme.LightBlue
 import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LightYellow
@@ -207,8 +208,8 @@ fun PetCard(pet: Pet, navController: NavController) {
     Card(
         onClick = { navController.navigate("profile/${pet.id}") },
         shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBG),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .padding(top = 10.dp)
             .width(400.dp)
@@ -251,17 +252,17 @@ fun PetCard(pet: Pet, navController: NavController) {
                                 "Male" -> Icon(
                                     imageVector = Icons.Filled.Male,
                                     contentDescription = "Male",
-                                    tint = Red
+                                    tint = Color.Black
                                 )
                                 "Female" -> Icon(
                                     imageVector = Icons.Filled.Female,
                                     contentDescription = "Female",
-                                    tint = LightBlue
+                                    tint = Color.Black
                                 )
                                 "Other" -> Icon(
                                     imageVector = Icons.Filled.Person,
                                     contentDescription = "Other",
-                                    tint = Yellow
+                                    tint = Color.Black
                                 )
                             }
                         }
@@ -269,35 +270,41 @@ fun PetCard(pet: Pet, navController: NavController) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // 第二行：DOB 和 Age
                         Text(
                             text = pet.specie,
-                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp)
                         )
-//                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = pet.dateOfBirth,
-                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp)
                         )
-//                        Spacer(modifier = Modifier.width(20.dp))
+                        Spacer(modifier = Modifier.width(2.dp))
                         Text(
                             text = calculateAge(pet.dateOfBirth),
-                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp)
                         )
-//                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "${stringResource(R.string.medical_condition)}: ${pet.medicalCondition}",
-                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black),
+            Box(
                 modifier = Modifier
-                    .background(LightYellow, shape = RoundedCornerShape(15.dp))
-                    .padding(horizontal = 20.dp, vertical = 15.dp)
-            )
+                .fillMaxWidth()
+                .background(LightYellow, shape = RoundedCornerShape(15.dp))
+                .padding(horizontal = 20.dp, vertical = 15.dp)) {
+                Text(
+                    text = "${stringResource(R.string.medical_condition)}: ${pet.medicalCondition}",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        color = Color.Black
+                    ),
 
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
@@ -307,8 +314,8 @@ fun PetCard(pet: Pet, navController: NavController) {
 fun NoPetsCard(navController: NavController) {
     Card(
         shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBG),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .padding(top = 150.dp)
             .width(352.dp)
@@ -381,8 +388,8 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
     if (weightEntries.isEmpty()) {
         Card(
             shape = RoundedCornerShape(15.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = CardBG),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
                 .padding(20.dp)
                 .width(352.dp)
@@ -417,8 +424,8 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
         // Display the weight trend in a chart
         Card(
             shape = RoundedCornerShape(15.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = CardBG),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
                 .padding(top= 10.dp)
                 .width(400.dp)
@@ -446,11 +453,11 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                             Line(
                                 label = petWeightLabel,
                                 values = chartData.map { it.second.toDouble() },
-                                color = SolidColor(Color.Blue),
+                                color = SolidColor(SecondaryColor),
                                 dotProperties = DotProperties(
                                     enabled = true,
                                     color = SolidColor(Color.White),
-                                    strokeColor = SolidColor(Color.Blue)
+                                    strokeColor = SolidColor(SecondaryColor)
                                 ),
                             )
                         )
@@ -522,8 +529,8 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, navCo
     // Card Layout
     Card(
         shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBG),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         onClick = {
             // Navigate to calendar screen on day click
             navController.navigate("calendarScreen")
@@ -619,7 +626,7 @@ fun Day(
             .aspectRatio(1f)
             .clip(CircleShape)
             .background(
-                color = if (isTagged) Color(0xFFFFCD4B) else Color.Transparent // Highlight tagged days
+                color = if (isTagged) LightRed else Color.Transparent // Highlight tagged days
             )
             .clickable { onClick(day) }, // Make the day clickable
         contentAlignment = Alignment.Center

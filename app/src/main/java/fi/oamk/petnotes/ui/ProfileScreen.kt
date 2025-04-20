@@ -138,7 +138,7 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .width(400.dp)
             .offset(y = (-30).dp)

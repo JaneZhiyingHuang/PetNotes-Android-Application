@@ -44,6 +44,10 @@ android {
 
 dependencies {
 
+    //for weight chart
+    // build.gradle (Module)
+
+//        implementation ("ir.ehsannarmani:compose-charts:0.7.0")
     // for blur ui
 //    implementation(libs.accompanist.systemuicontroller)
 //    implementation(libs.accompanist.blur)

@@ -70,6 +70,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import kotlinx.coroutines.launch
@@ -132,7 +134,7 @@ fun AddNewPetScreen(
     Scaffold(
         topBar = {
             Surface(
-                shape = RoundedCornerShape(bottomStart = 15.dp, bottomEnd = 15.dp),
+//                shape = RoundedCornerShape(bottomStart = 15.dp, bottomEnd = 15.dp),
             ) {
                 TopAppBar(
                     title = {
@@ -140,6 +142,7 @@ fun AddNewPetScreen(
                                 "Add A New Pet",
                                 fontWeight = FontWeight.Bold,
                                 color = SecondaryColor,
+                                fontSize = 20.sp,
                                 modifier = Modifier.padding(start = 95.dp)
                             )
                     },
@@ -160,17 +163,23 @@ fun AddNewPetScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(CardBG)
                 .padding(paddingValues)
         )
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp
+                )
                 .verticalScroll(rememberScrollState())
-                .background(Color.White)
         ) {
+
+            Spacer(modifier = Modifier.height(18.dp))
+
             // avatar
             Row(
                 horizontalArrangement = Arrangement.Center,
@@ -237,7 +246,7 @@ fun AddNewPetScreen(
                         .weight(1f),
                     contentPadding = PaddingValues(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (petGender == context.getString(R.string.male)) ButtonColor else InputColor,
+                        containerColor = if (petGender == context.getString(R.string.male)) LightYellow else InputColor,
                         contentColor = Color.Black
                     )
                 ) {
@@ -250,7 +259,7 @@ fun AddNewPetScreen(
                         .weight(1f),
                     contentPadding = PaddingValues(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (petGender == context.getString(R.string.female)) ButtonColor else InputColor,
+                        containerColor = if (petGender == context.getString(R.string.female)) LightYellow else InputColor,
                         contentColor = Color.Black
                     )
                 ) {
@@ -263,7 +272,7 @@ fun AddNewPetScreen(
                         .weight(1f),
                     contentPadding = PaddingValues(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (petGender == context.getString(R.string.other)) ButtonColor else InputColor,
+                        containerColor = if (petGender == context.getString(R.string.other)) LightYellow else InputColor,
                         contentColor = Color.Black
                     )
                 ) {

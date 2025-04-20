@@ -81,6 +81,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.ui.text.TextStyle
+import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.SecondaryColor
+import ir.ehsannarmani.compose_charts.models.DrawStyle.Fill
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -308,7 +311,7 @@ fun WeightTrendCard(
 
     Card(
         shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardBG),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier
             .padding(20.dp)
@@ -331,7 +334,7 @@ fun WeightTrendCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Previous",
-                        tint = if (canScrollLeft) Color.Blue else Color.Gray
+                        tint = if (canScrollLeft) SecondaryColor else Color.Gray
                     )
                 }
 
@@ -349,7 +352,7 @@ fun WeightTrendCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = "Next",
-                        tint = if (canScrollRight) Color.Blue else Color.Gray
+                        tint = if (canScrollRight) SecondaryColor else Color.Gray
                     )
                 }
             }
@@ -361,11 +364,12 @@ fun WeightTrendCard(
                         Line(
                             label = petWeightLabel,
                             values = chartData.map { it.second.toDouble() },
-                            color = SolidColor(Color.Blue),
+                            color = SolidColor(SecondaryColor),
                             dotProperties = DotProperties(
                                 enabled = true,
                                 color = SolidColor(Color.White),
-                                strokeColor = SolidColor(Color.Blue)
+                                strokeColor = SolidColor(SecondaryColor),
+
                             ),
                         )
                     )
@@ -394,8 +398,8 @@ fun WeightTrendCard(
 fun NoChartCard() {
     Card(
         shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBG),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .padding(20.dp)
             .width(400.dp)
@@ -430,8 +434,8 @@ fun AddWeightCard(
     Box(modifier = Modifier) {
         Card(
             shape = RoundedCornerShape(15.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor =CardBG),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
                 .padding(20.dp)
                 .width(400.dp)
@@ -539,8 +543,8 @@ fun WeightHistoryCard(
     if (weightEntries.isNotEmpty()) {
         Card(
             shape = RoundedCornerShape(15.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = CardBG),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
                 .padding(20.dp)
                 .width(400.dp)
@@ -593,7 +597,7 @@ fun WeightHistoryCard(
         Card(
             shape = RoundedCornerShape(15.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
                 .padding(20.dp)
                 .width(400.dp)

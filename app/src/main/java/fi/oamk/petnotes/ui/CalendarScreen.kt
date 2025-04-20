@@ -79,6 +79,8 @@ import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
+import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
@@ -234,8 +236,8 @@ fun CalendarCard(
     // 🗓️ Calendar UI
     Card(
         shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBG),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .padding(20.dp)
             .width(400.dp)
@@ -355,7 +357,7 @@ fun Day(
             .background(
                 color = when {
                     isSelected -> SecondaryColor
-                    isTagged -> LightYellow
+                    isTagged -> LightRed
                     else -> Color.Transparent
                 }
             )
@@ -423,8 +425,8 @@ fun PetTagCountsCard(
         )  {
             Card(
                 shape = RoundedCornerShape(15.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = CardBG),
                 modifier = Modifier
                     .padding(20.dp)
                     .fillMaxWidth()
@@ -458,8 +460,8 @@ fun PetTagCountsCard(
         // Display message when no tags are recorded
         Card(
             shape = RoundedCornerShape(15.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            colors = CardDefaults.cardColors(containerColor = CardBG),
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
@@ -544,9 +546,9 @@ fun NotesDetailCard(
                         modifier = Modifier
                             .padding(5.dp)
                             .fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = CardBG),
                         shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
                             Row(
@@ -718,7 +720,7 @@ fun EditNoteDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp) ,
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBG),
             ) {
                 val coroutineScope = rememberCoroutineScope()
 

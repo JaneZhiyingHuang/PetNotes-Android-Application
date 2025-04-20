@@ -11,22 +11,24 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 //some color variables for our app
-val PrimaryColor = Color(0xFFDCE0FF)
+val PrimaryColor = Color(0xFFE5E4F5)
 
-val SecondaryColor = Color(0xFF7E49E0)
+val SecondaryColor = Color(0xFF7F7AB7)
 
-val BgColor = Color(0xD0EDF0FF)
+val BgColor = Color(0xFFEDEAF3)
 //val BgColor = Color(0xFFEDF0FF)
 
 val InputColor = Color(0xFFECECEC)
 
 val ButtonColor = Color(0xFFFECF56)
 
+val CardBG = Color(0xFFFFFCFB)
+
 val DarkRed = Color(0xFFA91515)
 
 val LineColor = Color(0xFFECECEC)
 
-val LightRed = Color(0xFFFAE4E4)
+val LightRed = Color(0xFFFEE4CF)
 
 val Red = Color(0xFFEF7373)
 
