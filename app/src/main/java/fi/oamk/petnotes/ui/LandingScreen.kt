@@ -109,7 +109,11 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Welcome to PetNotes!", fontWeight = FontWeight.ExtraBold, fontSize = 36.sp,    fontFamily = FontFamily.Cursive )
+        Text(text = "Welcome to PetNotes!",
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 26.sp,
+            fontFamily = FontFamily.SansSerif)
+
         Spacer(modifier = Modifier.height(8.dp))
         Text("Let's login to continue")
         Spacer(modifier = Modifier.height(50.dp))

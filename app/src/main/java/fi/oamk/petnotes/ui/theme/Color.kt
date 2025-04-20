@@ -16,11 +16,8 @@ val PrimaryColor = Color(0xFFE5E4F5)
 val SecondaryColor = Color(0xFF7F7AB7)
 
 val BgColor = Color(0xFFEDEAF3)
-//val BgColor = Color(0xFFEDF0FF)
 
 val InputColor = Color(0xFFECECEC)
-
-val ButtonColor = Color(0xFFFECF56)
 
 val CardBG = Color(0xFFFFFCFB)
 
@@ -30,14 +27,12 @@ val LineColor = Color(0xFFECECEC)
 
 val LightRed = Color(0xFFFEE4CF)
 
-val Red = Color(0xFFEF7373)
-
 val LightYellow = Color(0xFFFDF2E2)
 
-val Yellow = Color(0xFFFFD278)
+val LightGrey =  Color(0xBCECECEC)
 
-val LightBlue = Color(0xFFB3E4FF)
+val NoteBG = Color(0xFFFFFCFB)
 
-val Blue = Color(0xFF2196F3)
+val NoteInput = Color(0xFFF5F5F5)
 
-val LightGrey =  Color(0xFFECECEC)
+val WeightTrend = Color(0xFF6D5FE3)

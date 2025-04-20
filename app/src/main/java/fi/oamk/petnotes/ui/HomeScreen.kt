@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -93,6 +94,7 @@ import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
+import fi.oamk.petnotes.ui.theme.WeightTrend
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -216,7 +218,9 @@ fun PetCard(pet: Pet, navController: NavController) {
                         .size(100.dp)
                         .clip(CircleShape)
                         .background(InputColor)
-                ) {
+                        .offset(x = (10).dp),
+
+                    ) {
                     if (pet.petImageUri.isNotEmpty()) {
                         Image(
                             painter = rememberAsyncImagePainter(pet.petImageUri),
@@ -366,7 +370,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                 }
             }
 
-            // show newest page in WeishtScreen
+            // show newest page in WeightScreen
             val pageSize = 7
             val totalItems = fetchedEntries.size
             val lastPage = if (totalItems == 0) 0 else (totalItems - 1) / pageSize
@@ -448,11 +452,11 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
                             Line(
                                 label = petWeightLabel,
                                 values = chartData.map { it.second.toDouble() },
-                                color = SolidColor(SecondaryColor),
+                                color = SolidColor(WeightTrend),
                                 dotProperties = DotProperties(
                                     enabled = true,
                                     color = SolidColor(Color.White),
-                                    strokeColor = SolidColor(SecondaryColor)
+                                    strokeColor = SolidColor(WeightTrend)
                                 ),
                             )
                         )

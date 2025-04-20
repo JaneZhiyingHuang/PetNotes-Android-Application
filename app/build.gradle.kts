@@ -52,6 +52,9 @@ dependencies {
 //    implementation(libs.accompanist.systemuicontroller)
 //    implementation(libs.accompanist.blur)
 
+    //for font google
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.7.8")
+
 
     // For the view-based calendar library
     implementation(libs.view)

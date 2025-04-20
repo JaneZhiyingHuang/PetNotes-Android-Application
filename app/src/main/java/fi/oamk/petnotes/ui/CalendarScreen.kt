@@ -565,7 +565,6 @@ fun NotesDetailCard(
                                     Text(
                                         it,
                                         style = MaterialTheme.typography.titleMedium,
-//                                        modifier = Modifier.padding(top = 8.dp)
                                     )
                                 }
 

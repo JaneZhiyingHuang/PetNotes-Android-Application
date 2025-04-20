@@ -62,6 +62,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -104,8 +105,11 @@ import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.ui.theme.CardBG
 import fi.oamk.petnotes.ui.theme.LightGrey
+import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.LineColor
+import fi.oamk.petnotes.ui.theme.NoteBG
+import fi.oamk.petnotes.ui.theme.NoteInput
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.NotesViewModel
@@ -583,11 +587,12 @@ fun NotesScreen(
                                         .height(200.dp),
 //                                        .padding(10.dp),
                                     colors = TextFieldDefaults.colors(
-                                        focusedContainerColor = LightGrey,
-                                        unfocusedContainerColor = LightGrey,
-                                        disabledContainerColor = LightYellow,
+                                        focusedContainerColor = NoteInput,
+                                        unfocusedContainerColor = NoteInput,
+//                                        disabledContainerColor = LightYellow,
                                         focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent),
+                                        unfocusedIndicatorColor = Color.Transparent
+                                        ),
                                     placeholder = { Text(stringResource(R.string.description_placeholder)) },
                                     singleLine = false
                                 )
@@ -1305,6 +1310,9 @@ fun DateSelector(selectedValue: String, onValueChange: (String) -> Unit) {
                 .clickable { expanded = true }
                 .padding(2.dp),
 //            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            colors = CardDefaults.cardColors(
+                containerColor = NoteBG,
+            )
         ) {
             Row(
                 modifier = Modifier
@@ -1313,13 +1321,15 @@ fun DateSelector(selectedValue: String, onValueChange: (String) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = selectedValue, modifier = Modifier.weight(1f))
+                Text(text = selectedValue, modifier = Modifier.weight(1f), color = Color.Black)
                 Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select")
             }
         }
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(NoteBG)
+
         ) {
             days.forEach { day ->
                 DropdownMenuItem(
@@ -1344,6 +1354,9 @@ fun DropdownSelector(modifier: Modifier = Modifier, selectedValue: String, optio
                 .clickable { expanded = true }
                 .height(45.dp)
                 .padding(2.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = NoteBG,
+            )
 
 //            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
@@ -1355,14 +1368,14 @@ fun DropdownSelector(modifier: Modifier = Modifier, selectedValue: String, optio
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = selectedValue, modifier = Modifier.weight(1f))
+                Text(text = selectedValue, modifier = Modifier.weight(1f), color = Color.Black)
                 Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select")
             }
         }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-//            modifier = Modifier.fillMaxWidth(0.9f).background(LightGrey)
+            modifier = Modifier.background(NoteBG)
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -1399,7 +1412,7 @@ fun NoteCard(
     Card(
         modifier = Modifier
             .width(400.dp)
-            .padding(8.dp),
+            .padding(4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = CardBG
@@ -1408,7 +1421,7 @@ fun NoteCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(vertical=12.dp, horizontal = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -1419,22 +1432,49 @@ fun NoteCard(
                 ) {
                     Text(
                         text = note.getFormattedDate(),
-                        fontSize = 14.sp,
-                        color = Color.Gray
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        fontWeight= FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.weight(0.8f))
+
                     Text(
                         text = note.tag,
                         fontSize = 14.sp,
-                        color = getTagColor(note.tag, context)
+//                        color = getTagColor(note.tag, context),
+                        color = Color.Black,
+                        modifier = Modifier
+                        .background(LightRed, shape = RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+
                     )
+
+                    Spacer(modifier = Modifier.weight(0.1f))
+
+
+                    IconButton(onClick = { onEdit(note) }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Note",
+                            tint = Color.Gray
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = note.description,
-                    fontSize = 16.sp
-                )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp),
+                    colors = CardDefaults.cardColors(containerColor = LightGrey),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(
+                        note.description,
+                        modifier = Modifier.padding(12.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color=(Color.Black)
+                    )
+                }
 
                 // Display photos if available
                 if (note.photoUrls.isNotEmpty()) {
@@ -1521,13 +1561,7 @@ fun NoteCard(
                 }
             }
 
-            IconButton(onClick = { onEdit(note) }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Note",
-                    tint = Color.Gray
-                )
-            }
+
         }
     }
 }

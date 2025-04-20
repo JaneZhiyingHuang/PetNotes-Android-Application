@@ -83,8 +83,10 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.text.TextStyle
 import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.LightGrey
 import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
+import fi.oamk.petnotes.ui.theme.WeightTrend
 import ir.ehsannarmani.compose_charts.models.DrawStyle.Fill
 
 
@@ -316,7 +318,7 @@ fun WeightTrendCard(
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = CardBG),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .padding(20.dp)
             .width(400.dp)
@@ -368,11 +370,11 @@ fun WeightTrendCard(
                         Line(
                             label = petWeightLabel,
                             values = chartData.map { it.second.toDouble() },
-                            color = SolidColor(SecondaryColor),
+                            color = SolidColor(WeightTrend),
                             dotProperties = DotProperties(
                                 enabled = true,
                                 color = SolidColor(Color.White),
-                                strokeColor = SolidColor(SecondaryColor),
+                                strokeColor = SolidColor(WeightTrend),
 
                             ),
                         )
@@ -441,17 +443,18 @@ fun AddWeightCard(
             colors = CardDefaults.cardColors(containerColor =CardBG),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
-                .padding(20.dp)
+                .padding(15.dp)
                 .width(400.dp)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier.padding(vertical = 12.dp, horizontal = 30.dp).fillMaxWidth(),
             ) {
                 // Date Row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(70.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+
                 ) {
                     Text(
                         text = stringResource(
@@ -459,14 +462,17 @@ fun AddWeightCard(
                             dateFormatforselect.format(selectedDate ?: currentDate)
                         ),
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.offset(y = (-2).dp),
+
+                        )
                     Button(
                         onClick = { isDatePickerOpen = true },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFD9D9D9),
+                            containerColor = LightGrey,
                             contentColor = Color.Black
-                        )
+                        ),
+                        modifier = Modifier.width(130.dp)
                     ) {
                         Text(stringResource(R.string.select_date), fontWeight = FontWeight.Bold)
                     }
@@ -491,34 +497,40 @@ fun AddWeightCard(
                 // Weight Input Row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(15.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
+
+
                 ) {
-                    OutlinedTextField(
-                        value = newWeight,
-                        onValueChange = { onWeightChange(it) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier
-                            .width(140.dp)
-                            .padding(start = 15.dp)
-                            .height(50.dp),
-                        shape = RoundedCornerShape(40.dp)
-                    )
-                    Text(
-                        text = "KG",
-                        fontWeight = FontWeight.Bold
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                        OutlinedTextField(
+                            value = newWeight,
+                            onValueChange = { onWeightChange(it) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier
+                                .width(140.dp)
+                                .height(50.dp)
+                                .offset(x = (-5).dp),
+                    shape = RoundedCornerShape(40.dp)
+                        )
+                        Text(
+                            text = "KG",
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
 
                     Button(
                         onClick = { addWeight() },
-                        modifier = Modifier.padding(start = 33.dp),
+                        modifier = Modifier.width(130.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Black,
-                            contentColor = Color.White
+                            contentColor = Color.White,
                         )
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(30.dp),
+                            horizontalArrangement = Arrangement.spacedBy(5.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -533,6 +545,8 @@ fun AddWeightCard(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(3.dp))
             }
         }
     }
@@ -592,6 +606,14 @@ fun WeightHistoryCard(
                             ) {
                                 Icon(Icons.Filled.Delete, contentDescription = "Delete")
                             }
+//                            //line
+//                            HorizontalDivider(
+//                                thickness = 1.dp,
+//                                color = LineColor,
+//                                modifier = Modifier
+//                                    .padding(top=4.dp)
+//                                    .width(300.dp)
+//                            )
                         }
                     }
                 }

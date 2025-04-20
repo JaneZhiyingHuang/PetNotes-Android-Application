@@ -55,7 +55,6 @@ import androidx.navigation.NavController
 import fi.oamk.petnotes.viewmodel.AddNewPetViewModel
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.R
-import fi.oamk.petnotes.ui.theme.ButtonColor
 import fi.oamk.petnotes.ui.theme.InputColor
 import java.util.*
 import android.app.DatePickerDialog
