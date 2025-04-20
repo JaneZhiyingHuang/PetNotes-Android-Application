@@ -75,4 +75,24 @@
     <string name="failed_to_add_tag">Misslyckades med att lägga till tagg: %1$s</string>
     <string name="photos2">Foton:</string>
     <string name="documents2">Dokument:</string>
+    <string name="please_log_in_to_access_the_map">Logga in för att få tillgång till kartan.</string>
+    <string name="your_current_location_is">Din nuvarande plats är: %1$s</string>
+    <string name="address_not_found">Adress hittades inte.</string>
+    <string name="find_pet_stores">Hitta djuraffärer</string>
+    <string name="find_pet_clinics">Hitta djurkliniker</string>
+    <string name="unknown_email">Okänd e-post</string>
+    <string name="user_info">Användarinformation</string>
+    <string name="user_name">Användarnamn:</string>
+    <string name="user_email">E-postadress:</string>
+    <string name="delete_account">Radera konto</string>
+    <string name="change_language">Byt språk</string>
+    <string name="join_membership">Gå med i medlemskap</string>
+    <string name="sign_out">Logga ut</string>
+    <string name="no_user_is_currently_logged_in">Ingen användare är inloggad</string>
+    <string name="add_a_new_pet">Lägg till ett nytt husdjur</string>
+    <string name="no_pet_selected">Inget husdjur valt.</string>
+    <string name="recorded_tags">Registrerade taggar: %1$s %2$s</string>
+    <string name="times">%1$s gånger</string>
+    <string name="no_tags_recorded_yet">Inga taggar har registrerats än.</string>
+    <string name="notes_detail">Anteckningsdetaljer</string>
 </resources>

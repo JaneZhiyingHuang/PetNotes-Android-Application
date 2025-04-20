@@ -1,6 +1,7 @@
 package fi.oamk.petnotes.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,6 +53,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.PetStore
 import fi.oamk.petnotes.ui.theme.CardBG
 import fi.oamk.petnotes.ui.theme.LightYellow
@@ -63,6 +66,7 @@ import org.json.JSONObject
 import java.net.URL
 import java.util.Locale
 
+@SuppressLint("StringFormatInvalid")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(navController: NavController, context: Context) {
@@ -83,7 +87,7 @@ fun MapScreen(navController: NavController, context: Context) {
 
     if (!isLoggedIn) {
         // Show login prompt or redirect to login screen
-        Text(text = "Please log in to access the map.", modifier = Modifier.padding(16.dp))
+        Text(text = stringResource(R.string.please_log_in_to_access_the_map), modifier = Modifier.padding(16.dp))
         return
     }
 
@@ -109,9 +113,10 @@ fun MapScreen(navController: NavController, context: Context) {
                     if (addresses != null) {
                         if (addresses.isNotEmpty()) {
                             val address = addresses[0]?.getAddressLine(0)
-                            userAddress = "Your current location is:\n$address"
+                            userAddress =
+                                context.getString(R.string.your_current_location_is, address)
                         } else {
-                            userAddress = "Address not found."
+                            userAddress = context.getString(R.string.address_not_found)
                         }
                     }
                     Log.d("MapScreen", "User location: Latitude = ${it.latitude}, Longitude = ${it.longitude}")
@@ -203,7 +208,7 @@ fun MapScreen(navController: NavController, context: Context) {
                             contentColor = if (showPetStores) Color.White else Color.Black
                         ),
                     ) {
-                        Text("Find Pet Stores")
+                        Text(stringResource(R.string.find_pet_stores), color = Color.Black)  // Set text color to black
                     }
 
                     Button(
@@ -213,13 +218,10 @@ fun MapScreen(navController: NavController, context: Context) {
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(30.dp)),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (showPetClinics) Color.Black else LightYellow,
-                            contentColor = if (showPetClinics) Color.White else Color.Black
-                        ),
+                            .clip(RoundedCornerShape(0.dp)), // Set shape to rectangle (no rounded corners)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD3D3D3))  // Set button color to #D3D3D3
                     ) {
-                        Text("Find Pet Clinics")
+                        Text(stringResource(R.string.find_pet_clinics), color = Color.Black)  // Set text color to black
                     }
 
                 }

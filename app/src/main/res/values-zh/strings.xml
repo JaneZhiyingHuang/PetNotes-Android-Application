@@ -75,4 +75,24 @@
     <string name="failed_to_add_tag">添加标签失败：%1$s</string>
     <string name="photos2">照片:</string>
     <string name="documents2">文件:</string>
+    <string name="please_log_in_to_access_the_map">请登录以访问地图。</string>
+    <string name="your_current_location_is">您目前的位置是: %1$s</string>
+    <string name="address_not_found">地址未找到。</string>
+    <string name="find_pet_stores">查找宠物商店</string>
+    <string name="find_pet_clinics">查找宠物诊所</string>
+    <string name="unknown_email">未知邮箱</string>
+    <string name="user_info">用户信息</string>
+    <string name="user_name">用户名：</string>
+    <string name="user_email">用户邮箱：</string>
+    <string name="delete_account">删除账户</string>
+    <string name="change_language">更改语言</string>
+    <string name="join_membership">加入会员</string>
+    <string name="sign_out">登出</string>
+    <string name="no_user_is_currently_logged_in">当前没有用户登录</string>
+    <string name="add_a_new_pet">添加新宠物</string>
+    <string name="no_pet_selected">未选择宠物。</string>
+    <string name="recorded_tags">记录的标签：%1$s %2$s</string>
+    <string name="times">%1$s 次</string>
+    <string name="no_tags_recorded_yet">尚未记录任何标签。</string>
+    <string name="notes_detail">备注详情</string>
 </resources>

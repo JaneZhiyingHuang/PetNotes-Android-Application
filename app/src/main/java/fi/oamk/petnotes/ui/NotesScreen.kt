@@ -211,6 +211,42 @@ fun NotesScreen(
         }
     }
 
+    fun mapTagToLocalizedString(tag: String, context: Context): String {
+        // Map English tags to resource IDs
+        val tagResourceMap = mapOf(
+            "all" to R.string.all,
+            "vomit" to R.string.vomit,
+            "stool" to R.string.stool,
+            "cough" to R.string.cough,
+            "vet" to R.string.vet,
+            "water intake" to R.string.water_intake,
+            "emotion" to R.string.emotion
+            // Add all other tags you use
+        )
+
+        val resourceId = tagResourceMap[tag.lowercase()]
+
+        return if (resourceId != null) {
+            context.getString(resourceId)
+        } else {
+            tag
+        }
+    }
+
+    fun reverseMapLocalizedTagToStorageFormat(localizedTag: String, context: Context): String {
+        val reverseTagMap = mapOf(
+            context.getString(R.string.all) to "all",
+            context.getString(R.string.vomit) to "vomit",
+            context.getString(R.string.stool) to "stool",
+            context.getString(R.string.cough) to "cough",
+            context.getString(R.string.vet) to "vet",
+            context.getString(R.string.water_intake) to "water_intake",
+            context.getString(R.string.emotion) to "emotion"
+        )
+
+        return reverseTagMap[localizedTag] ?: localizedTag
+    }
+
     LaunchedEffect(isUserLoggedIn) {
         if (isUserLoggedIn) {
             coroutineScope.launch {
@@ -732,7 +768,8 @@ fun NotesScreen(
 
             // Display notes
             items(fetchedNotes.filter { note ->
-                selectedTag == context.getString(R.string.all) || note.tag == selectedTag
+                val localizedTag = mapTagToLocalizedString(note.tag, context)
+                selectedTag == context.getString(R.string.all) || localizedTag == selectedTag
             }) { note ->
                 AnimatedVisibility(visible = viewNotesExpanded) {
                     NoteCard(
@@ -740,7 +777,7 @@ fun NotesScreen(
                         onEdit = {
                             noteToEdit = it
                             editedDescription = it.description
-                            editedTag = it.tag
+                            editedTag = mapTagToLocalizedString(it.tag, context)
                             existingPhotoUrls = it.photoUrls
                             existingDocumentUrls = it.documentUrls
                             editedPhotoUris = emptyList()
@@ -1073,7 +1110,7 @@ fun NotesScreen(
 
                                         val updatedNote = note.copy(
                                             description = editedDescription,
-                                            tag = editedTag,
+                                            tag = reverseMapLocalizedTagToStorageFormat(editedTag, context),
                                             photoUrls = updatedPhotoUrls,
                                             documentUrls = updatedDocumentUrls
                                         )
@@ -1397,6 +1434,33 @@ fun NoteCard(
     onDelete: (Notes) -> Unit = {}
 ) {
     val context = LocalContext.current
+
+    fun mapTagToLocalizedString(tag: String, context: Context): String {
+        // Map English tags to resource IDs
+        val tagResourceMap = mapOf(
+            "all" to R.string.all,
+            "vomit" to R.string.vomit,
+            "stool" to R.string.stool,
+            "cough" to R.string.cough,
+            "vet" to R.string.vet,
+            "water intake" to R.string.water_intake,
+            "emotion" to R.string.emotion
+            // Add all other tags you use
+        )
+
+        // Try to find the tag in lowercase form (for case insensitivity)
+        val resourceId = tagResourceMap[tag.lowercase()]
+
+        // If we found a matching resource ID, use it; otherwise use the original tag
+        return if (resourceId != null) {
+            context.getString(resourceId)
+        } else {
+            tag // Return original for custom tags that don't have translations
+        }
+    }
+
+    val localizedTag = mapTagToLocalizedString(note.tag, context)
+
     fun getTagColor(tag: String, context: Context): Color {
         return when (tag) {
             context.getString(R.string.all) -> Color(0xFF757575) // Medium Gray
@@ -1409,6 +1473,7 @@ fun NoteCard(
             else -> Color(0xFF9E9E9E) // Gray for default/custom tags
         }
     }
+
     Card(
         modifier = Modifier
             .width(400.dp)
@@ -1439,14 +1504,12 @@ fun NoteCard(
                     Spacer(modifier = Modifier.weight(0.8f))
 
                     Text(
-                        text = note.tag,
+                        text = localizedTag,
                         fontSize = 14.sp,
-//                        color = getTagColor(note.tag, context),
-                        color = Color.Black,
+                        color = getTagColor(localizedTag, context),
                         modifier = Modifier
-                        .background(LightRed, shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-
+                            .background(LightRed, shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     )
 
                     Spacer(modifier = Modifier.weight(0.1f))

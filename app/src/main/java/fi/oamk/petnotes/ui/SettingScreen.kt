@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +44,7 @@ import com.google.firebase.auth.FirebaseAuth
 import fi.oamk.petnotes.ui.theme.CardBG
 import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LineColor
+import fi.oamk.petnotes.R
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import fi.oamk.petnotes.utils.LanguageManager
@@ -99,7 +101,6 @@ fun SettingScreen(
             }
         },
         bottomBar = { BottomNavigationBar(navController = navController) }
-
     ) { paddingValues ->
 
         Column(
@@ -111,13 +112,13 @@ fun SettingScreen(
 
             if (isUserLoggedIn) {
                 val user = FirebaseAuth.getInstance().currentUser
-                val email = user?.email ?: "Unknown Email"
+                val email = user?.email ?: stringResource(R.string.unknown_email)
                 val username = email.substringBefore("@")
 
                 Spacer(modifier = Modifier.height(100.dp))
                 // Title: "User Info" in bold and larger font
                 Text(
-                    text = "User Info",
+                    text = stringResource(R.string.user_info),
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     modifier = Modifier
@@ -125,7 +126,7 @@ fun SettingScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "User Name:",
+                    text = stringResource(R.string.user_name),
                     fontSize = 16.sp,
                     color = Color.Gray,
                     modifier = Modifier
@@ -140,7 +141,7 @@ fun SettingScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp)) // Space between Username and Email
                 Text(
-                    text = "User Email:",
+                    text = stringResource(R.string.user_email),
                     color = Color.Gray,
                     fontSize = 16.sp,
                     modifier = Modifier
@@ -176,7 +177,7 @@ fun SettingScreen(
                     )
                 ) {
                     Text(
-                        text = "Delete Account",
+                        text = stringResource(R.string.delete_account),
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -198,7 +199,7 @@ fun SettingScreen(
                     )
                 ) {
                     Text(
-                        text = "Change Language",
+                        text = stringResource(R.string.change_language),
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -215,7 +216,10 @@ fun SettingScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                LanguageManager.applyLanguageAndRecreate(context as Activity, code)
+                                                LanguageManager.applyLanguageAndRecreate(
+                                                    context as Activity,
+                                                    code
+                                                )
                                                 showLanguageDialog = false
                                             }
                                             .padding(vertical = 12.dp),
@@ -249,7 +253,7 @@ fun SettingScreen(
                     )
                 ) {
                     Text(
-                        text = "Join Membership",
+                        text = stringResource(R.string.join_membership),
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -272,12 +276,12 @@ fun SettingScreen(
                     )
                 ) {
                     Text(
-                        text = "Sign Out",
+                        text = stringResource(R.string.sign_out),
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
             } else {
-                Text(text = "No user is currently logged in", color = Color.Red)
+                Text(text = stringResource(R.string.no_user_is_currently_logged_in), color = Color.Red)
             }
 
         }

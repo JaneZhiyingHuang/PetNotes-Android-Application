@@ -76,4 +76,24 @@
     <string name="failed_to_add_tag">Failed to add tag: %1$s</string>
     <string name="photos2">Photos:</string>
     <string name="documents2">Documents:</string>
+    <string name="please_log_in_to_access_the_map">Please log in to access the map.</string>
+    <string name="your_current_location_is">Your current location is:\n%1$s</string>
+    <string name="address_not_found">Address not found.</string>
+    <string name="find_pet_stores">Find Pet Stores</string>
+    <string name="find_pet_clinics">Find Pet Clinics</string>
+    <string name="unknown_email">Unknown Email</string>
+    <string name="user_info">User Info</string>
+    <string name="user_name">User Name:</string>
+    <string name="user_email">User Email:</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="change_language">Change Language</string>
+    <string name="join_membership">Join Membership</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="no_user_is_currently_logged_in">No user is currently logged in</string>
+    <string name="add_a_new_pet">Add A New Pet</string>
+    <string name="no_pet_selected">No pet selected.</string>
+    <string name="recorded_tags">Recorded Tags : %1$s %2$s</string>
+    <string name="times">%1$s times</string>
+    <string name="no_tags_recorded_yet">No tags recorded yet.</string>
+    <string name="notes_detail">Notes Detail</string>
 </resources>

@@ -138,7 +138,7 @@ fun AddNewPetScreen(
                 TopAppBar(
                     title = {
                             Text(
-                                "Add A New Pet",
+                                stringResource(R.string.add_a_new_pet),
                                 fontWeight = FontWeight.Bold,
                                 color = SecondaryColor,
                                 fontSize = 20.sp,
