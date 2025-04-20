@@ -62,6 +62,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -76,6 +78,7 @@ import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
+import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
@@ -157,7 +160,7 @@ fun CalendarScreen(
                         // Pass petId from selectedPet to CalendarCard and PetTagCountsCard
                         CalendarCard(viewModel, selectedPet!!.id, refreshTrigger.intValue)
                     } else {
-                        Text("No pet selected.")
+                        Text(stringResource(R.string.no_pet_selected))
                     }
                 }
             }
@@ -382,6 +385,27 @@ fun PetTagCountsCard(
     visibleMonth: YearMonth
 ) {
     val tagCounts = viewModel.tagCounts
+    val context = LocalContext.current
+
+    fun mapTagToLocalizedString(tag: String, context: Context): String {
+        val tagResourceMap = mapOf(
+            "all" to R.string.all,
+            "vomit" to R.string.vomit,
+            "stool" to R.string.stool,
+            "cough" to R.string.cough,
+            "vet" to R.string.vet,
+            "water intake" to R.string.water_intake,
+            "emotion" to R.string.emotion
+        )
+
+        val resourceId = tagResourceMap[tag.lowercase()]
+
+        return if (resourceId != null) {
+            context.getString(resourceId)
+        } else {
+            tag
+        }
+    }
 
     // 🔁 Re-fetch tag counts when petId or visibleMonth changes
     LaunchedEffect(petId, visibleMonth) {
@@ -410,7 +434,11 @@ fun PetTagCountsCard(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Recorded Tags : ${visibleMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${visibleMonth.year}",
+                text = stringResource(
+                    R.string.recorded_tags,
+                    visibleMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault()),
+                    visibleMonth.year
+                ),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -433,6 +461,8 @@ fun PetTagCountsCard(
 
                     // Displaying tags sorted by count
                     tagCounts.sortedByDescending { it.count }.forEach { tagCount ->
+                        val localizedTag = mapTagToLocalizedString(tagCount.tag, context)
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -440,11 +470,11 @@ fun PetTagCountsCard(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = tagCount.tag,
+                                text = localizedTag,
                                 fontWeight = FontWeight.Bold  // Make this text bold
                             )
                             Text(
-                                text = "${tagCount.count} times",
+                                text = stringResource(R.string.times, tagCount.count),
                                 color = Color.Gray,
                                 fontWeight = FontWeight.Bold  // Make this text bold as well
                             )
@@ -464,7 +494,7 @@ fun PetTagCountsCard(
                 .fillMaxWidth()
         ) {
             Text(
-                text = "No tags recorded yet.",
+                text = stringResource(R.string.no_tags_recorded_yet),
                 modifier = Modifier.padding(16.dp),
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -493,6 +523,28 @@ fun NotesDetailCard(
 
     // Tags state
     var tags by remember { mutableStateOf(listOf<String>()) }
+
+    val context = LocalContext.current
+
+    fun mapTagToLocalizedString(tag: String, context: Context): String {
+        val tagResourceMap = mapOf(
+            "all" to R.string.all,
+            "vomit" to R.string.vomit,
+            "stool" to R.string.stool,
+            "cough" to R.string.cough,
+            "vet" to R.string.vet,
+            "water intake" to R.string.water_intake,
+            "emotion" to R.string.emotion
+        )
+
+        val resourceId = tagResourceMap[tag.lowercase()]
+
+        return if (resourceId != null) {
+            context.getString(resourceId)
+        } else {
+            tag
+        }
+    }
 
     // Fetch pet tags based on petId (on the ViewModel level)
     LaunchedEffect(petId) {
@@ -529,7 +581,7 @@ fun NotesDetailCard(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "NotesDetail",
+                text = stringResource(R.string.notes_detail),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -539,6 +591,8 @@ fun NotesDetailCard(
         AnimatedVisibility(visible = expanded) {
             Column {
                 notes.forEach { note ->
+                    val localizedTag = mapTagToLocalizedString(note.tag, context)
+
                     Card(
                         modifier = Modifier
                             .padding(5.dp)
@@ -563,11 +617,14 @@ fun NotesDetailCard(
                                 Spacer(modifier = Modifier.weight(0.8f))
 
                                 Text(
-                                    note.tag,
+                                    localizedTag,
                                     style = MaterialTheme.typography.titleMedium,
                                     modifier = Modifier
                                         .padding(top = 10.dp)
-                                        .background(Color(0xFFFFCD4B), shape = RoundedCornerShape(4.dp))
+                                        .background(
+                                            Color(0xFFFFCD4B),
+                                            shape = RoundedCornerShape(4.dp)
+                                        )
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
 
@@ -711,6 +768,55 @@ fun EditNoteDialog(
     onRemoveDocumentUrl: (String) -> Unit,
     onRemoveDocumentUri: (Uri) -> Unit,
 ) {
+    val context = LocalContext.current
+
+    fun mapTagToLocalizedString(tag: String, context: Context): String {
+        val tagResourceMap = mapOf(
+            "all" to R.string.all,
+            "vomit" to R.string.vomit,
+            "stool" to R.string.stool,
+            "cough" to R.string.cough,
+            "vet" to R.string.vet,
+            "water intake" to R.string.water_intake,
+            "emotion" to R.string.emotion
+        )
+
+        val resourceId = tagResourceMap[tag.lowercase()]
+
+        return if (resourceId != null) {
+            context.getString(resourceId)
+        } else {
+            tag // Return original for custom tags that don't have translations
+        }
+    }
+
+    fun reverseMapLocalizedTagToStorageFormat(localizedTag: String, context: Context): String {
+        // This creates a map of localized strings to their "standard" storage format
+        val reverseTagMap = mapOf(
+            context.getString(R.string.all) to "all",
+            context.getString(R.string.vomit) to "vomit",
+            context.getString(R.string.stool) to "stool",
+            context.getString(R.string.cough) to "cough",
+            context.getString(R.string.vet) to "vet",
+            context.getString(R.string.water_intake) to "water_intake",
+            context.getString(R.string.emotion) to "emotion"
+            // Add all other tags you use
+        )
+
+        return reverseTagMap[localizedTag] ?: localizedTag
+    }
+
+    val localizedTags = tags.filter { it != "All" }.map { tag ->
+        mapTagToLocalizedString(tag, context)
+    }
+
+    // Get currently selected tag in localized form
+    val localizedSelectedTag = mapTagToLocalizedString(editedTag, context)
+
+    LaunchedEffect(tags) {
+        Log.d("EditNoteDialog", "Tags received: $tags, Localized tags: $localizedTags")
+    }
+
     if (showDialog && noteToEdit != null) {
         BasicAlertDialog(onDismissRequest = onDismiss) {
             Card(
@@ -729,7 +835,7 @@ fun EditNoteDialog(
                 ) {
                     item {
                         Text(
-                            text = "Edit Note",
+                            text = stringResource(R.string.edit_note),
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             modifier = Modifier.padding(bottom = 16.dp)
@@ -739,9 +845,12 @@ fun EditNoteDialog(
                     item {
                         // Dropdown for Tag Selection
                         DropdownSelector(
-                            selectedValue = editedTag,
-                            options = tags.filter { it != "All" },
-                            onValueChange = onTagChange,
+                            selectedValue = localizedSelectedTag,
+                            options = localizedTags,
+                            onValueChange = { localizedTag ->
+                                val storageTag = reverseMapLocalizedTagToStorageFormat(localizedTag, context)
+                                onTagChange(storageTag)
+                            },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -755,7 +864,7 @@ fun EditNoteDialog(
                         OutlinedTextField(
                             value = editedDescription,
                             onValueChange = onDescriptionChange,
-                            label = { Text("Description") },
+                            label = { Text(stringResource(R.string.description)) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(200.dp), // Set a height for the description box
@@ -770,7 +879,7 @@ fun EditNoteDialog(
                     item {
                         // Photo Viewer
                         if (existingPhotoUrls.isNotEmpty() || editedPhotoUris.isNotEmpty()) {
-                            Text("Photos", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.align(Alignment.Start))
+                            Text(stringResource(R.string.photos2), fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.align(Alignment.Start))
                             LazyRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -797,7 +906,7 @@ fun EditNoteDialog(
                     item {
                         // Document Viewer
                         if (existingDocumentUrls.isNotEmpty() || editedDocumentUris.isNotEmpty()) {
-                            Text("Documents", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.align(Alignment.Start))
+                            Text(stringResource(R.string.documents2), fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.align(Alignment.Start))
 
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 existingDocumentUrls.filter { it !in removedDocumentUrls }.forEach { url ->
@@ -837,7 +946,7 @@ fun EditNoteDialog(
                                     .weight(1f)
                                     .padding(end = 4.dp)
                             ) {
-                                Text("Add Photos", fontSize = 12.sp)
+                                Text(stringResource(R.string.add_photos2), fontSize = 12.sp, textAlign = TextAlign.Center)
                             }
 
                             Button(
@@ -846,7 +955,7 @@ fun EditNoteDialog(
                                     .weight(1f)
                                     .padding(start = 4.dp)
                             ) {
-                                Text("Add Documents", fontSize = 12.sp)
+                                Text(stringResource(R.string.add_documents2), fontSize = 12.sp, textAlign = TextAlign.Center)
                             }
                         }
                     }
@@ -882,7 +991,7 @@ fun EditNoteDialog(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD9D9D9))
                             ) {
-                                Text("Save", fontSize = 12.sp)
+                                Text(stringResource(R.string.save), fontSize = 12.sp)
                             }
 
                             Button(
@@ -890,7 +999,7 @@ fun EditNoteDialog(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                             ) {
-                                Text("Delete", fontSize = 12.sp)
+                                Text(stringResource(R.string.delete), fontSize = 12.sp)
                             }
 
                             Button(
@@ -898,7 +1007,7 @@ fun EditNoteDialog(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD9D9D9))
                             ) {
-                                Text("Cancel", fontSize = 12.sp)
+                                Text(stringResource(R.string.cancel), fontSize = 12.sp)
                             }
                         }
                     }
@@ -923,7 +1032,9 @@ fun PhotoThumbnail(url: String? = null, uri: Uri? = null, onRemove: () -> Unit) 
         )
         IconButton(
             onClick = onRemove,
-            modifier = Modifier.align(Alignment.TopEnd).background(Color.White, CircleShape)
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .background(Color.White, CircleShape)
         ) {
             Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.Red)
         }
@@ -946,4 +1057,3 @@ fun DocumentRow(name: String, onRemove: () -> Unit) {
         }
     }
 }
-

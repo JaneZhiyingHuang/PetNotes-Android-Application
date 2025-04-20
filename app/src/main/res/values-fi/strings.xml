@@ -74,4 +74,24 @@
     <string name="failed_to_add_tag">Tunnisteen lisääminen epäonnistui: %1$s</string>
     <string name="photos2">Valokuvat:</string>
     <string name="documents2">Asiakirjat:</string>
+    <string name="please_log_in_to_access_the_map">Kirjaudu sisään käyttääksesi karttaa.</string>
+    <string name="your_current_location_is">Nykyinen sijaintisi on: %1$s</string>
+    <string name="address_not_found">Osoitetta ei löytynyt.</string>
+    <string name="find_pet_stores">Etsi lemmikkikauppoja</string>
+    <string name="find_pet_clinics">Etsi eläinklinikoita</string>
+    <string name="unknown_email">Tuntematon sähköposti</string>
+    <string name="user_info">Käyttäjätiedot</string>
+    <string name="user_name">Käyttäjänimi:</string>
+    <string name="user_email">Sähköposti:</string>
+    <string name="delete_account">Poista tili</string>
+    <string name="change_language">Vaihda kieli</string>
+    <string name="join_membership">Liity jäseneksi</string>
+    <string name="sign_out">Kirjaudu ulos</string>
+    <string name="no_user_is_currently_logged_in">Käyttäjää ei ole kirjautunut sisään</string>
+    <string name="add_a_new_pet">Lisää uusi lemmikki</string>
+    <string name="no_pet_selected">Lemmikkiä ei valittu.</string>
+    <string name="recorded_tags">Tallennetut tunnisteet: %1$s %2$s</string>
+    <string name="times">%1$s kertaa</string>
+    <string name="no_tags_recorded_yet">Tunnisteita ei ole vielä tallennettu.</string>
+    <string name="notes_detail">Muistiinpanon tiedot</string>
 </resources>
