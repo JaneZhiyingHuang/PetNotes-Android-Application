@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,7 +51,7 @@ import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import fi.oamk.petnotes.utils.LanguageManager
 import fi.oamk.petnotes.viewmodel.SettingScreenViewModel
-
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,6 +61,7 @@ fun SettingScreen(
     navController: NavController,
     onSignOut: () -> Unit
 ) {
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
     val isUserLoggedIn = remember { settingScreenViewModel.isUserLoggedIn() }
     val context = LocalContext.current
     var showLanguageDialog by rememberSaveable { mutableStateOf(false) }
@@ -158,16 +160,7 @@ fun SettingScreen(
                 Spacer(modifier = Modifier.height(50.dp))
                 // Delete Account Button
                 Button(
-                    onClick = {
-                        settingScreenViewModel.deleteAccount { success, message ->
-                            if (success) {
-                                Toast.makeText(context, "Account deleted", Toast.LENGTH_SHORT).show()
-                                onSignOut()
-                            } else {
-                                Toast.makeText(context, "Error: $message", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    },
+                    onClick = { showDeleteAccountDialog = true },
                     modifier = Modifier
                         .width(280.dp)
                         .height(48.dp)
@@ -181,6 +174,40 @@ fun SettingScreen(
                         text = stringResource(R.string.delete_account),
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                         color = DarkRed
+                    )
+                }
+
+                // Show confirmation dialog
+                if (showDeleteAccountDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteAccountDialog = false },
+                        title = { Text(stringResource(R.string.warning2)) },
+                        text = {
+                            Text(
+                                stringResource(R.string.are_you_sure_to_delete_your_account) + "\n\n" +
+                                        stringResource(R.string.this_will_delete_all_your_data_forever)
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                showDeleteAccountDialog = false
+                                settingScreenViewModel.deleteAccount { success, message ->
+                                    if (success) {
+                                        Toast.makeText(context, "Account deleted", Toast.LENGTH_SHORT).show()
+                                        onSignOut()
+                                    } else {
+                                        Toast.makeText(context, "Error: $message", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }) {
+                                Text(stringResource(R.string.delete2))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDeleteAccountDialog = false }) {
+                                Text(stringResource(R.string.cancel2))
+                            }
+                        }
                     )
                 }
 
