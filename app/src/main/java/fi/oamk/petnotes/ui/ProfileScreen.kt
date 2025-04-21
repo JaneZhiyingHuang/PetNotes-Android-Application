@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.ui.theme.CardBG
@@ -104,7 +106,7 @@ fun ProfileScreen(
                 // card for pet infos
                 PetInfoCard(pet = selectedPet!!, navController = navController)
             } else {
-                Text(text = "Pet not found")
+                Text(text = stringResource(R.string.pet_not_found))
             }
         }
     }
@@ -156,12 +158,12 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
             // title (Pet Profile)
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Pet Profile",
+                    text = stringResource(R.string.pet_profile),
                     style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 20.sp),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .weight(1f)
-                        .padding(start= 50.dp),
+                        .padding(start = 50.dp),
                     textAlign = TextAlign.Center
                 )
 
@@ -183,23 +185,23 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Details ( Name,Gender...)
-            InfoRow(label = "Pet Name:", text = pet.name)
-            InfoRow(label = "Gender:", text = pet.gender)
-            InfoRow(label = "Specie:", text = pet.specie)
-            InfoRow(label = "Date of Birth:", text = pet.dateOfBirth)
-            InfoRow(label = "Age:", text = calculateAge(pet.dateOfBirth))
-            InfoRow(label = "Breed:", text = pet.breed)
-            InfoRow(label = "Medical Condition:", text = pet.medicalCondition)
-            InfoRow(label = "Microchip Number:", text = pet.microchipNumber)
-            InfoRow(label = "Insurance Company:", text = pet.insuranceCompany)
-            InfoRow(label = "Insurance Number:", text = pet.insuranceNumber)
+            InfoRow(label = stringResource(R.string.pet_name2), text = pet.name)
+            GenderInfoRow(label = stringResource(R.string.gender2), genderValue = pet.gender)
+            InfoRow(label = stringResource(R.string.specie2), text = pet.specie)
+            InfoRow(label = stringResource(R.string.date_of_birth2), text = pet.dateOfBirth)
+            InfoRow(label = stringResource(R.string.age), text = calculateAge(pet.dateOfBirth))
+            InfoRow(label = stringResource(R.string.breed2), text = pet.breed)
+            InfoRow(label = stringResource(R.string.medical_condition2), text = pet.medicalCondition)
+            InfoRow(label = stringResource(R.string.microchip_number), text = pet.microchipNumber)
+            InfoRow(label = stringResource(R.string.insurance_company2), text = pet.insuranceCompany)
+            InfoRow(label = stringResource(R.string.insurance_number2), text = pet.insuranceNumber)
 
             Spacer(modifier = Modifier.height(30.dp))
 
             // Delete button
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "*Delete profile of this pet.",
+                        text = stringResource(R.string.delete_profile_of_this_pet),
                         style = TextStyle(fontSize = 16.sp, color = DarkRed, fontWeight = FontWeight.Bold),
                         modifier = Modifier
                             .weight(1f)
@@ -213,9 +215,11 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
 
                     AlertDialog(
                         onDismissRequest = { showDialog = false },
-                        title = { Text("* Warning") },
-                        text = { Text("Are you sure to DELETE profile of this pet?" +
-                                "This will delete all data related to this pet. ") },
+                        title = { Text(stringResource(R.string.warning2)) },
+                        text = { Text(
+                            stringResource(R.string.are_you_sure_to_delete_profile_of_this_pet) +
+                                    stringResource(R.string.this_will_delete_all_data_related_to_this_pet)
+                        ) },
 
 
                         confirmButton = {
@@ -227,12 +231,12 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
                                     }
                                 }
                             }) {
-                                Text("DELETE")
+                                Text(stringResource(R.string.delete2))
                             }
                         },
                         dismissButton = {
                             TextButton(onClick = { showDialog = false }) {
-                                Text("CANCEL")
+                                Text(stringResource(R.string.cancel2))
                             }
                         }
                     )
@@ -257,4 +261,29 @@ fun InfoRow(label: String, text: String) {
             style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp, color = Color.Black)
         )
     }
+}
+
+@Composable
+fun GenderInfoRow(label: String, genderValue: String) {
+    val context = LocalContext.current
+    val displayText = when(genderValue.lowercase()) {
+        "male" -> context.getString(R.string.male)
+        "female" -> context.getString(R.string.female)
+        "other" -> context.getString(R.string.other)
+        else -> {
+            when {
+                genderValue.equals(context.getString(R.string.male), ignoreCase = true) ||
+                        genderValue.lowercase().contains("male") ->
+                    context.getString(R.string.male)
+
+                genderValue.equals(context.getString(R.string.female), ignoreCase = true) ||
+                        genderValue.lowercase().contains("female") ->
+                    context.getString(R.string.female)
+
+                else -> genderValue
+            }
+        }
+    }
+
+    InfoRow(label = label, text = displayText)
 }

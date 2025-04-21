@@ -1,5 +1,6 @@
 package fi.oamk.petnotes.ui
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -127,8 +128,6 @@ fun HomeScreen(
         topBar = {
             Column {
                 TopAppBar(
-
-
                     title = { Text(text = "") },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigate("addNewPet") }) {
@@ -246,22 +245,50 @@ fun PetCard(pet: Pet, navController: NavController) {
 //                                text = pet.gender,
 //                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
 //                            )
-                            when (pet.gender) {
-                                "Male" -> Icon(
+                            when (pet.gender.lowercase()) {
+                                "male" -> Icon(
                                     imageVector = Icons.Filled.Male,
                                     contentDescription = "Male",
                                     tint = Color.Black
                                 )
-                                "Female" -> Icon(
+                                "female" -> Icon(
                                     imageVector = Icons.Filled.Female,
                                     contentDescription = "Female",
                                     tint = Color.Black
                                 )
-                                "Other" -> Icon(
+                                "other" -> Icon(
                                     imageVector = Icons.Filled.Person,
                                     contentDescription = "Other",
                                     tint = Color.Black
                                 )
+                                else -> {
+                                    // Handle legacy data format - first try to match against resources
+                                    when {
+                                        pet.gender.equals(stringResource(R.string.male), ignoreCase = true) ||
+                                                pet.gender.lowercase().contains("male") -> {
+                                            Icon(
+                                                imageVector = Icons.Filled.Male,
+                                                contentDescription = "Male",
+                                                tint = Color.Black
+                                            )
+                                        }
+                                        pet.gender.equals(stringResource(R.string.female), ignoreCase = true) ||
+                                                pet.gender.lowercase().contains("female") -> {
+                                            Icon(
+                                                imageVector = Icons.Filled.Female,
+                                                contentDescription = "Female",
+                                                tint = Color.Black
+                                            )
+                                        }
+                                        else -> {
+                                            Icon(
+                                                imageVector = Icons.Filled.Person,
+                                                contentDescription = "Other",
+                                                tint = Color.Black
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -290,9 +317,9 @@ fun PetCard(pet: Pet, navController: NavController) {
 
             Box(
                 modifier = Modifier
-                .fillMaxWidth()
-                .background(LightYellow, shape = RoundedCornerShape(15.dp))
-                .padding(horizontal = 20.dp, vertical = 15.dp)) {
+                    .fillMaxWidth()
+                    .background(LightYellow, shape = RoundedCornerShape(15.dp))
+                    .padding(horizontal = 20.dp, vertical = 15.dp)) {
                 Text(
                     text = "${stringResource(R.string.medical_condition)}: ${pet.medicalCondition}",
                     style = TextStyle(
@@ -425,7 +452,7 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
             colors = CardDefaults.cardColors(containerColor = CardBG),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
-                .padding(top= 10.dp)
+                .padding(top = 10.dp)
                 .width(400.dp)
                 .clickable {
                     // Navigate to weight screen when clicked
@@ -535,7 +562,7 @@ fun CalendarCard(viewModel: PetTagsViewModel = viewModel(), petId: String, navCo
         },
         modifier = Modifier
             .width(400.dp)
-            .padding(top= 10.dp)
+            .padding(top = 10.dp)
     ) {
         HorizontalCalendar(
             state = state,
@@ -641,18 +668,17 @@ fun Day(
     }
 }
 
-
-
-
-
+@SuppressLint("StringFormatMatches")
+@Composable
 fun calculateAge(dateOfBirth: String?): String {
-    if (dateOfBirth.isNullOrEmpty()) return "Unknown Age"
+    val context = LocalContext.current
+    if (dateOfBirth.isNullOrEmpty()) return stringResource(R.string.unknown_age)
     return try {
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
         val birthDate = LocalDate.parse(dateOfBirth, formatter)
         val period = Period.between(birthDate, LocalDate.now())
-        "${period.years} years and ${period.months} months"
+        context.getString(R.string.years_and_months, period.years, period.months)
     } catch (e: DateTimeParseException) {
-        "Invalid Date Format"
+        stringResource(R.string.invalid_date_format)
     }
 }

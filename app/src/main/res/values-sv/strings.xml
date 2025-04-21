@@ -96,4 +96,25 @@
     <string name="times">%1$s gånger</string>
     <string name="no_tags_recorded_yet">Inga taggar har registrerats än.</string>
     <string name="notes_detail">Anteckningsdetaljer</string>
+    <string name="age">Ålder:</string>
+    <string name="breed2">Ras:</string>
+    <string name="pet_profile">Husdjursprofil</string>
+    <string name="pet_name2">Husdjurets namn:</string>
+    <string name="gender2">Kön:</string>
+    <string name="specie2">Art:</string>
+    <string name="date_of_birth2">Födelsedatum:</string>
+    <string name="medical_condition2">Medicinskt tillstånd:</string>
+    <string name="microchip_number">Mikrochips nummer:</string>
+    <string name="insurance_company2">Försökringsbolag:</string>
+    <string name="insurance_number2">Försökringsnummer:</string>
+    <string name="this_will_delete_all_data_related_to_this_pet">Detta kommer att radera all data relaterad till detta husdjur.</string>
+    <string name="delete2">RADERA</string>
+    <string name="cancel2">AVBRYT</string>
+    <string name="delete_profile_of_this_pet">*Radera profilen för detta husdjur.</string>
+    <string name="warning2">⚠ Varning</string>
+    <string name="pet_not_found">Husdjur hittades inte</string>
+    <string name="are_you_sure_to_delete_profile_of_this_pet">Är du säker på att du vill RADERA profilen för detta husdjur?</string>
+    <string name="years_and_months">%1$s år och %2$s månader</string>
+    <string name="unknown_age">Okänd ålder</string>
+    <string name="invalid_date_format">Ogiltigt datumformat</string>
 </resources>

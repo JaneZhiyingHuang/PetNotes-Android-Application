@@ -96,4 +96,25 @@
     <string name="times">%1$s 次</string>
     <string name="no_tags_recorded_yet">尚未记录任何标签。</string>
     <string name="notes_detail">备注详情</string>
+    <string name="pet_profile">宠物档案</string>
+    <string name="pet_name2">宠物名:</string>
+    <string name="gender2">性别:</string>
+    <string name="specie2">物种:</string>
+    <string name="date_of_birth2">生日:</string>
+    <string name="age">年龄:</string>
+    <string name="breed2">品种:</string>
+    <string name="medical_condition2">医疗状况:</string>
+    <string name="microchip_number">芯片编号:</string>
+    <string name="insurance_company2">保险公司:</string>
+    <string name="insurance_number2">保险号码:</string>
+    <string name="this_will_delete_all_data_related_to_this_pet">"这将删除与该宠物相关的所有数据。  "</string>
+    <string name="delete2">删除</string>
+    <string name="cancel2">取消</string>
+    <string name="delete_profile_of_this_pet">*删除该宠物的档案。</string>
+    <string name="warning2">⚠ 警告</string>
+    <string name="pet_not_found">未找到宠物</string>
+    <string name="are_you_sure_to_delete_profile_of_this_pet">您确定要删除该宠物的档案吗？</string>
+    <string name="years_and_months">%1$s岁%2$s个月</string>
+    <string name="unknown_age">年龄未知</string>
+    <string name="invalid_date_format">日期格式无效</string>
 </resources>

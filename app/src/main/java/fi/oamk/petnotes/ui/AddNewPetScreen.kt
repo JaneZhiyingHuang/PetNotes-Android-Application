@@ -238,39 +238,39 @@ fun AddNewPetScreen(
                 horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
             ) {
                 Button(
-                    onClick = { petGender = context.getString(R.string.male) },
+                    onClick = { petGender = "male" },
                     modifier = Modifier
                         .height(35.dp)
                         .weight(1f),
                     contentPadding = PaddingValues(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (petGender == context.getString(R.string.male)) LightYellow else InputColor,
+                        containerColor = if (petGender.lowercase() == "male") LightYellow else InputColor,
                         contentColor = Color.Black
                     )
                 ) {
                     Text(context.getString(R.string.male), fontSize = 14.sp)
                 }
                 Button(
-                    onClick = { petGender = context.getString(R.string.female) },
+                    onClick = { petGender = "female" },
                     modifier = Modifier
                         .height(35.dp)
                         .weight(1f),
                     contentPadding = PaddingValues(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (petGender == context.getString(R.string.female)) LightYellow else InputColor,
+                        containerColor = if (petGender.lowercase() == "female") LightYellow else InputColor,
                         contentColor = Color.Black
                     )
                 ) {
                     Text(context.getString(R.string.female), fontSize = 14.sp)
                 }
                 Button(
-                    onClick = { petGender = context.getString(R.string.other) },
+                    onClick = { petGender = "other" },
                     modifier = Modifier
                         .height(35.dp)
                         .weight(1f),
                     contentPadding = PaddingValues(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (petGender == context.getString(R.string.other)) LightYellow else InputColor,
+                        containerColor = if (petGender.lowercase() == "other") LightYellow else InputColor,
                         contentColor = Color.Black
                     )
                 ) {

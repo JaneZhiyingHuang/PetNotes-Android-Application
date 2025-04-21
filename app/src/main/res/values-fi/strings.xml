@@ -96,4 +96,25 @@
     <string name="times">%1$s kertaa</string>
     <string name="no_tags_recorded_yet">Tunnisteita ei ole vielä tallennettu.</string>
     <string name="notes_detail">Muistiinpanon tiedot</string>
+    <string name="age">Ikä:</string>
+    <string name="breed2">Rotu:</string>
+    <string name="pet_profile">Lemmikin profiili</string>
+    <string name="pet_name2">Lemmikin nimi:</string>
+    <string name="gender2">Sukupuoli:</string>
+    <string name="specie2">Laji:</string>
+    <string name="date_of_birth2">Syntymäaika:</string>
+    <string name="medical_condition2">Sairaus:</string>
+    <string name="microchip_number">Mikrosirun numero:</string>
+    <string name="insurance_company2">Vakuutusyhtiö:</string>
+    <string name="insurance_number2">Vakuutusnumero:</string>
+    <string name="this_will_delete_all_data_related_to_this_pet">"Tämä poistaa kaikki tähän lemmikkiin liittyvät tiedot. "</string>
+    <string name="delete2">POISTA</string>
+    <string name="cancel2">PERUUTA</string>
+    <string name="delete_profile_of_this_pet">*Poista tämän lemmikin profiili.</string>
+    <string name="warning2">⚠ Varoitus</string>
+    <string name="pet_not_found">Lemmikkiä ei löytynyt</string>
+    <string name="are_you_sure_to_delete_profile_of_this_pet">Haluatko varmasti POISTAA tämän lemmikin profiilin?</string>
+    <string name="years_and_months">%1$s vuotta ja %2$s kuukautta</string>
+    <string name="unknown_age">Ikä tuntematon</string>
+    <string name="invalid_date_format">Virheellinen päivämäärämuoto</string>
 </resources>

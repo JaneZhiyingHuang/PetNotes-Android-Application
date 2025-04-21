@@ -97,4 +97,25 @@
     <string name="times">%1$s times</string>
     <string name="no_tags_recorded_yet">No tags recorded yet.</string>
     <string name="notes_detail">Notes Detail</string>
+    <string name="pet_not_found">Pet not found</string>
+    <string name="pet_profile">Pet Profile</string>
+    <string name="pet_name2">Pet Name:</string>
+    <string name="gender2">Gender:</string>
+    <string name="specie2">Specie:</string>
+    <string name="date_of_birth2">Date of Birth:</string>
+    <string name="age">Age:</string>
+    <string name="breed2">Breed:</string>
+    <string name="medical_condition2">Medical Condition:</string>
+    <string name="microchip_number">Microchip Number:</string>
+    <string name="insurance_company2">Insurance Company:</string>
+    <string name="insurance_number2">Insurance Number:</string>
+    <string name="delete_profile_of_this_pet">*Delete profile of this pet.</string>
+    <string name="warning2">* Warning</string>
+    <string name="are_you_sure_to_delete_profile_of_this_pet">Are you sure to DELETE profile of this pet?</string>
+    <string name="this_will_delete_all_data_related_to_this_pet">"This will delete all data related to this pet. "</string>
+    <string name="delete2">DELETE</string>
+    <string name="cancel2">CANCEL</string>
+    <string name="years_and_months">%1$s years and %2$s months</string>
+    <string name="unknown_age">Unknown Age</string>
+    <string name="invalid_date_format">Invalid Date Format</string>
 </resources>
