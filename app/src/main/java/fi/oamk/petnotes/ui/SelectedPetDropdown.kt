@@ -1,5 +1,6 @@
 package fi.oamk.petnotes.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -61,7 +62,9 @@ fun SelectedPetDropdown(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            offset = DpOffset(x = 40.dp, y = 0.dp)
+            offset = DpOffset(x = 40.dp, y = 0.dp),
+            modifier = Modifier.background(PrimaryColor)
+
         ) {
             pets.forEach { pet ->
                 DropdownMenuItem(

@@ -1423,9 +1423,7 @@ fun DropdownSelector(modifier: Modifier = Modifier, selectedValue: String, optio
         ) {
             Row(
                 modifier = Modifier
-//                    .fillMaxWidth()
                     .padding(8.dp),
-//                    .background(LightGrey),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {

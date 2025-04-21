@@ -115,7 +115,13 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
             fontFamily = FontFamily.SansSerif)
 
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Let's login to continue")
+
+        Text(text ="Let's login to continue",
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            fontFamily = FontFamily.SansSerif,
+            )
+
         Spacer(modifier = Modifier.height(50.dp))
 
         // Show loading indicator during authentication
@@ -184,10 +190,9 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "Continue with Google",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 18.sp
-                            )
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily.SansSerif
                         )
                     }
                 }
@@ -216,20 +221,26 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                         Spacer(modifier = Modifier.width(14.dp))
                         Text(
                             text = "Continue with Email",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 18.sp
-                            )
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily.SansSerif
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("or")
+                Text(text = "or",
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily.SansSerif
+                    )
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Sign Up Button
-                Text(text = "Don't have an account?", color = Color.Black)
+                Text(text = "Don't have an account?",
+                    color = Color.Black,
+                    fontSize = 14.sp
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { navController.navigate("sign_up") },
@@ -243,7 +254,9 @@ fun LandingScreen(navController: NavController, googleSignInViewModel: GoogleSig
                 ) {
                     Text(
                         text = "Sign up with a new account",
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily.SansSerif
                     )
                 }
             }
