@@ -45,6 +45,7 @@ import fi.oamk.petnotes.ui.theme.CardBG
 import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.R
+import fi.oamk.petnotes.ui.theme.DarkRed
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import fi.oamk.petnotes.utils.LanguageManager
@@ -178,7 +179,8 @@ fun SettingScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.delete_account),
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                        color = DarkRed
                     )
                 }
 
