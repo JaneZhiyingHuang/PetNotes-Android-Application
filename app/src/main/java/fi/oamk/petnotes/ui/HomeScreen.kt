@@ -213,24 +213,23 @@ fun PetCard(pet: Pet, navController: NavController) {
     ) {
         Column(modifier = Modifier.padding(22.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(InputColor)
-                        .offset(x = (10).dp),
-
+                Column(modifier = Modifier.offset(x=5.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .background(InputColor)
                     ) {
-                    if (pet.petImageUri.isNotEmpty()) {
-                        Image(
-                            painter = rememberAsyncImagePainter(pet.petImageUri),
-                            contentDescription = "Pet Avatar",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
+                        if (pet.petImageUri.isNotEmpty()) {
+                            Image(
+                                painter = rememberAsyncImagePainter(pet.petImageUri),
+                                contentDescription = "Pet Avatar",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                 }
-
                 Spacer(modifier = Modifier.width(26.dp))
 
                 Column {

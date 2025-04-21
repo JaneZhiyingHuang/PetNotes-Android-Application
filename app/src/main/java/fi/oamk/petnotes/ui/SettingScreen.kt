@@ -86,7 +86,7 @@ fun SettingScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Setting",
+                                text = stringResource(R.string.setting),
                                 color = SecondaryColor,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold

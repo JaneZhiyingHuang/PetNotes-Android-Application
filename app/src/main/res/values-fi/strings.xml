@@ -76,6 +76,7 @@
     <string name="photos2">Valokuvat:</string>
     <string name="documents2">Asiakirjat:</string>
     <string name="please_log_in_to_access_the_map">Kirjaudu sisään käyttääksesi karttaa.</string>
+    <string name="find_pet_services">Etsi lemmikkipalveluita</string>
     <string name="your_current_location_is">Nykyinen sijaintisi on: %1$s</string>
     <string name="address_not_found">Osoitetta ei löytynyt.</string>
     <string name="find_pet_stores">Etsi lemmikkikauppoja</string>

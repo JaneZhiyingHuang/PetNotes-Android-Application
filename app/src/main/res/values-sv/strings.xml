@@ -76,6 +76,7 @@
     <string name="photos2">Foton:</string>
     <string name="documents2">Dokument:</string>
     <string name="please_log_in_to_access_the_map">Logga in för att få tillgång till kartan.</string>
+    <string name="find_pet_services">Hitta husdjurstjänster</string>
     <string name="your_current_location_is">Din nuvarande plats är: %1$s</string>
     <string name="address_not_found">Adress hittades inte.</string>
     <string name="find_pet_stores">Hitta djuraffärer</string>

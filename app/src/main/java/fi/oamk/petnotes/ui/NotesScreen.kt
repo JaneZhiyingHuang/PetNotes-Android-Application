@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -93,8 +94,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -799,13 +802,15 @@ fun NotesScreen(
             onDismissRequest = {
                 showEditDialog = false
                 noteToEdit = null
-            }
+            },
+            properties = DialogProperties(
+            usePlatformDefaultWidth = false
+            )
         ) {
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(16.dp)
-                    .height(600.dp),
+                    .width(350.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = CardBG
                 )
@@ -816,7 +821,8 @@ fun NotesScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(){
+                    Row(  verticalAlignment = Alignment.CenterVertically
+                    ){
                     Text(
                         text = stringResource(R.string.edit_note),
                         fontWeight = FontWeight.Bold,
@@ -827,9 +833,12 @@ fun NotesScreen(
                         selectedValue = editedTag,
                         options = tags.filter { it != stringResource(R.string.all) },
                         onValueChange = { editedTag = it },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .width(150.dp)
+                            .padding(start=40.dp)
+                            .offset(y =-7.dp),
 
-                    )
+                        )
                         }
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
@@ -903,7 +912,7 @@ fun NotesScreen(
                                             .fillMaxSize()
                                             .clip(RoundedCornerShape(8.dp)),
                                         contentScale = ContentScale.Crop,
-                                        placeholder = ColorPainter(Color(0xFFE0E0E0))
+                                        placeholder = ColorPainter(PrimaryColor)
                                     )
                                     IconButton(
                                         onClick = {
@@ -1041,7 +1050,7 @@ fun NotesScreen(
                                 .weight(1f)
                                 .padding(end = 4.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFD9D9D9),
+                                containerColor = PrimaryColor,
                                 contentColor = Color.Black
                             )
                         ) {
@@ -1054,7 +1063,7 @@ fun NotesScreen(
                                 .weight(1f)
                                 .padding(start = 4.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFD9D9D9),
+                                containerColor = PrimaryColor,
                                 contentColor = Color.Black
                             )
                         ) {
@@ -1133,7 +1142,7 @@ fun NotesScreen(
                                     }
                                 }
                             },
-                            modifier = Modifier.weight(0.9f),
+                            modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Black,
                                 contentColor = Color.White
@@ -1147,7 +1156,8 @@ fun NotesScreen(
                                 showEditDialog = false
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Red
+                                containerColor = LightRed,
+                                contentColor = Color.Black
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
@@ -1160,7 +1170,7 @@ fun NotesScreen(
                             },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFD9D9D9),
+                                containerColor = LightGrey,
                                 contentColor = Color.Black,
                             )
                         ) {
@@ -1506,6 +1516,7 @@ fun NoteCard(
                     Text(
                         text = localizedTag,
                         fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
                         color = getTagColor(localizedTag, context),
                         modifier = Modifier
                             .background(LightRed, shape = RoundedCornerShape(8.dp))
@@ -1616,7 +1627,11 @@ fun NoteCard(
                                     text = fileName,
                                     fontSize = 14.sp,
                                     color = Color.Black,
-                                    textDecoration = TextDecoration.Underline
+                                    textDecoration = TextDecoration.Underline,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier
+                                        .weight(1f)
                                 )
                             }
                         }

@@ -1,8 +1,11 @@
 package fi.oamk.petnotes.ui
 
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -17,13 +20,17 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
@@ -68,11 +75,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
@@ -618,7 +628,9 @@ fun NotesDetailCard(
                                 note.date?.let {
                                     Text(
                                         it,
-                                        style = MaterialTheme.typography.titleMedium,
+                                        fontSize = 16.sp,
+                                        color = Color.Black,
+                                        fontWeight= FontWeight.Bold,
                                         modifier = Modifier.padding(top = 10.dp)
                                     )
                                 }
@@ -665,37 +677,95 @@ fun NotesDetailCard(
                             ) {
                                 Text(
                                     note.description,
-                                    modifier = Modifier.padding(12.dp),
+                                    modifier = Modifier.padding(14.dp),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color=(Color.Black)
                                 )
                             }
 
                             if (note.photoUrls.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("Photos:", fontWeight = FontWeight.Bold)
-                                note.photoUrls.forEach { photoUrl ->
-                                    AsyncImage(
-                                        model = photoUrl,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(4.dp)
-                                            .fillMaxWidth()
-                                            .height(150.dp)
-                                    )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = stringResource(R.string.photos2),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                LazyRow(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(note.photoUrls) { photoUrl ->
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(photoUrl)
+                                                .crossfade(true)
+                                                .build(),
+                                            contentDescription = "Pet photo",
+                                            modifier = Modifier
+                                                .size(120.dp)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentScale = ContentScale.Crop,
+                                            placeholder = ColorPainter(Color(0xFFE0E0E0))
+                                        )
+                                    }
                                 }
                             }
 
                             if (note.documentUrls.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("Documents:", fontWeight = FontWeight.Bold)
-                                note.documentUrls.forEach { documentUrl ->
-                                    val fileName = documentUrl.substringAfterLast("/")
-                                    Text(
-                                        text = fileName,
-                                        style = androidx.compose.ui.text.TextStyle(textDecoration = TextDecoration.Underline),
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = stringResource(R.string.documents2),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                ) {
+                                    note.documentUrls.forEach { documentUrl ->
+                                        val fileName = documentUrl.substringAfterLast("/")
+                                        val context = LocalContext.current
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp)
+                                                .clickable {
+                                                    val intent =
+                                                        Intent(Intent.ACTION_VIEW, Uri.parse(documentUrl))
+                                                    try {
+                                                        context.startActivity(intent)
+                                                    } catch (e: ActivityNotFoundException) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "No application found to open this document",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    }
+                                                },
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
+                                                contentDescription = "Document",
+                                                tint = Color.Gray,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = fileName,
+                                                fontSize = 14.sp,
+                                                color = Color.Black,
+                                                textDecoration = TextDecoration.Underline,
+                                                maxLines = 2,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -825,42 +895,53 @@ fun EditNoteDialog(
     }
 
     if (showDialog && noteToEdit != null) {
-        BasicAlertDialog(onDismissRequest = onDismiss) {
+        BasicAlertDialog(
+                onDismissRequest = onDismiss,
+                properties = DialogProperties(
+                usePlatformDefaultWidth = false
+                )) {
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp) ,
-                colors = CardDefaults.cardColors(containerColor = CardBG),
+                    .padding(16.dp)
+                    .width(350.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = CardBG
+                )
             ) {
                 val coroutineScope = rememberCoroutineScope()
 
                 LazyColumn(
                     modifier = Modifier
-                        .padding(16.dp)
-                        .height(600.dp),  // Ensuring proper height constraints for the scrollable content
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     item {
-                        Text(
-                            text = stringResource(R.string.edit_note),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = stringResource(R.string.edit_note),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+
+                            // Dropdown for Tag Selection
+                            DropdownSelector(
+                                selectedValue = localizedSelectedTag,
+                                options = localizedTags,
+                                onValueChange = { localizedTag ->
+                                    val storageTag =
+                                        reverseMapLocalizedTagToStorageFormat(localizedTag, context)
+                                    onTagChange(storageTag)
+                                },
+                                modifier = Modifier
+                                    .width(150.dp)
+                                    .padding(start = 40.dp)
+                                    .offset(y = -7.dp),
+                            )
+                        }
                     }
 
-                    item {
-                        // Dropdown for Tag Selection
-                        DropdownSelector(
-                            selectedValue = localizedSelectedTag,
-                            options = localizedTags,
-                            onValueChange = { localizedTag ->
-                                val storageTag = reverseMapLocalizedTagToStorageFormat(localizedTag, context)
-                                onTagChange(storageTag)
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
 
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
@@ -951,7 +1032,11 @@ fun EditNoteDialog(
                                 onClick = { photoPickerLauncher.launch("image/*") },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(end = 4.dp)
+                                    .padding(end = 4.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = PrimaryColor,
+                                    contentColor = Color.Black
+                                )
                             ) {
                                 Text(stringResource(R.string.add_photos2), fontSize = 12.sp, textAlign = TextAlign.Center)
                             }
@@ -960,7 +1045,11 @@ fun EditNoteDialog(
                                 onClick = { documentPickerLauncher.launch("*/*") },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(start = 4.dp)
+                                    .padding(start = 4.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = PrimaryColor,
+                                    contentColor = Color.Black
+                                )
                             ) {
                                 Text(stringResource(R.string.add_documents2), fontSize = 12.sp, textAlign = TextAlign.Center)
                             }
@@ -996,7 +1085,10 @@ fun EditNoteDialog(
                                     }
                                 },
                                 modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD9D9D9))
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Black,
+                                    contentColor = Color.White
+                                )
                             ) {
                                 Text(stringResource(R.string.save), fontSize = 12.sp)
                             }
@@ -1004,7 +1096,10 @@ fun EditNoteDialog(
                             Button(
                                 onClick = { onDelete(noteToEdit) },
                                 modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = LightRed,
+                                    contentColor = Color.Black
+                                )
                             ) {
                                 Text(stringResource(R.string.delete), fontSize = 12.sp)
                             }
@@ -1012,7 +1107,10 @@ fun EditNoteDialog(
                             Button(
                                 onClick = onDismiss,
                                 modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD9D9D9))
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = LightGrey,
+                                    contentColor = Color.Black,
+                                )
                             ) {
                                 Text(stringResource(R.string.cancel), fontSize = 12.sp)
                             }

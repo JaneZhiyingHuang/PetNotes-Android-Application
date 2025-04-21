@@ -76,6 +76,7 @@
     <string name="photos2">照片:</string>
     <string name="documents2">文件:</string>
     <string name="please_log_in_to_access_the_map">请登录以访问地图。</string>
+    <string name="find_pet_services">附近的宠物服务</string>
     <string name="your_current_location_is">您目前的位置是: %1$s</string>
     <string name="address_not_found">地址未找到。</string>
     <string name="find_pet_stores">查找宠物商店</string>

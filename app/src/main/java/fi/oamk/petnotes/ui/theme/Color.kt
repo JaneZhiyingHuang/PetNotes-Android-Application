@@ -13,7 +13,10 @@ val Pink40 = Color(0xFF7D5260)
 //some color variables for our app
 val PrimaryColor = Color(0xFFE5E4F5)
 
-val SecondaryColor = Color(0xFF7F7AB7)
+//val SecondaryColor = Color(0xFF7F7AB7)
+
+val SecondaryColor = Color(0xFF6D5FE3)
+
 
 val BgColor = Color(0xFFEDEAF3)
 

@@ -56,6 +56,7 @@ import com.google.maps.android.compose.rememberMarkerState
 import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.PetStore
 import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.LightGrey
 import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.PrimaryColor
@@ -162,7 +163,7 @@ fun MapScreen(navController: NavController, context: Context) {
                 title = {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "Find Pet Services",
+                            text = stringResource(R.string.find_pet_services),
                             color = SecondaryColor,
                             fontSize = 20.sp  ,
                             fontWeight = FontWeight.Bold
@@ -208,7 +209,7 @@ fun MapScreen(navController: NavController, context: Context) {
                             contentColor = if (showPetStores) Color.White else Color.Black
                         ),
                     ) {
-                        Text(stringResource(R.string.find_pet_stores), color = Color.Black)  // Set text color to black
+                        Text(stringResource(R.string.find_pet_stores))
                     }
 
                     Button(
@@ -218,11 +219,13 @@ fun MapScreen(navController: NavController, context: Context) {
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(0.dp)), // Set shape to rectangle (no rounded corners)
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD3D3D3))  // Set button color to #D3D3D3
+                            .clip(RoundedCornerShape(30.dp)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (showPetClinics) Color.Black else LightYellow,
+                            contentColor = if (showPetClinics) Color.White else Color.Black
+                        ),
                     ) {
-                        Text(stringResource(R.string.find_pet_clinics), color = Color.Black)  // Set text color to black
-                    }
+                        Text(stringResource(R.string.find_pet_clinics))                    }
 
                 }
                 Spacer(modifier = Modifier.height(20.dp))
