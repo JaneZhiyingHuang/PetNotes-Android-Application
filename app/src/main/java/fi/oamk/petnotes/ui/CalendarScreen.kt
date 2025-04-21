@@ -884,7 +884,7 @@ fun EditNoteDialog(
         return reverseTagMap[localizedTag] ?: localizedTag
     }
 
-    val localizedTags = tags.filter { it != "All" }.map { tag ->
+    val localizedTags = tags.map { tag ->
         mapTagToLocalizedString(tag, context)
     }
 
