@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,6 +62,7 @@ fun SettingScreen(
     navController: NavController,
     onSignOut: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     val isUserLoggedIn = remember { settingScreenViewModel.isUserLoggedIn() }
     val context = LocalContext.current
@@ -191,7 +193,8 @@ fun SettingScreen(
                         confirmButton = {
                             TextButton(onClick = {
                                 showDeleteAccountDialog = false
-                                settingScreenViewModel.deleteAccount { success, message ->
+                                coroutineScope.launch {
+                                    val (success, message) = settingScreenViewModel.deleteAccountAndAllData()
                                     if (success) {
                                         Toast.makeText(context, "Account deleted", Toast.LENGTH_SHORT).show()
                                         onSignOut()
@@ -210,6 +213,7 @@ fun SettingScreen(
                         }
                     )
                 }
+
 
                 Spacer(modifier = Modifier.height(16.dp))
 
