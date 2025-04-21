@@ -106,7 +106,13 @@ import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
+import fi.oamk.petnotes.ui.theme.All
 import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.Cough
+import fi.oamk.petnotes.ui.theme.DarkGrey
+import fi.oamk.petnotes.ui.theme.DarkRed
+import fi.oamk.petnotes.ui.theme.Else
+import fi.oamk.petnotes.ui.theme.Emotion
 import fi.oamk.petnotes.ui.theme.LightGrey
 import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LightYellow
@@ -114,6 +120,10 @@ import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.NoteBG
 import fi.oamk.petnotes.ui.theme.NoteInput
 import fi.oamk.petnotes.ui.theme.PrimaryColor
+import fi.oamk.petnotes.ui.theme.Stool
+import fi.oamk.petnotes.ui.theme.Vet
+import fi.oamk.petnotes.ui.theme.Vomit
+import fi.oamk.petnotes.ui.theme.WaterIntake
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.NotesViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
@@ -203,14 +213,14 @@ fun NotesScreen(
 
     fun getTagColor(tag: String, context: Context): Color {
         return when (tag) {
-            context.getString(R.string.all) -> Color(0xFF757575) // Medium Gray
-            context.getString(R.string.vomit) -> Color(0xFFE57373) // Light red
-            context.getString(R.string.stool) -> Color(0xFF81C784) // Light green
-            context.getString(R.string.cough) -> Color(0xFF64B5F6) // Light blue
-            context.getString(R.string.vet) -> Color(0xFFFFB74D) // Light orange
-            context.getString(R.string.water_intake) -> Color(0xFF4FC3F7) // Sky blue
-            context.getString(R.string.emotion) -> Color(0xFFBA68C8) // Light purple
-            else -> Color(0xFF9E9E9E) // Gray for default/custom tags
+            context.getString(R.string.all) -> All
+            context.getString(R.string.vomit) -> Vomit
+            context.getString(R.string.stool) -> Stool
+            context.getString(R.string.cough) -> Cough
+            context.getString(R.string.vet) -> Vet
+            context.getString(R.string.water_intake) -> WaterIntake
+            context.getString(R.string.emotion) -> Emotion
+            else -> Else // Gray for default/custom tags
         }
     }
 
@@ -354,7 +364,7 @@ fun NotesScreen(
                             lazyListState.animateScrollToItem(0)
                         }
                     },
-                    containerColor = Color(0xFFD9D9D9),
+                    containerColor = LightGrey,
                     contentColor = Color.Black,
                     shape = CircleShape,
                     modifier = Modifier
@@ -421,8 +431,8 @@ fun NotesScreen(
                                         colors = FilterChipDefaults.filterChipColors(
                                             containerColor = getTagColor(tag, context).copy(alpha = 0.2f),
                                             labelColor = getTagColor(tag, context),
-                                            selectedContainerColor = getTagColor(tag, context).copy(alpha = 0.7f),
-                                            selectedLabelColor = Color.White,
+                                            selectedContainerColor = getTagColor(tag, context).copy(alpha = 0.3f),
+                                            selectedLabelColor = getTagColor(tag, context),
                                         ),
                                         border = BorderStroke(0.dp, Color.Transparent)
                                     )
@@ -437,8 +447,8 @@ fun NotesScreen(
                                             Icon(
                                                 Icons.Filled.Delete,
                                                 contentDescription = "Delete Tag",
-                                                tint = Color.Red,
-                                                modifier = Modifier.size(16.dp)
+                                                tint = DarkGrey,
+                                                modifier = Modifier.size(18.dp)
                                             )
                                         }
                                     }
@@ -458,12 +468,12 @@ fun NotesScreen(
                                         )
                                     ) {
                                         Column(
-                                            modifier = Modifier.padding(16.dp),
+                                            modifier = Modifier.padding(24.dp),
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
                                             Text(
                                                 text = stringResource(R.string.warning),
-                                                color = Color.Red,
+                                                color = DarkRed,
                                                 modifier = Modifier.padding(bottom = 16.dp)
                                             )
                                             Text(
@@ -471,7 +481,9 @@ fun NotesScreen(
                                                     R.string.tag_delete_alert,
                                                     showDeleteConfirmationDialog!!
                                                 ),
-                                                modifier = Modifier.padding(bottom = 16.dp)
+                                                modifier = Modifier.padding(bottom = 16.dp),
+
+
                                             )
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
@@ -503,8 +515,8 @@ fun NotesScreen(
                                                         }
                                                     },
                                                     colors = ButtonDefaults.buttonColors(
-                                                        containerColor = Color(0xFFD9D9D9),
-                                                        contentColor = Color.Black
+                                                        containerColor = DarkRed,
+                                                        contentColor = Color.White
                                                     )
                                                 ) {
                                                     Text(stringResource(R.string.yes))
@@ -514,7 +526,7 @@ fun NotesScreen(
                                                         showDeleteConfirmationDialog = null
                                                     },
                                                     colors = ButtonDefaults.buttonColors(
-                                                        containerColor = Color(0xFFD9D9D9),
+                                                        containerColor = LightGrey,
                                                         contentColor = Color.Black
                                                     )
                                                 ) {
@@ -557,7 +569,6 @@ fun NotesScreen(
                 AnimatedVisibility(visible = addNoteExpanded) {
                     Card(
                         modifier = Modifier
-//                            .padding(8.dp)
                             .width(400.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         colors = CardDefaults.cardColors(
@@ -1157,7 +1168,7 @@ fun NotesScreen(
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = LightRed,
-                                contentColor = Color.Black
+                                contentColor = DarkRed
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
@@ -1195,12 +1206,12 @@ fun NotesScreen(
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = stringResource(R.string.warning),
-                        color = Color.Red,
+                        color = DarkRed,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
@@ -1236,7 +1247,7 @@ fun NotesScreen(
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Red
+                                containerColor = DarkRed
                             )
                         ) {
                             Text(stringResource(R.string.delete))
@@ -1244,7 +1255,7 @@ fun NotesScreen(
                         Button(
                             onClick = { showDeleteNoteDialog = null },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFD9D9D9),
+                                containerColor = LightGrey,
                                 contentColor = Color.Black
                             )
                         ) {
@@ -1268,13 +1279,16 @@ fun NotesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    colors = CardDefaults.cardColors(
+                    containerColor = CardBG
+                    )
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp), // Ensure proper padding inside the Card
+                        modifier = Modifier.padding(24.dp), // Ensure proper padding inside the Card
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(stringResource(R.string.add_a_new_tag))
+                        Text(stringResource(R.string.add_a_new_tag), fontSize =18.sp,fontWeight=FontWeight.Normal )
 
                         Spacer(modifier = Modifier.height(12.dp))
 
@@ -1317,10 +1331,10 @@ fun NotesScreen(
                                     }
                                     showDialog = false
                                 },
-                                modifier = Modifier.padding(vertical = 8.dp),
+                                modifier = Modifier.padding(vertical = 8.dp).width(100.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFD9D9D9),
-                                    contentColor = Color.Black
+                                    containerColor = Color.Black,
+                                    contentColor = Color.White
                                 )
                             ) {
                                 Text(stringResource(R.string.add))
@@ -1328,9 +1342,9 @@ fun NotesScreen(
 
                             Button(
                                 onClick = { showDialog = false },
-                                modifier = Modifier.padding(vertical = 8.dp),
+                                modifier = Modifier.padding(vertical = 8.dp).width(100.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFD9D9D9),
+                                    containerColor = PrimaryColor,
                                     contentColor = Color.Black
                                 )
                             ) {
@@ -1473,14 +1487,14 @@ fun NoteCard(
 
     fun getTagColor(tag: String, context: Context): Color {
         return when (tag) {
-            context.getString(R.string.all) -> Color(0xFF757575) // Medium Gray
-            context.getString(R.string.vomit) -> Color(0xFFE57373) // Light red
-            context.getString(R.string.stool) -> Color(0xFF81C784) // Light green
-            context.getString(R.string.cough) -> Color(0xFF64B5F6) // Light blue
-            context.getString(R.string.vet) -> Color(0xFFFFB74D) // Light orange
-            context.getString(R.string.water_intake) -> Color(0xFF4FC3F7) // Sky blue
-            context.getString(R.string.emotion) -> Color(0xFFBA68C8) // Light purple
-            else -> Color(0xFF9E9E9E) // Gray for default/custom tags
+            context.getString(R.string.all) -> All
+            context.getString(R.string.vomit) -> Vomit
+            context.getString(R.string.stool) -> Stool
+            context.getString(R.string.cough) -> Cough
+            context.getString(R.string.vet) -> Vet
+            context.getString(R.string.water_intake) -> WaterIntake
+            context.getString(R.string.emotion) -> Emotion
+            else -> Else
         }
     }
 
@@ -1519,7 +1533,7 @@ fun NoteCard(
                         fontWeight = FontWeight.Bold,
                         color = getTagColor(localizedTag, context),
                         modifier = Modifier
-                            .background(LightRed, shape = RoundedCornerShape(8.dp))
+                            .background( getTagColor(localizedTag, context).copy(alpha = 0.2f), shape = RoundedCornerShape(8.dp))
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     )
 

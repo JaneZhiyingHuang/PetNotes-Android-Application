@@ -266,21 +266,21 @@ fun PetCard(pet: Pet, navController: NavController) {
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
                             text = pet.specie,
-                            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp)
+                            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 16.sp)
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = pet.dateOfBirth,
-                            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp)
+                            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 16.sp)
                         )
                         Spacer(modifier = Modifier.width(2.dp))
                         Text(
                             text = calculateAge(pet.dateOfBirth),
-                            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp)
+                            style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 16.sp)
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                 }

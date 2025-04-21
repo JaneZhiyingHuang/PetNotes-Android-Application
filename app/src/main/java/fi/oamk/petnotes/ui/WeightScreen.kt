@@ -2,6 +2,7 @@
 package fi.oamk.petnotes.ui
 
 import android.app.DatePickerDialog
+import android.hardware.lights.Light
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -197,7 +198,7 @@ fun WeightScreen(
                             scrollState.animateScrollTo(0)
                         }
                     },
-                    containerColor = Color(0xFFD9D9D9),
+                    containerColor = LightGrey,
                     contentColor = Color.Black,
                     shape = CircleShape,
                     modifier = Modifier

@@ -94,6 +94,7 @@ import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import fi.oamk.petnotes.model.PetDataStore
 import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.DarkRed
 import fi.oamk.petnotes.ui.theme.LightGrey
 import fi.oamk.petnotes.ui.theme.LightRed
 import fi.oamk.petnotes.ui.theme.LightYellow
@@ -1098,7 +1099,7 @@ fun EditNoteDialog(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = LightRed,
-                                    contentColor = Color.Black
+                                    contentColor = DarkRed
                                 )
                             ) {
                                 Text(stringResource(R.string.delete), fontSize = 12.sp)
