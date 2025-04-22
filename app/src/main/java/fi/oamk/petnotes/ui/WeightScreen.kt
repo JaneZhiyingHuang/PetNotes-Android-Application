@@ -204,7 +204,7 @@ fun WeightScreen(
                             scrollState.animateScrollTo(0)
                         }
                     },
-                    containerColor = LightGrey,
+                    containerColor = PrimaryColor,
                     contentColor = Color.Black,
                     shape = CircleShape,
                     modifier = Modifier
