@@ -735,7 +735,8 @@ fun NotesScreen(
                                             selectedMonth = selectedMonth.toInt(),
                                             selectedDate = selectedDate.toInt(),
                                             selectedTag = selectedTag,
-                                            userSelectedTimestamp = userSelectedTimestamp
+                                            userSelectedTimestamp = userSelectedTimestamp,
+                                            context = context
                                         )
                                     }
                                 },

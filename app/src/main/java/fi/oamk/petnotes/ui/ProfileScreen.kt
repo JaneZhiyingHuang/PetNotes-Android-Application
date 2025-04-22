@@ -153,7 +153,7 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
         Column(modifier = Modifier
             .padding(16.dp)
         )
-            {
+        {
 
             // title (Pet Profile)
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -199,52 +199,52 @@ fun PetInfoCard(pet: Pet, navController: NavController) {
             Spacer(modifier = Modifier.height(30.dp))
 
             // Delete button
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = stringResource(R.string.delete_profile_of_this_pet),
-                        style = TextStyle(fontSize = 16.sp, color = DarkRed, fontWeight = FontWeight.Bold),
-                        modifier = Modifier
-                            .weight(1f)
-                            .align(Alignment.CenterVertically)
-                            .clickable { showDialog = true },
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                if (showDialog) {
-
-                    AlertDialog(
-                        onDismissRequest = { showDialog = false },
-                        title = { Text(stringResource(R.string.warning2)) },
-                        text = { Text(
-                            stringResource(R.string.are_you_sure_to_delete_profile_of_this_pet) +
-                                    stringResource(R.string.this_will_delete_all_data_related_to_this_pet)
-                        ) },
-
-
-                        confirmButton = {
-                            TextButton(onClick = {
-                                showDialog = false
-                                coroutineScope.launch {
-                                    addnewPetViewModel.deletePetAndRelatedData(petId = pet.id) {
-                                        navController.popBackStack()
-                                    }
-                                }
-                            }) {
-                                Text(stringResource(R.string.delete2))
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { showDialog = false }) {
-                                Text(stringResource(R.string.cancel2))
-                            }
-                        }
-                    )
-                }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(R.string.delete_profile_of_this_pet),
+                    style = TextStyle(fontSize = 16.sp, color = DarkRed, fontWeight = FontWeight.Bold),
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically)
+                        .clickable { showDialog = true },
+                    textAlign = TextAlign.Center
+                )
             }
-            Spacer(modifier = Modifier.height(30.dp))
+
+            if (showDialog) {
+
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text(stringResource(R.string.warning2)) },
+                    text = { Text(
+                        stringResource(R.string.are_you_sure_to_delete_profile_of_this_pet) +
+                                stringResource(R.string.this_will_delete_all_data_related_to_this_pet)
+                    ) },
+
+
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDialog = false
+                            coroutineScope.launch {
+                                addnewPetViewModel.deletePetAndRelatedData(petId = pet.id) {
+                                    navController.popBackStack()
+                                }
+                            }
+                        }) {
+                            Text(stringResource(R.string.delete2))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDialog = false }) {
+                            Text(stringResource(R.string.cancel2))
+                        }
+                    }
+                )
+            }
         }
+        Spacer(modifier = Modifier.height(30.dp))
     }
+}
 
 
 //for info card style

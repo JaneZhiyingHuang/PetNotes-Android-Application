@@ -2,6 +2,7 @@ package fi.oamk.petnotes.viewmodel
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
@@ -22,7 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.net.URLDecoder
-import java.util.Calendar
 import java.util.UUID
 
 class NotesViewModel : ViewModel() {
@@ -204,6 +204,20 @@ class NotesViewModel : ViewModel() {
         }
     }
 
+    private fun reverseMapLocalizedTagToStorageFormat(localizedTag: String, context: android.content.Context): String {
+        val reverseTagMap = mapOf(
+            context.getString(fi.oamk.petnotes.R.string.all) to "all",
+            context.getString(fi.oamk.petnotes.R.string.vomit) to "vomit",
+            context.getString(fi.oamk.petnotes.R.string.stool) to "stool",
+            context.getString(fi.oamk.petnotes.R.string.cough) to "cough",
+            context.getString(fi.oamk.petnotes.R.string.vet) to "vet",
+            context.getString(fi.oamk.petnotes.R.string.water_intake) to "water_intake",
+            context.getString(fi.oamk.petnotes.R.string.emotion) to "emotion"
+        )
+
+        return reverseTagMap[localizedTag] ?: localizedTag.lowercase().replace(" ", "_")
+    }
+
     // Function to handle both file uploads and note creation
     fun uploadAndCreateNote(
         photoUris: List<Uri>,
@@ -214,7 +228,8 @@ class NotesViewModel : ViewModel() {
         selectedMonth: Int,
         selectedDate: Int,
         selectedTag: String,
-        userSelectedTimestamp: Long
+        userSelectedTimestamp: Long,
+        context: android.content.Context
     ) = viewModelScope.launch {
         if (selectedPet == null || userInput.isBlank()) {
             _uploadState.value = UploadState.Error("Pet or description is missing!")
@@ -224,6 +239,7 @@ class NotesViewModel : ViewModel() {
         _uploadState.value = UploadState.Loading
 
         val petId = selectedPet.id
+        val tagKey = reverseMapLocalizedTagToStorageFormat(selectedTag, context)
 
         try {
             val photoUrlsDeferred = async { uploadFilesToFirebase(photoUris, "photo", petId) }
@@ -237,7 +253,7 @@ class NotesViewModel : ViewModel() {
                 petId = petId,
                 description = userInput,
                 date = "$selectedYear-$selectedMonth-$selectedDate",
-                tag = selectedTag,
+                tag = tagKey,
                 photoUrls = photoUrls,
                 documentUrls = documentUrls,
                 userSelectedTimestamp = userSelectedTimestamp
