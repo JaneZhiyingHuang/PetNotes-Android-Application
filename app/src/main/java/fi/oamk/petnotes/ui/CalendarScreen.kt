@@ -355,7 +355,7 @@ fun CalendarCard(
             },
             petId = petId, // Pass petId correctly
             notesViewModel = notesViewModel, // Pass NotesViewModel correctly
-          // Pass PetTagsViewModel correctly
+            // Pass PetTagsViewModel correctly
         )
     }
 
@@ -465,7 +465,7 @@ fun PetTagCountsCard(
 
         AnimatedVisibility(
             visible = expanded,
-             // Slide out from top to bottom
+            // Slide out from top to bottom
         )  {
             Card(
                 shape = RoundedCornerShape(15.dp),
@@ -897,10 +897,10 @@ fun EditNoteDialog(
 
     if (showDialog && noteToEdit != null) {
         BasicAlertDialog(
-                onDismissRequest = onDismiss,
-                properties = DialogProperties(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(
                 usePlatformDefaultWidth = false
-                )) {
+            )) {
             Card(
                 modifier = Modifier
                     .padding(16.dp)
