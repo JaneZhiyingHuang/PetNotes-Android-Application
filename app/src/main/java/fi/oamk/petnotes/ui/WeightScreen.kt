@@ -80,15 +80,21 @@ import fi.oamk.petnotes.ui.theme.PrimaryColor
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.window.DialogProperties
 import fi.oamk.petnotes.ui.theme.CardBG
+import fi.oamk.petnotes.ui.theme.Default
 import fi.oamk.petnotes.ui.theme.LightGrey
 import fi.oamk.petnotes.ui.theme.LineColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import fi.oamk.petnotes.ui.theme.WeightTrend
-import ir.ehsannarmani.compose_charts.models.DrawStyle.Fill
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -426,6 +432,7 @@ fun NoChartCard() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddWeightCard(
     currentDate: Date,
@@ -480,20 +487,39 @@ fun AddWeightCard(
                 }
 
                 // Show Date Picker Dialog
+                val pickerState = rememberDatePickerState()
+
                 if (isDatePickerOpen) {
-                    DatePickerDialog(
-                        LocalContext.current,
-                        { _, year, month, dayOfMonth ->
-                            val selectedCalendar = Calendar.getInstance()
-                            selectedCalendar.set(year, month, dayOfMonth)
-                            onDateSelected(selectedCalendar.time)
-                            isDatePickerOpen = false
+                    AlertDialog(
+                        onDismissRequest = { isDatePickerOpen = false },
+                        properties = DialogProperties(usePlatformDefaultWidth = false),
+                        modifier = Modifier.width(400.dp),
+                        confirmButton = {
+                            TextButton(onClick = {
+                                pickerState.selectedDateMillis?.let { millis ->
+                                    val selectedDate = Date(millis)
+                                    onDateSelected(selectedDate)
+                                }
+                                isDatePickerOpen = false
+                            }) {
+                                Text(text = stringResource(id = android.R.string.ok))
+                            }
                         },
-                        Calendar.getInstance().get(Calendar.YEAR),
-                        Calendar.getInstance().get(Calendar.MONTH),
-                        Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-                    ).show()
+                        dismissButton = {
+                            TextButton(onClick = { isDatePickerOpen = false }) {
+                                Text(text = stringResource(id = android.R.string.cancel))
+                            }
+                        },
+                        text = {
+                            DatePicker(
+                                state = pickerState,
+                                colors = DatePickerDefaults.colors(
+                                    containerColor               = Default,                                )
+                            )
+                        }
+                    )
                 }
+
 
                 // Weight Input Row
                 Row(
@@ -569,8 +595,6 @@ fun WeightHistoryCard(
                 .width(400.dp)
         ) {
             Column(modifier = Modifier.padding(start = 30.dp,end=30.dp, top = 30.dp)) {
-
-//                Spacer(modifier = Modifier.height(20.dp))
 
                 Column(
                     modifier = Modifier.fillMaxWidth(),

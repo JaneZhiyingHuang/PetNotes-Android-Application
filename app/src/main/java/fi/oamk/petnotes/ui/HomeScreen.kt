@@ -416,8 +416,8 @@ fun WeightTrendCard(pet: Pet, userId: String, navController: NavController) {
             colors = CardDefaults.cardColors(containerColor = CardBG),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
-                .padding(20.dp)
-                .width(352.dp)
+                .padding(top=10.dp)
+                .width(400.dp)
                 .clickable {
                     // Navigate to weight screen when clicked
                     navController.navigate("weight_screen/$userId/${pet.id}")

@@ -1,6 +1,7 @@
 package fi.oamk.petnotes.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import kotlin.random.Random
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
@@ -42,12 +43,12 @@ val NoteInput = Color(0xFFF5F5F5)
 
 val WeightTrend = Color(0xFF6D5FE3)
 
-val All =Color(0xFF757575)
+val All =Color(0xFF7048A6)
 val Vomit =Color(0xFFE57393)
 val Stool =Color(0xFF6D91D2)
-//val Stool =Color(0xFFFDB645)
 val Cough =Color(0xFFE78030)
 val Vet =Color(0xFF78C58E)
 val WaterIntake =Color(0xFF419FCF)
 val Emotion =Color(0xFFA068C8)
 val Else= Color(0xFF675781)
+val Default = Color(0xFFEDE7F1)
