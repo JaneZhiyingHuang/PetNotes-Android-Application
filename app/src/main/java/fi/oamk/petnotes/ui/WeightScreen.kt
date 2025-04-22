@@ -568,7 +568,7 @@ fun WeightHistoryCard(
                 .padding(20.dp)
                 .width(400.dp)
         ) {
-            Column(modifier = Modifier.padding(30.dp)) {
+            Column(modifier = Modifier.padding(start = 30.dp,end=30.dp, top = 30.dp)) {
 
 //                Spacer(modifier = Modifier.height(20.dp))
 
