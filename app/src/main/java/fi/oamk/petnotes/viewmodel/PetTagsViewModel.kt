@@ -12,6 +12,7 @@ import com.google.firebase.firestore.Query
 import fi.oamk.petnotes.model.Notes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
@@ -23,8 +24,6 @@ class PetTagsViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     // Backing field for tag counts
-    private val _tagCounts = mutableStateListOf<TagCount>()
-    val tagCounts: List<TagCount> = _tagCounts
 
     // Function to fetch pet tags from Firestore
     suspend fun fetchPetTags(
@@ -79,17 +78,21 @@ class PetTagsViewModel : ViewModel() {
             }
         }
     }
+    private val _tagCounts = MutableStateFlow<List<TagCount>>(emptyList())
+    val tagCounts: StateFlow<List<TagCount>> = _tagCounts.asStateFlow()
+
     fun fetchTagCountsFromNotes(petId: String, visibleMonth: YearMonth) {
         Log.d("PetTagsViewModel", "Fetching tag counts for petId: $petId in visibleMonth: $visibleMonth")
 
-        db.collection("notes")
+        val formatter = DateTimeFormatter.ofPattern("yyyy-M-d")
+
+        FirebaseFirestore.getInstance().collection("notes")
             .whereEqualTo("petId", petId)
             .get()
             .addOnSuccessListener { querySnapshot ->
                 Log.d("PetTagsViewModel", "Fetched ${querySnapshot.size()} notes for petId: $petId")
 
                 val tagFrequencyMap = mutableMapOf<String, Int>()
-                val formatter = DateTimeFormatter.ofPattern("yyyy-M-d")
 
                 for (document in querySnapshot) {
                     Log.d("PetTagsViewModel", "Document data: ${document.data}")
@@ -114,13 +117,10 @@ class PetTagsViewModel : ViewModel() {
                     }
                 }
 
-                // Update the tag counts
-                _tagCounts.clear()
-                if (tagFrequencyMap.isNotEmpty()) {
-                    _tagCounts.addAll(tagFrequencyMap.map { TagCount(it.key, it.value) })
-                }
+                val newTagCounts = tagFrequencyMap.map { TagCount(it.key, it.value) }
+                _tagCounts.value = newTagCounts
 
-                Log.d("PetTagsViewModel", "Final tag counts for $visibleMonth: $_tagCounts")
+                Log.d("PetTagsViewModel", "Final tag counts for $visibleMonth: $newTagCounts")
             }
             .addOnFailureListener { exception ->
                 Log.e("PetTagsViewModel", "Error fetching tags for petId: $petId", exception)
