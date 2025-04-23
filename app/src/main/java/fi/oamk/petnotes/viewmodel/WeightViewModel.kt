@@ -67,7 +67,8 @@ class WeightViewModel : ViewModel() {
                     } else {
                         null
                     }
-                }.sortedBy { it.first }
+                }.sortedByDescending { it.first }
+
 
                 // Update state with parsed weights
                 _weightEntries.value = parsedWeights
