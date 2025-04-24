@@ -30,6 +30,7 @@ class GoogleSignInViewModel(application: Application) : AndroidViewModel(applica
 
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private var credentialManager: CredentialManager = CredentialManager.create(application)
+    @Suppress("DEPRECATION")
     private val googleSignInClient: GoogleSignInClient
 
     // StateFlow to track authentication state
@@ -41,10 +42,12 @@ class GoogleSignInViewModel(application: Application) : AndroidViewModel(applica
     val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
 
     init {
+        @Suppress("DEPRECATION")
         val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getApplication<Application>().getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
+        @Suppress("DEPRECATION")
         googleSignInClient = GoogleSignIn.getClient(getApplication(), googleSignInOptions)
 
         // Initialize the current user state

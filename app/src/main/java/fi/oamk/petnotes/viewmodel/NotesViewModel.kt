@@ -12,6 +12,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storage
+import fi.oamk.petnotes.R
 import fi.oamk.petnotes.model.Notes
 import fi.oamk.petnotes.model.Pet
 import kotlinx.coroutines.Dispatchers
@@ -23,11 +24,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.net.URLDecoder
+import java.util.Locale
 import java.util.UUID
 
 class NotesViewModel : ViewModel() {
     private val _uploadState = MutableStateFlow<UploadState>(UploadState.Idle)
     val uploadState: StateFlow<UploadState> = _uploadState.asStateFlow()
+    private val _notes = MutableStateFlow<List<Notes>>(emptyList())
+    val notes: StateFlow<List<Notes>> = _notes.asStateFlow()
 
     sealed class UploadState {
         object Idle : UploadState()
@@ -202,6 +206,21 @@ class NotesViewModel : ViewModel() {
                 Log.e("NotesViewModel", "Error parsing or deleting file: $fileUrl", e)
             }
         }
+    }
+
+    fun mapStorageFormatToDisplayTag(storageTag: String, context: android.content.Context): String {
+        val displayTagMap = mapOf(
+            "all" to context.getString(R.string.all),
+            "vomit" to context.getString(R.string.vomit),
+            "stool" to context.getString(R.string.stool),
+            "cough" to context.getString(R.string.cough),
+            "vet" to context.getString(R.string.vet),
+            "water_intake" to context.getString(R.string.water_intake),
+            "emotion" to context.getString(R.string.emotion)
+        )
+
+        return displayTagMap[storageTag] ?: storageTag.split("_")
+            .joinToString(" ") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() } }
     }
 
     private fun reverseMapLocalizedTagToStorageFormat(localizedTag: String, context: android.content.Context): String {

@@ -491,22 +491,40 @@ fun NotesScreen(
                                             ) {
                                                 Button(
                                                     onClick = {
-                                                        val tagToDelete =
-                                                            showDeleteConfirmationDialog
-                                                        val updatedTags = tags.toMutableList()
-                                                            .apply { remove(tagToDelete) }
+                                                        val tagToDelete = showDeleteConfirmationDialog
+                                                        val updatedTags = tags.toMutableList().apply { remove(tagToDelete) }
 
                                                         selectedPet?.id?.let { petId ->
                                                             coroutineScope.launch {
+                                                                val notesToProcess = fetchedNotes.filter { note ->
+                                                                    val localizedTag = notesViewModel.mapStorageFormatToDisplayTag(note.tag, context)
+                                                                    localizedTag == tagToDelete
+                                                                }
+
+                                                                for (note in notesToProcess) {
+                                                                    notesViewModel.deleteNote(
+                                                                        note,
+                                                                        onSuccess = {
+                                                                            fetchedNotes = fetchedNotes.filter { it.id != note.id }
+                                                                        },
+                                                                        onFailure = { error ->
+                                                                            Toast.makeText(context, "Failed to delete note: $error", Toast.LENGTH_SHORT).show()
+                                                                        }
+                                                                    )
+                                                                }
+
+                                                                // After deleting the notes, update the pet tags
                                                                 petTagsViewModel.updatePetTags(
                                                                     petId,
                                                                     updatedTags,
                                                                     onSuccess = {
+                                                                        // Successfully updated the tags
                                                                         tags = updatedTags
                                                                         selectedTag = context.getString(R.string.all)
                                                                         showDeleteConfirmationDialog = null
                                                                     },
                                                                     onFailure = { error ->
+                                                                        // Handle error updating tags
                                                                         Toast.makeText(context, "Failed to delete tag: $error", Toast.LENGTH_SHORT).show()
                                                                         showDeleteConfirmationDialog = null
                                                                     }
@@ -521,6 +539,7 @@ fun NotesScreen(
                                                 ) {
                                                     Text(stringResource(R.string.yes))
                                                 }
+
                                                 Button(
                                                     onClick = {
                                                         showDeleteConfirmationDialog = null
@@ -716,6 +735,16 @@ fun NotesScreen(
                                         return@Button
                                     }
 
+                                    if (selectedTag == context.getString(R.string.all)) {
+                                        // Prevent note creation if "All" tag is selected
+                                        Toast.makeText(
+                                            context,
+                                            "Cannot create a note with the 'All' tag.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        return@Button
+                                    }
+
                                     // Create a Calendar instance for the timestamp
                                     val calendar = Calendar.getInstance()
                                     calendar.set(
@@ -745,7 +774,8 @@ fun NotesScreen(
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color.Black,
                                     contentColor = Color.White
-                                )
+                                ),
+                                enabled = selectedTag != context.getString(R.string.all) // Disable button if "All" tag is selected
                             ) {
                                 Text(
                                     text = stringResource(R.string.confirm),
@@ -783,7 +813,7 @@ fun NotesScreen(
 
             // Display notes
             items(fetchedNotes.filter { note ->
-                val localizedTag = mapTagToLocalizedString(note.tag, context)
+                val localizedTag = notesViewModel.mapStorageFormatToDisplayTag(note.tag, context)
                 selectedTag == context.getString(R.string.all) || localizedTag == selectedTag
             }) { note ->
                 AnimatedVisibility(visible = viewNotesExpanded) {
@@ -801,7 +831,8 @@ fun NotesScreen(
                             removedDocumentUrls = emptyList()
                             showEditDialog = true
                         },
-                        onDelete = { showDeleteNoteDialog = it }
+                        onDelete = { showDeleteNoteDialog = it },
+                        notesViewModel = notesViewModel
                     )
                 }
             }
@@ -835,23 +866,22 @@ fun NotesScreen(
                 ) {
                     Row(  verticalAlignment = Alignment.CenterVertically
                     ){
-                    Text(
-                        text = stringResource(R.string.edit_note),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    DropdownSelector(
-                        selectedValue = editedTag,
-                        options = tags.filter { it != stringResource(R.string.all) },
-                        onValueChange = { editedTag = it },
-                        modifier = Modifier
-                            .width(150.dp)
-                            .padding(start=40.dp)
-                            .offset(y =-7.dp),
-
+                        Text(
+                            text = stringResource(R.string.edit_note),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(bottom = 16.dp)
                         )
-                        }
+                        DropdownSelector(
+                            selectedValue = editedTag,
+                            options = tags.filter { it != stringResource(R.string.all) },
+                            onValueChange = { editedTag = it },
+                            modifier = Modifier
+                                .width(150.dp)
+                                .padding(start=40.dp)
+                                .offset(y =-7.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = editedDescription,
@@ -1453,6 +1483,7 @@ fun DropdownSelector(modifier: Modifier = Modifier, selectedValue: String, optio
 @Composable
 fun NoteCard(
     note: Notes,
+    notesViewModel: NotesViewModel,
     onEdit: (Notes) -> Unit = {},
     onDelete: (Notes) -> Unit = {}
 ) {
@@ -1482,7 +1513,7 @@ fun NoteCard(
         }
     }
 
-    val localizedTag = mapTagToLocalizedString(note.tag, context)
+    val localizedTag = notesViewModel.mapStorageFormatToDisplayTag(note.tag, context)
 
     fun getTagColor(tag: String, context: Context): Color {
         return when (tag) {
@@ -1651,7 +1682,6 @@ fun NoteCard(
                     }
                 }
             }
-
 
         }
     }
