@@ -27,13 +27,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -43,6 +42,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -54,6 +55,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -79,6 +81,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -97,13 +102,14 @@ import fi.oamk.petnotes.ui.theme.CardBG
 import fi.oamk.petnotes.ui.theme.DarkRed
 import fi.oamk.petnotes.ui.theme.LightGrey
 import fi.oamk.petnotes.ui.theme.LightRed
-import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.LineColor
+import fi.oamk.petnotes.ui.theme.NoteBG
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import fi.oamk.petnotes.viewmodel.HomeScreenViewModel
 import fi.oamk.petnotes.viewmodel.NotesViewModel
 import fi.oamk.petnotes.viewmodel.PetTagsViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
@@ -123,20 +129,35 @@ fun CalendarScreen(
     val coroutineScope = rememberCoroutineScope()
     val refreshTrigger = remember { mutableIntStateOf(0) }
     val viewModel: PetTagsViewModel = viewModel()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val triggerRefresh = {
+        refreshTrigger.intValue++
+    }
+    // 🔄 Trigger refresh on screen resume
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                Log.d("CalendarScreen", "Screen resumed – refreshing tag counts")
+                refreshTrigger.intValue++
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
+    // Initial load
     LaunchedEffect(context, refreshTrigger.intValue) {
         Log.d("CalendarScreen", "User logged in: ${isUserLoggedIn()}")
         PetDataStore.getSelectedPetId(context).collect { petId ->
             if (isUserLoggedIn()) {
                 val fetchedPets = homeScreenViewModel.fetchPets()
                 pets = fetchedPets
-
                 selectedPet = fetchedPets.find { it.id == petId } ?: fetchedPets.firstOrNull()
             }
         }
     }
-
-
 
     Scaffold(
         topBar = {
@@ -156,7 +177,7 @@ fun CalendarScreen(
                                 selectedPet = pet
                                 coroutineScope.launch {
                                     PetDataStore.setSelectedPetId(context, pet.id)
-                                    refreshTrigger.intValue++ // Trigger refresh
+                                    triggerRefresh()// Manually trigger refresh
                                 }
                             }
                         )
@@ -164,7 +185,6 @@ fun CalendarScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
             )
-            //line
             HorizontalDivider(thickness = 1.dp, color = LineColor)
         },
         bottomBar = { BottomNavigationBar(navController = navController) }
@@ -172,12 +192,11 @@ fun CalendarScreen(
         Box(modifier = Modifier.padding(innerPadding)) {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()  // Ensures the LazyColumn takes up the full available space
+                    .fillMaxSize()
                     .padding(2.dp)
             ) {
                 item {
                     if (selectedPet != null) {
-                        // Pass petId from selectedPet to CalendarCard and PetTagCountsCard
                         CalendarCard(viewModel, selectedPet!!.id, refreshTrigger.intValue)
                     } else {
                         Text(stringResource(R.string.no_pet_selected))
@@ -252,7 +271,7 @@ fun CalendarCard(
         }
     }
 
-    // 🗓️ Calendar UI
+
     Card(
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = CardBG),
@@ -329,6 +348,7 @@ fun CalendarCard(
     val selectedNotes = viewModel.selectedNotes.value
 
     if (selectedDay?.date != null && selectedDay!!.date in taggedLocalDates && selectedNotes.isNotEmpty()) {
+
         NotesDetailCard(
             notes = selectedNotes,
             onDelete = { note ->
@@ -354,7 +374,8 @@ fun CalendarCard(
                 )
             },
             petId = petId, // Pass petId correctly
-            notesViewModel = notesViewModel, // Pass NotesViewModel correctly
+            notesViewModel = notesViewModel,
+            selectedDate = selectedDay?.date// Pass NotesViewModel correctly
             // Pass PetTagsViewModel correctly
         )
     }
@@ -403,7 +424,7 @@ fun PetTagCountsCard(
     petId: String,
     visibleMonth: YearMonth
 ) {
-    val tagCounts = viewModel.tagCounts
+    val tagCounts by viewModel.tagCounts.collectAsState()
     val context = LocalContext.current
 
     fun mapTagToLocalizedString(tag: String, context: Context): String {
@@ -416,35 +437,25 @@ fun PetTagCountsCard(
             "water intake" to R.string.water_intake,
             "emotion" to R.string.emotion
         )
-
         val resourceId = tagResourceMap[tag.lowercase()]
-
-        return if (resourceId != null) {
-            context.getString(resourceId)
-        } else {
-            tag
-        }
+        return if (resourceId != null) context.getString(resourceId) else tag
     }
 
-    // 🔁 Re-fetch tag counts when petId or visibleMonth changes
+    // Fetch tag counts on petId or month change
     LaunchedEffect(petId, visibleMonth) {
-        Log.d("PetTagCountsCard", "Fetching tag counts for petId: $petId, visibleMonth: $visibleMonth")
+        Log.d("PetTagCountsCard", "Fetching tag counts for petId=$petId, month=$visibleMonth")
         viewModel.fetchTagCountsFromNotes(petId, visibleMonth)
     }
 
-    LaunchedEffect(tagCounts) {
-        Log.d("PetTagCountsCard", "Current tag counts: $tagCounts")
-    }
-    var expanded by remember { mutableStateOf(true) } // State to toggle card visibility
+    var expanded by remember { mutableStateOf(true) }
 
     if (tagCounts.isNotEmpty()) {
-        // Header with expandable functionality
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded } // Toggle on row click
-                .padding(horizontal = 16.dp)
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Icon(
                 imageVector = if (expanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
@@ -463,10 +474,7 @@ fun PetTagCountsCard(
             )
         }
 
-        AnimatedVisibility(
-            visible = expanded,
-            // Slide out from top to bottom
-        )  {
+        AnimatedVisibility(visible = expanded) {
             Card(
                 shape = RoundedCornerShape(15.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -476,12 +484,8 @@ fun PetTagCountsCard(
                     .fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp)) {
-
-
-                    // Displaying tags sorted by count
                     tagCounts.sortedByDescending { it.count }.forEach { tagCount ->
                         val localizedTag = mapTagToLocalizedString(tagCount.tag, context)
-
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -490,7 +494,7 @@ fun PetTagCountsCard(
                         ) {
                             Text(
                                 text = localizedTag,
-                                fontWeight = FontWeight.Bold  // Make this text bold
+                                fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = stringResource(R.string.times, tagCount.count),
@@ -503,7 +507,6 @@ fun PetTagCountsCard(
             }
         }
     } else {
-        // Display message when no tags are recorded
         Card(
             shape = RoundedCornerShape(15.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -519,18 +522,21 @@ fun PetTagCountsCard(
             )
         }
     }
-
-
 }
+
+
 @Composable
 fun NotesDetailCard(
     notes: List<Notes>,
     onDelete: (Notes) -> Unit,
     onEdit: (Notes) -> Unit,
-    petId: String, // Pass petId if you need it for fetching pet tags
-    petTagsViewModel: PetTagsViewModel = viewModel(), // Pass PetTagsViewModel as dependency
-    notesViewModel: NotesViewModel = viewModel() // Pass NotesViewModel as dependency
+    petId: String,
+    selectedDate: LocalDate?,
+    petTagsViewModel: PetTagsViewModel = viewModel(),
+    notesViewModel: NotesViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+
     var showEditDialog by remember { mutableStateOf(false) }
     var noteBeingEdited by remember { mutableStateOf<Notes?>(null) }
     var editedDescription by remember { mutableStateOf("") }
@@ -539,13 +545,28 @@ fun NotesDetailCard(
     var editedDocumentUris by remember { mutableStateOf(listOf<Uri>()) }
     var removedPhotoUrls by remember { mutableStateOf(listOf<String>()) }
     var removedDocumentUrls by remember { mutableStateOf(listOf<String>()) }
-
-    // Tags state
+    var shouldRefresh by remember { mutableStateOf(false) }
     var tags by remember { mutableStateOf(listOf<String>()) }
+    var expanded by remember { mutableStateOf(true) }
 
-    val context = LocalContext.current
+    // --- LaunchedEffect for fetching notes ---
+    LaunchedEffect(key1 = petId, key2 = selectedDate, key3 = shouldRefresh) {
+        if (selectedDate != null) {
+            petTagsViewModel.fetchNotesForSelectedDay(petId, selectedDate)
+            shouldRefresh = false
+        }
+    }
 
-    fun mapTagToLocalizedString(tag: String, context: Context): String {
+    // --- Fetch Tags ---
+    LaunchedEffect(petId) {
+        petTagsViewModel.fetchPetTags(
+            petId = petId,
+            onSuccess = { fetchedTags -> tags = fetchedTags },
+            onFailure = { Log.e("NotesDetailCard", "Failed to fetch pet tags") }
+        )
+    }
+
+    fun mapTagToLocalizedString(tag: String): String {
         val tagResourceMap = mapOf(
             "all" to R.string.all,
             "vomit" to R.string.vomit,
@@ -556,36 +577,15 @@ fun NotesDetailCard(
             "emotion" to R.string.emotion
         )
 
-        val resourceId = tagResourceMap[tag.lowercase()]
-
-        return if (resourceId != null) {
-            context.getString(resourceId)
-        } else {
-            tag
-        }
+        return context.getString(tagResourceMap[tag.lowercase()] ?: return tag)
     }
-
-    // Fetch pet tags based on petId (on the ViewModel level)
-    LaunchedEffect(petId) {
-        petTagsViewModel.fetchPetTags(
-            petId = petId,
-            onSuccess = { fetchedTags ->
-                tags = fetchedTags
-            },
-            onFailure = {
-                Log.e("NotesDetailCard", "Failed to fetch pet tags")
-            }
-        )
-    }
-
-    var expanded by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxSize()
     ) {
-        // Foldable Header
+        // Header
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -606,11 +606,10 @@ fun NotesDetailCard(
             )
         }
 
-        // Notes list with fold animation
         AnimatedVisibility(visible = expanded) {
             Column {
                 notes.forEach { note ->
-                    val localizedTag = mapTagToLocalizedString(note.tag, context)
+                    val localizedTag = mapTagToLocalizedString(note.tag)
 
                     Card(
                         modifier = Modifier
@@ -642,29 +641,26 @@ fun NotesDetailCard(
                                     localizedTag,
                                     style = MaterialTheme.typography.titleMedium,
                                     modifier = Modifier
-//                                        .padding(top = 4.dp)
                                         .background(LightRed, shape = RoundedCornerShape(8.dp))
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
 
                                 Spacer(modifier = Modifier.weight(0.1f))
-                                Row {
-                                    IconButton(onClick = {
-                                        noteBeingEdited = note
-                                        editedDescription = note.description
-                                        editedTag = note.tag
-                                        editedPhotoUris = listOf()
-                                        editedDocumentUris = listOf()
-                                        removedPhotoUrls = listOf()
-                                        removedDocumentUrls = listOf()
-                                        showEditDialog = true
-                                    }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "Edit Note",
-                                            tint = Color.Gray
-                                        )
-                                    }
+                                IconButton(onClick = {
+                                    noteBeingEdited = note
+                                    editedDescription = note.description
+                                    editedTag = note.tag
+                                    editedPhotoUris = listOf()
+                                    editedDocumentUris = listOf()
+                                    removedPhotoUrls = listOf()
+                                    removedDocumentUrls = listOf()
+                                    showEditDialog = true
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit Note",
+                                        tint = Color.Gray
+                                    )
                                 }
                             }
 
@@ -680,10 +676,11 @@ fun NotesDetailCard(
                                     note.description,
                                     modifier = Modifier.padding(14.dp),
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color=(Color.Black)
+                                    color = Color.Black
                                 )
                             }
 
+                            // Photo Display
                             if (note.photoUrls.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -692,14 +689,12 @@ fun NotesDetailCard(
                                     fontWeight = FontWeight.Bold
                                 )
                                 LazyRow(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     items(note.photoUrls) { photoUrl ->
                                         AsyncImage(
-                                            model = ImageRequest.Builder(LocalContext.current)
+                                            model = ImageRequest.Builder(context)
                                                 .data(photoUrl)
                                                 .crossfade(true)
                                                 .build(),
@@ -714,6 +709,7 @@ fun NotesDetailCard(
                                 }
                             }
 
+                            // Document Display
                             if (note.documentUrls.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -722,20 +718,16 @@ fun NotesDetailCard(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp)
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                                 ) {
                                     note.documentUrls.forEach { documentUrl ->
                                         val fileName = documentUrl.substringAfterLast("/")
-                                        val context = LocalContext.current
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .padding(vertical = 4.dp)
                                                 .clickable {
-                                                    val intent =
-                                                        Intent(Intent.ACTION_VIEW, Uri.parse(documentUrl))
+                                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(documentUrl))
                                                     try {
                                                         context.startActivity(intent)
                                                     } catch (e: ActivityNotFoundException) {
@@ -762,8 +754,7 @@ fun NotesDetailCard(
                                                 textDecoration = TextDecoration.Underline,
                                                 maxLines = 2,
                                                 overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier
-                                                    .weight(1f)
+                                                modifier = Modifier.weight(1f)
                                             )
                                         }
                                     }
@@ -775,8 +766,6 @@ fun NotesDetailCard(
             }
         }
     }
-
-
 
     // Edit Dialog
     if (showEditDialog && noteBeingEdited != null) {
@@ -800,6 +789,7 @@ fun NotesDetailCard(
             onSave = { updatedNote, _, _, _, _ ->
                 onEdit(updatedNote)
                 showEditDialog = false
+                shouldRefresh = true
             },
             onDescriptionChange = { editedDescription = it },
             onTagChange = { editedTag = it },
@@ -812,6 +802,9 @@ fun NotesDetailCard(
         )
     }
 }
+
+
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -845,9 +838,15 @@ fun EditNoteDialog(
     onRemovePhotoUri: (Uri) -> Unit,
     onRemoveDocumentUrl: (String) -> Unit,
     onRemoveDocumentUri: (Uri) -> Unit,
+
 ) {
     val context = LocalContext.current
+    var shouldRefresh by remember { mutableStateOf(false) }
 
+    if (shouldRefresh) {
+        // Your logic to refresh, like fetching data again
+        shouldRefresh = false  // Reset the flag after refreshing
+    }
     fun mapTagToLocalizedString(tag: String, context: Context): String {
         val tagResourceMap = mapOf(
             "all" to R.string.all,
@@ -884,9 +883,14 @@ fun EditNoteDialog(
         return reverseTagMap[localizedTag] ?: localizedTag
     }
 
-    val localizedTags = tags.map { tag ->
-        mapTagToLocalizedString(tag, context)
+    var localizedTags by remember { mutableStateOf(emptyList<String>()) }
+
+    LaunchedEffect(tags) {
+        Log.d("EditNoteDialog", "Tags received: $tags")
+        localizedTags = tags.map { tag -> mapTagToLocalizedString(tag, context) }
+        Log.d("EditNoteDialog", "Localized tags updated: $localizedTags")
     }
+
 
     // Get currently selected tag in localized form
     val localizedSelectedTag = mapTagToLocalizedString(editedTag, context)
@@ -927,7 +931,7 @@ fun EditNoteDialog(
 
 
                             // Dropdown for Tag Selection
-                            DropdownSelector(
+                            CalendarDropdownSelector(
                                 selectedValue = localizedSelectedTag,
                                 options = localizedTags,
                                 onValueChange = { localizedTag ->
@@ -1083,6 +1087,8 @@ fun EditNoteDialog(
                                             removedPhotoUrls,
                                             removedDocumentUrls
                                         )
+                                        delay(2000)
+                                        shouldRefresh = true
                                     }
                                 },
                                 modifier = Modifier.weight(1f),
@@ -1123,6 +1129,49 @@ fun EditNoteDialog(
     }
 }
 
+@Composable
+fun CalendarDropdownSelector(modifier: Modifier = Modifier, selectedValue: String, options: List<String>, onValueChange: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        Card(
+            modifier = Modifier
+                .clickable { expanded = true }
+                .height(45.dp)
+                .padding(2.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = NoteBG,
+            )
+
+//            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = selectedValue, modifier = Modifier.weight(1f), color = Color.Black)
+                Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select")
+            }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(NoteBG)
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onValueChange(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun PhotoThumbnail(url: String? = null, uri: Uri? = null, onRemove: () -> Unit) {

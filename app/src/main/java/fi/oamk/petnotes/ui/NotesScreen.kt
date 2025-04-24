@@ -364,7 +364,7 @@ fun NotesScreen(
                             lazyListState.animateScrollToItem(0)
                         }
                     },
-                    containerColor = LightGrey,
+                    containerColor = PrimaryColor,
                     contentColor = Color.Black,
                     shape = CircleShape,
                     modifier = Modifier

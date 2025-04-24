@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
+import android.provider.Settings.Global.getString
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -79,7 +80,10 @@ fun MapScreen(navController: NavController, context: Context) {
     var petClinics by remember { mutableStateOf<List<PetStore>>(emptyList()) }  // New state for pet clinics
     var showPetClinics by remember { mutableStateOf(false) }  // State to control visibility of pet clinics
 
-    val apiKey ="discord"
+
+    val apiKey = context.getString(R.string.google_maps_api_key)
+
+
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     // Replace with your API key
 
@@ -303,6 +307,7 @@ fun MapScreen(navController: NavController, context: Context) {
         }
     }
 }
+
 
 
 // Function to check if the user is logged in

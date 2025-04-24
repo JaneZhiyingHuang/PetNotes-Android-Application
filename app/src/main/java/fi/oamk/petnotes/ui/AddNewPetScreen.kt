@@ -73,6 +73,18 @@ import fi.oamk.petnotes.ui.theme.LightYellow
 import fi.oamk.petnotes.ui.theme.PrimaryColor
 import fi.oamk.petnotes.ui.theme.SecondaryColor
 import kotlinx.coroutines.launch
+import android.icu.text.SimpleDateFormat
+import android.icu.util.TimeZone
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.ui.window.DialogProperties
+import fi.oamk.petnotes.ui.theme.Default
+import java.util.Date
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -479,47 +491,33 @@ fun LabeledTextField(
 }
 
 // DoB calendar datepicker
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerField(
     label: String,
     date: String,
     onDateSelected: (String) -> Unit
 ) {
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance()
-
-    val year = calendar.get(Calendar.YEAR)
-    val month = calendar.get(Calendar.MONTH)
-    val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-    val datePickerDialog = DatePickerDialog(
-        context,
-        { _, selectedYear: Int, selectedMonth: Int, selectedDay: Int ->
-            val formattedDate = String.format("%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear)
-            onDateSelected(formattedDate)
-        },
-        year, month, day
-    )
+    var showPicker by remember { mutableStateOf(false) }
+    // State to hold the picked date in millis
+    val pickerState = rememberDatePickerState()
 
     Column {
         Text(
             text = label,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .padding(bottom = 1.dp)
-                .padding(start = 73.dp)
+                .padding(start = 73.dp, bottom = 1.dp)
                 .fillMaxWidth()
         )
         Box(
             modifier = Modifier
                 .width(280.dp)
-                .padding(top = 3.dp)
                 .height(56.dp)
-                .background(
-                    color = InputColor,
-                    shape = RoundedCornerShape(40.dp)
-                )
-                .clickable { datePickerDialog.show() }
+                .padding(top = 3.dp)
+                .background(InputColor, RoundedCornerShape(40.dp))
+                .clickable { showPicker = true }
                 .align(Alignment.CenterHorizontally),
             contentAlignment = Alignment.Center
         ) {
@@ -531,8 +529,47 @@ fun DatePickerField(
         }
         Spacer(modifier = Modifier.height(12.dp))
     }
-}
 
+    if (showPicker) {
+        AlertDialog(
+            onDismissRequest = { showPicker = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+            modifier = Modifier.width(400.dp),
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { millis ->
+                        // format to dd/MM/yyyy
+                        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        sdf.timeZone = TimeZone.getDefault()
+                        onDateSelected(sdf.format(Date(millis)))
+                    }
+                    showPicker = false
+                }) {
+                    Text(text = stringResource(id = android.R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPicker = false }) {
+                    Text(text = stringResource(id = android.R.string.cancel))
+                }
+            },
+            text = {
+                DatePicker(
+                    state = pickerState,
+                    colors = DatePickerDefaults.colors(
+                        containerColor               = Default,
+//                        titleContentColor            = MaterialTheme.colorScheme.primary,
+//                        headlineContentColor         = MaterialTheme.colorScheme.onSurface,
+//                        selectedDayContainerColor    = MaterialTheme.colorScheme.secondary,
+//                        selectedDayContentColor      = MaterialTheme.colorScheme.onSecondary,
+//                        todayDateBorderColor         = MaterialTheme.colorScheme.primary,
+//                        todayContentColor            = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
+        )
+    }
+}
 // handle avatar photo upload logic:
 // to fire storage-> get imageUrl -> store Url in firebase -> use Url to fetch image
 fun uploadImageToFirebase(uri: Uri, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
