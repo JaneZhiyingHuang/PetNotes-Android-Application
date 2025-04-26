@@ -81,9 +81,8 @@ To run the **PetNotes** app on your local Android Studio environment, follow the
 6. ✅ **Enjoy PetNotes**  
     Once the app builds and launches, you’ll be able to sign up, create pet profiles, add notes, and more!
 
-
-## 🎥 Demo/Preview
-View the working live demo here: 
-
+## 🎥 Demo/Slides
+- **demo**: https://youtu.be/S842Rq5kbnc
+- **slides**: https://docs.google.com/presentation/d/11yM-FC9KQFOLO1MwBze8ioIcBvwnqjp9xz9aP8RQKdw/edit?usp=sharing
 ## 📝 License
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for more information.
