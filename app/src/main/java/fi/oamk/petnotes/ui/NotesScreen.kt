@@ -212,15 +212,17 @@ fun NotesScreen(
     }
 
     fun getTagColor(tag: String, context: Context): Color {
-        return when (tag) {
-            context.getString(R.string.all) -> All
-            context.getString(R.string.vomit) -> Vomit
-            context.getString(R.string.stool) -> Stool
-            context.getString(R.string.cough) -> Cough
-            context.getString(R.string.vet) -> Vet
-            context.getString(R.string.water_intake) -> WaterIntake
-            context.getString(R.string.emotion) -> Emotion
-            else -> Else // Gray for default/custom tags
+        // Try to match with standard tags first, regardless of language
+        val normalizedTag = notesViewModel.reverseMapLocalizedTagToStorageFormat(tag, context)
+        return when (normalizedTag) {
+            "all" -> All
+            "vomit" -> Vomit
+            "stool" -> Stool
+            "cough" -> Cough
+            "vet" -> Vet
+            "water_intake" -> WaterIntake
+            "emotion" -> Emotion
+            else -> Else // Gray for custom tags
         }
     }
 
@@ -232,7 +234,7 @@ fun NotesScreen(
             "stool" to R.string.stool,
             "cough" to R.string.cough,
             "vet" to R.string.vet,
-            "water intake" to R.string.water_intake,
+            "water_intake" to R.string.water_intake,
             "emotion" to R.string.emotion
             // Add all other tags you use
         )
@@ -278,8 +280,41 @@ fun NotesScreen(
         }
     }
 
-    LaunchedEffect(selectedPet) {
-        tags = selectedPet?.tags?.takeIf { it.isNotEmpty() } ?: defaultTags
+    LaunchedEffect(selectedPet, refreshTrigger) {
+        // Get the original tags
+        val originalTags = selectedPet?.tags?.takeIf { it.isNotEmpty() } ?: defaultTags
+
+        // This is critical - make sure all tags are in storage format first
+        val storageFormatTags = originalTags.map { tag ->
+            // Convert any localized tags back to storage format
+            notesViewModel.reverseMapLocalizedTagToStorageFormat(tag, context)
+        }.toSet()
+
+        // Always ensure "all" is included as the first tag
+        val allStorageTag = "all"
+        val finalStorageTags = if (!storageFormatTags.contains(allStorageTag)) {
+            listOf(allStorageTag) + storageFormatTags.filter { it != allStorageTag }
+        } else {
+            listOf(allStorageTag) + (storageFormatTags - allStorageTag)
+        }
+
+        // Now convert all tags to localized format for display
+        val localizedTags = finalStorageTags.map { storageTag ->
+            notesViewModel.mapStorageFormatToDisplayTag(storageTag, context)
+        }
+
+        tags = localizedTags
+
+        // Also ensure the selected tag is properly localized
+        if (selectedTag != context.getString(R.string.all)) {
+            val storageFormat = notesViewModel.reverseMapLocalizedTagToStorageFormat(selectedTag, context)
+            if (NotesViewModel.TagConstants.STANDARD_TAG_KEYS.contains(storageFormat)) {
+                selectedTag = notesViewModel.mapStorageFormatToDisplayTag(storageFormat, context)
+            }
+        } else {
+            // Always make sure "all" tag is properly localized
+            selectedTag = context.getString(R.string.all)
+        }
 
         selectedPet?.id?.let { petId ->
             fetchedNotes = notesViewModel.getNotesByPetId(petId)
@@ -396,7 +431,7 @@ fun NotesScreen(
                         .width(400.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     colors = CardDefaults.cardColors(
-                    containerColor = CardBG
+                        containerColor = CardBG
                     )
                 ) {
                     Column(modifier = Modifier.padding(6.dp)) {
@@ -412,7 +447,14 @@ fun NotesScreen(
                                 selected = selectedTag == stringResource(R.string.all),
                                 onClick = { selectedTag = context.getString(R.string.all) },
                                 label = { Text(stringResource(R.string.all)) },
-                                modifier = Modifier.padding(end = 4.dp)
+                                modifier = Modifier.padding(end = 4.dp),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    containerColor = getTagColor(context.getString(R.string.all), context).copy(alpha = 0.2f),
+                                    labelColor = getTagColor(context.getString(R.string.all), context),
+                                    selectedContainerColor = getTagColor(context.getString(R.string.all), context).copy(alpha = 0.3f),
+                                    selectedLabelColor = getTagColor(context.getString(R.string.all), context),
+                                ),
+                                border = BorderStroke(0.dp, Color.Transparent)
                             )
 
                             // Display other tags with delete functionality
@@ -464,7 +506,7 @@ fun NotesScreen(
                                             .fillMaxWidth()
                                             .padding(16.dp),
                                         colors = CardDefaults.cardColors(
-                                        containerColor = CardBG
+                                            containerColor = CardBG
                                         )
                                     ) {
                                         Column(
@@ -484,7 +526,7 @@ fun NotesScreen(
                                                 modifier = Modifier.padding(bottom = 16.dp),
 
 
-                                            )
+                                                )
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -492,13 +534,17 @@ fun NotesScreen(
                                                 Button(
                                                     onClick = {
                                                         val tagToDelete = showDeleteConfirmationDialog
-                                                        val updatedTags = tags.toMutableList().apply { remove(tagToDelete) }
+                                                        val storageFormatTagToDelete = notesViewModel.reverseMapLocalizedTagToStorageFormat(tagToDelete!!, context)
+                                                        val updatedLocalizedTags = tags.toMutableList().apply { remove(tagToDelete) }
+                                                        val updatedStorageTags = updatedLocalizedTags.map { tag ->
+                                                            notesViewModel.reverseMapLocalizedTagToStorageFormat(tag, context)
+                                                        }
 
                                                         selectedPet?.id?.let { petId ->
                                                             coroutineScope.launch {
+                                                                val storageFormatTag = reverseMapLocalizedTagToStorageFormat(tagToDelete!!, context)
                                                                 val notesToProcess = fetchedNotes.filter { note ->
-                                                                    val localizedTag = notesViewModel.mapStorageFormatToDisplayTag(note.tag, context)
-                                                                    localizedTag == tagToDelete
+                                                                    note.tag == storageFormatTag
                                                                 }
 
                                                                 for (note in notesToProcess) {
@@ -516,10 +562,22 @@ fun NotesScreen(
                                                                 // After deleting the notes, update the pet tags
                                                                 petTagsViewModel.updatePetTags(
                                                                     petId,
-                                                                    updatedTags,
+                                                                    updatedStorageTags,
                                                                     onSuccess = {
                                                                         // Successfully updated the tags
-                                                                        tags = updatedTags
+                                                                        tags = updatedLocalizedTags
+                                                                        coroutineScope.launch {
+                                                                            val updatedPet = homeScreenViewModel.fetchPetById(petId)
+                                                                            if (updatedPet != null && updatedPet.name.isNotEmpty()) {
+                                                                                selectedPet = updatedPet
+                                                                                // This will ensure the tag LaunchedEffect is triggered with fresh data
+                                                                                refreshTrigger++
+                                                                            } else {
+                                                                                // If fetching fails or name is empty, keep the current selectedPet but update its tags
+                                                                                selectedPet = selectedPet?.copy(tags = updatedStorageTags)
+                                                                                refreshTrigger++
+                                                                            }
+                                                                        }
                                                                         selectedTag = context.getString(R.string.all)
                                                                         showDeleteConfirmationDialog = null
                                                                     },
@@ -654,14 +712,12 @@ fun NotesScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(200.dp),
-//                                        .padding(10.dp),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = NoteInput,
                                         unfocusedContainerColor = NoteInput,
-//                                        disabledContainerColor = LightYellow,
                                         focusedIndicatorColor = Color.Transparent,
                                         unfocusedIndicatorColor = Color.Transparent
-                                        ),
+                                    ),
                                     placeholder = { Text(stringResource(R.string.description_placeholder)) },
                                     singleLine = false
                                 )
@@ -710,10 +766,7 @@ fun NotesScreen(
 
                                     )
                                 }
-
-
-
-                        }
+                            }
 
                             Button(
                                 onClick = {
@@ -847,7 +900,7 @@ fun NotesScreen(
                 noteToEdit = null
             },
             properties = DialogProperties(
-            usePlatformDefaultWidth = false
+                usePlatformDefaultWidth = false
             )
         ) {
             Card(
@@ -910,7 +963,7 @@ fun NotesScreen(
                             items(existingPhotoUrls.filter {url ->
                                 !removedPhotoUrls.contains(url)
                             }) {
-                                photoUrl ->
+                                    photoUrl ->
                                 Box(modifier = Modifier.size(100.dp)) {
                                     AsyncImage(
                                         model = ImageRequest.Builder(LocalContext.current)
@@ -1312,7 +1365,7 @@ fun NotesScreen(
                         .padding(8.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     colors = CardDefaults.cardColors(
-                    containerColor = CardBG
+                        containerColor = CardBG
                     )
                 ) {
                     Column(
@@ -1339,25 +1392,64 @@ fun NotesScreen(
                             Button(
                                 onClick = {
                                     if (newTag.text.isNotBlank()) {
-                                        val updatedTags = tags.toMutableList().apply { add(newTag.text.trim()) }
-                                        tags = updatedTags // Update the local state
+                                        val customTagValue = newTag.text.trim()
 
-                                        selectedPet?.id?.let { petId ->
-                                            coroutineScope.launch {
-                                                petTagsViewModel.updatePetTags(petId, updatedTags,
-                                                    onSuccess = {
-                                                        newTag = TextFieldValue("")
-                                                        showDialog = false
-                                                    },
-                                                    onFailure = { e ->
-                                                        Toast.makeText(context,
-                                                            context.getString(
-                                                                R.string.failed_to_add_tag,
-                                                                e.message ?: "Unknown error"
-                                                            ), Toast.LENGTH_SHORT).show()
-                                                        tags = tags.filter { it != newTag.text.trim() }
-                                                    })
+                                        val tagAlreadyExists = tags.any { existingTag ->
+                                            val storageFormatExisting = notesViewModel.reverseMapLocalizedTagToStorageFormat(existingTag, context)
+                                            val storageFormatNew = notesViewModel.reverseMapLocalizedTagToStorageFormat(customTagValue, context)
+                                            storageFormatExisting.equals(storageFormatNew, ignoreCase = true)
+                                        }
+
+                                        if (!tagAlreadyExists) {
+                                            // First, check if this is a standard tag in another language
+                                            val storageFormat = notesViewModel.reverseMapLocalizedTagToStorageFormat(customTagValue, context)
+                                            val tagToAdd = if (NotesViewModel.TagConstants.STANDARD_TAG_KEYS.contains(storageFormat.lowercase())) {
+                                                mapTagToLocalizedString(storageFormat, context) // Add localized version
+                                            } else {
+                                                customTagValue // Keep custom tag as is
                                             }
+                                            val updatedTags = tags.toMutableList().apply { add(customTagValue) }
+//                                            tags = updatedTags // Update the local state
+
+                                            selectedPet?.id?.let { petId ->
+                                                coroutineScope.launch {
+                                                    val tagsForStorage = updatedTags.map { tag ->
+                                                        notesViewModel.reverseMapLocalizedTagToStorageFormat(tag,context)
+                                                    }
+
+                                                    petTagsViewModel.updatePetTags(petId,
+                                                        tagsForStorage,
+                                                        onSuccess = {
+                                                            selectedPet = selectedPet?.copy(
+                                                                tags = selectedPet!!.tags.toMutableList().apply {
+                                                                    add(notesViewModel.reverseMapLocalizedTagToStorageFormat(customTagValue, context))
+                                                                }
+                                                            )
+                                                            tags = updatedTags
+                                                            refreshTrigger++
+
+                                                            newTag = TextFieldValue("")
+                                                            showDialog = false
+                                                        },
+                                                        onFailure = { e ->
+                                                            Toast.makeText(
+                                                                context,
+                                                                context.getString(
+                                                                    R.string.failed_to_add_tag,
+                                                                    e.message ?: "Unknown error"
+                                                                ), Toast.LENGTH_SHORT
+                                                            ).show()
+                                                            tags = tags.filter { it != customTagValue }
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.tag_already_exists),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
                                     }
                                     showDialog = false
@@ -1686,4 +1778,3 @@ fun NoteCard(
         }
     }
 }
-

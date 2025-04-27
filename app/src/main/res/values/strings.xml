@@ -120,4 +120,5 @@
     <string name="invalid_date_format">Invalid Date Format</string>
     <string name="are_you_sure_to_delete_your_account">Are you sure you want to delete your account?</string>
     <string name="this_will_delete_all_your_data_forever">This will permanently delete all your pets, notes, and weights.</string>
+    <string name="tag_already_exists">Tag already exists.</string>
 </resources>

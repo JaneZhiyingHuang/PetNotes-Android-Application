@@ -1,5 +1,6 @@
 package fi.oamk.petnotes.viewmodel
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +39,18 @@ class NotesViewModel : ViewModel() {
         object Loading : UploadState()
         data class Success(val message: String) : UploadState()
         data class Error(val message: String, val exception: Exception? = null) : UploadState()
+    }
+
+    companion object TagConstants {
+        val STANDARD_TAG_KEYS = setOf(
+            "all",
+            "vomit",
+            "stool",
+            "cough",
+            "vet",
+            "water_intake",
+            "emotion"
+        )
     }
 
     private suspend fun uploadFilesToFirebase(
@@ -209,21 +222,27 @@ class NotesViewModel : ViewModel() {
     }
 
     fun mapStorageFormatToDisplayTag(storageTag: String, context: android.content.Context): String {
-        val displayTagMap = mapOf(
-            "all" to context.getString(R.string.all),
-            "vomit" to context.getString(R.string.vomit),
-            "stool" to context.getString(R.string.stool),
-            "cough" to context.getString(R.string.cough),
-            "vet" to context.getString(R.string.vet),
-            "water_intake" to context.getString(R.string.water_intake),
-            "emotion" to context.getString(R.string.emotion)
-        )
+        if (TagConstants.STANDARD_TAG_KEYS.contains(storageTag.lowercase())) {
+            val resourceId = when(storageTag.lowercase()) {
+                "all" -> R.string.all
+                "vomit" -> R.string.vomit
+                "stool" -> R.string.stool
+                "cough" -> R.string.cough
+                "vet" -> R.string.vet
+                "water_intake" -> R.string.water_intake
+                "emotion" -> R.string.emotion
+                else -> null
+            }
 
-        return displayTagMap[storageTag] ?: storageTag.split("_")
-            .joinToString(" ") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() } }
+            if (resourceId != null) {
+                return context.getString(resourceId)
+            }
+        }
+
+        return storageTag
     }
 
-    private fun reverseMapLocalizedTagToStorageFormat(localizedTag: String, context: android.content.Context): String {
+    fun reverseMapLocalizedTagToStorageFormat(localizedTag: String, context: android.content.Context): String {
         val reverseTagMap = mapOf(
             context.getString(fi.oamk.petnotes.R.string.all) to "all",
             context.getString(fi.oamk.petnotes.R.string.vomit) to "vomit",
@@ -233,8 +252,7 @@ class NotesViewModel : ViewModel() {
             context.getString(fi.oamk.petnotes.R.string.water_intake) to "water_intake",
             context.getString(fi.oamk.petnotes.R.string.emotion) to "emotion"
         )
-
-        return reverseTagMap[localizedTag] ?: localizedTag.lowercase().replace(" ", "_")
+        return reverseTagMap[localizedTag] ?: localizedTag
     }
 
     // Function to handle both file uploads and note creation

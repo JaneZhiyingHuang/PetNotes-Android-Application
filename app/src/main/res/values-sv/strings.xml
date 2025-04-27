@@ -119,4 +119,5 @@
     <string name="invalid_date_format">Ogiltigt datumformat</string>
     <string name="are_you_sure_to_delete_your_account">Är du säker på att du vill radera ditt konto?</string>
     <string name="this_will_delete_all_your_data_forever">Detta kommer permanent att radera alla dina husdjur, anteckningar och viktuppgifter.</string>
+    <string name="tag_already_exists">Taggen finns redan.</string>
 </resources>

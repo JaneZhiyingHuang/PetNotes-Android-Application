@@ -119,4 +119,5 @@
     <string name="invalid_date_format">Virheellinen päivämäärämuoto</string>
     <string name="are_you_sure_to_delete_your_account">Haluatko varmasti poistaa tilisi?</string>
     <string name="this_will_delete_all_your_data_forever">Tämä poistaa pysyvästi kaikki lemmikkisi, muistiinpanosi ja painotiedot.</string>
+    <string name="tag_already_exists">Tunniste on jo olemassa.</string>
 </resources>

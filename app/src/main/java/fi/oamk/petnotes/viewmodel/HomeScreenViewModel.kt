@@ -63,6 +63,25 @@ class HomeScreenViewModel : ViewModel() {
         return petList
     }
 
+    suspend fun fetchPetById(petId: String): Pet? {
+        return try {
+            val petDoc = FirebaseFirestore.getInstance()
+                .collection("pets")
+                .document(petId)
+                .get()
+                .await()
+
+            if (petDoc.exists()) {
+                petDoc.toObject(Pet::class.java)?.copy(id = petId)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("HomeScreenViewModel", "Error fetching pet by ID", e)
+            null
+        }
+    }
+
     fun getUserId(): String {
         val user = FirebaseAuth.getInstance().currentUser
         return user?.uid ?: "" // Return the user ID or an empty string if no user is logged in
