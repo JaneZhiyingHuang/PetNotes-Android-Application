@@ -5,7 +5,7 @@
 PetNotes helps you manage pet profiles, write daily notes, track weight trends, and monitor abnormal behaviors—all in one simple app. Stay organized, catch health issues early, and give your pets the care they deserve with PetNotes!
 
 ## 🎥 Demo/Slides
-- **demo**: https://youtu.be/S842Rq5kbnc
+- **demo**: https://youtu.be/Xh1UiuBFhOw
 - **slides**: https://docs.google.com/presentation/d/11yM-FC9KQFOLO1MwBze8ioIcBvwnqjp9xz9aP8RQKdw/edit?usp=sharing
 <img width="200" height="450" alt="Picture 1" src="https://github.com/user-attachments/assets/661c9c3d-c575-4622-bf77-12afc33e8796" />
 <img width="200" height="789" alt="Screenshot 2025-04-21 at 20 43 38" src="https://github.com/user-attachments/assets/1b734731-5d26-4f6e-aa44-ec2462d34de9" />
@@ -93,4 +93,5 @@ To run the **PetNotes** app on your local Android Studio environment, follow the
 
 ## 📝 License
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for more information.
+
 
