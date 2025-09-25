@@ -47,8 +47,11 @@ PetNotes helps you manage pet profiles, write daily notes, track weight trends, 
 - **🛢 Database**: Uses Cloud Firestore, a NoSQL cloud database, to efficiently store and retrieve structured pet data such as profiles, daily notes, weight records, and behavioral logs.
 
 ## 🎨 UI Design
-The figma link for UI wireframe and pages layout:
+The figma link for UI wireframe and pages layout:  
 https://www.figma.com/design/zuWRlwQW2uoDNhvvf1WNvB/PetNotes?node-id=0-1&t=NIBf71VJDZlu2iy7-1
+
+<img width="709" height="742" alt="image" src="https://github.com/user-attachments/assets/3fbfc343-dcc3-4f9c-990a-004148d6995c" />
+
 
 ## 🚦 Running the Project
 
@@ -93,5 +96,6 @@ To run the **PetNotes** app on your local Android Studio environment, follow the
 
 ## 📝 License
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for more information.
+
 
 
